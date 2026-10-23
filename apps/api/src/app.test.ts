@@ -1,10 +1,12 @@
-import type { Dashboard, Session } from '@shooting-clays/shared';
+import type { Dashboard, Profile, Session } from '@shooting-clays/shared';
 import { describe, expect, it } from 'vitest';
 import { createApp } from './app';
+import { createTestAuth } from './auth';
 import { loadConfig } from './config';
 import { createMemoryDb } from './db/client';
 import { importHistory } from './import/history-csv';
-import { createTestApp, historyRows } from './test-utils';
+import { createProfilesRepo } from './profiles-repo';
+import { createTestApp, historyRows, OTHER, OWNER, STRANGER } from './test-utils';
 
 const newSession = {
   date: '2026-10-23',
@@ -14,14 +16,18 @@ const newSession = {
   notes: 'Field A',
 };
 
+const neverCalled = async () => {
+  throw new Error('not expected');
+};
+
 describe('health', () => {
-  it('GET /api/health answers without touching the database', async () => {
+  it('GET /api/health answers without touching the database or auth', async () => {
     const db = new Proxy({} as never, {
       get: () => {
         throw new Error('database accessed');
       },
     });
-    const app = createApp({ db, now: () => new Date() });
+    const app = createApp({ db, now: () => new Date(), verifyToken: neverCalled, adminEmails: [] });
     const res = await app.request('/api/health');
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
@@ -34,16 +40,82 @@ describe('health', () => {
 
   it('GET /api/health/db returns 503 when the database is unreachable', async () => {
     const db = { execute: () => Promise.reject(new Error('down')) } as never;
-    const res = await createApp({ db, now: () => new Date() }).request('/api/health/db');
+    const app = createApp({ db, now: () => new Date(), verifyToken: neverCalled, adminEmails: [] });
+    const res = await app.request('/api/health/db');
     expect(res.status).toBe(503);
     expect(await res.json()).toMatchObject({ error: { code: 'UNAVAILABLE' } });
   });
 });
 
+describe('authentication', () => {
+  it.each(['/api/dashboard', '/api/sessions', '/api/disciplines', '/api/me/profile'])(
+    'GET %s without a token returns 401 UNAUTHENTICATED',
+    async (path) => {
+      const { json } = await createTestApp({ empty: true });
+      const res = await json('GET', path, undefined, null);
+      expect(res.status).toBe(401);
+      expect(await res.json()).toMatchObject({ error: { code: 'UNAUTHENTICATED' } });
+    },
+  );
+
+  it('rejects tokens with a bad signature or that have expired', async () => {
+    const { app, testAuth } = await createTestApp({ empty: true });
+    const otherKey = await createTestAuth();
+    const expired = await testAuth.signToken(OWNER, '-1m');
+    for (const token of [await otherKey.signToken(OWNER), expired, 'not-a-jwt']) {
+      const res = await app.request('/api/dashboard', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      expect(res.status).toBe(401);
+    }
+  });
+
+  it('returns 403 ACCESS_NOT_OPEN for emails outside ADMIN_EMAILS', async () => {
+    const { json } = await createTestApp({ empty: true });
+    const res = await json('GET', '/api/dashboard', undefined, STRANGER);
+    expect(res.status).toBe(403);
+    expect(await res.json()).toMatchObject({ error: { code: 'ACCESS_NOT_OPEN' } });
+  });
+
+  it('returns 403 ACCESS_NOT_OPEN for an allowed email that is not verified', async () => {
+    const { json } = await createTestApp({ empty: true });
+    const res = await json('GET', '/api/dashboard', undefined, { ...OWNER, emailVerified: false });
+    expect(res.status).toBe(403);
+  });
+
+  it('matches ADMIN_EMAILS case-insensitively', async () => {
+    const { json } = await createTestApp({ empty: true });
+    expect((await json('GET', '/api/dashboard', undefined, OTHER)).status).toBe(200);
+  });
+});
+
+describe('profile', () => {
+  it('is created on the first request with the name from the token', async () => {
+    const { json, db } = await createTestApp({ empty: true });
+    expect(await createProfilesRepo(db).get(OTHER.id)).toBeUndefined();
+    const res = await json('GET', '/api/me/profile', undefined, OTHER);
+    expect(res.status).toBe(200);
+    expect((await res.json()) as Profile).toEqual({
+      displayName: 'Other Shooter',
+      avatarUrl: null,
+      email: OTHER.email,
+    });
+  });
+
+  it('can be renamed, and the new name is kept on later sign-ins', async () => {
+    const { json } = await createTestApp({ empty: true });
+    const put = await json('PUT', '/api/me/profile', { displayName: '  Ace  ' });
+    expect(await put.json()).toMatchObject({ displayName: 'Ace' });
+    const get = await json('GET', '/api/me/profile');
+    expect(await get.json()).toMatchObject({ displayName: 'Ace' });
+    expect((await json('PUT', '/api/me/profile', { displayName: ' ' })).status).toBe(400);
+  });
+});
+
 describe('GET /api/disciplines', () => {
   it('lists disciplines with their target-letter flag', async () => {
-    const { app } = await createTestApp({ empty: true });
-    const body = await (await app.request('/api/disciplines')).json();
+    const { json } = await createTestApp({ empty: true });
+    const body = await (await json('GET', '/api/disciplines')).json();
     expect(body).toContainEqual({ key: 'compak', hasTargetLetters: true });
     expect(body).toContainEqual({ key: 'fosso', hasTargetLetters: false });
   });
@@ -51,8 +123,8 @@ describe('GET /api/disciplines', () => {
 
 describe('GET /api/dashboard', () => {
   it('returns the reference values for the imported history (R1)', async () => {
-    const { app } = await createTestApp();
-    const dashboard = (await (await app.request('/api/dashboard')).json()) as Dashboard;
+    const { json } = await createTestApp();
+    const dashboard = (await (await json('GET', '/api/dashboard')).json()) as Dashboard;
     expect(dashboard.referenceDate).toBe('2026-10-23');
     expect(dashboard.periods.allTime.compak).toMatchObject({ avg: 16, min: 8, max: 23 });
     expect(dashboard.periods.lastMonth.compak).toMatchObject({ avg: 18, min: 14, max: 23 });
@@ -98,21 +170,21 @@ describe('sessions', () => {
   });
 
   it('lists sessions newest first and filters by discipline and dates', async () => {
-    const { app } = await createTestApp();
-    const all = (await (await app.request('/api/sessions')).json()) as Session[];
+    const { json } = await createTestApp();
+    const all = (await (await json('GET', '/api/sessions')).json()) as Session[];
     expect(all).toHaveLength(historyRows().length);
     expect(all[0]!.date).toBe('2026-10-23');
     expect(all.at(-1)!.date).toBe('2026-04-12');
 
     const trap = (await (
-      await app.request('/api/sessions?discipline=trap&from=2026-10-14&to=2026-10-31')
+      await json('GET', '/api/sessions?discipline=trap&from=2026-10-14&to=2026-10-31')
     ).json()) as Session[];
     expect(trap.map((s) => [s.date, s.score])).toEqual([
       ['2026-10-23', 18],
       ['2026-10-17', 19],
     ]);
 
-    expect((await app.request('/api/sessions?discipline=skeet')).status).toBe(400);
+    expect((await json('GET', '/api/sessions?discipline=skeet')).status).toBe(400);
   });
 
   it('updates a session and returns the new dashboard', async () => {
@@ -154,14 +226,22 @@ describe('sessions', () => {
   );
 
   it('returns 500 INTERNAL_ERROR without details for unexpected errors', async () => {
-    const db = {
-      select: () => {
-        throw new Error('boom: secret detail');
-      },
-    } as never;
     const captured: unknown[] = [];
-    const app = createApp({ db, now: () => new Date(), captureException: (e) => captured.push(e) });
-    const res = await app.request('/api/sessions');
+    const db = await createMemoryDb();
+    // Sessions queries fail; profile creation (insert) still works so auth passes.
+    const broken = new Proxy(db, {
+      get: (target, prop) =>
+        prop === 'select'
+          ? () => {
+              throw new Error('boom: secret detail');
+            }
+          : Reflect.get(target, prop),
+    });
+    const { json } = await createTestApp({
+      empty: true,
+      deps: { db: broken, captureException: (e) => captured.push(e) },
+    });
+    const res = await json('GET', '/api/sessions');
     expect(res.status).toBe(500);
     const text = await res.text();
     expect(text).toContain('INTERNAL_ERROR');
@@ -170,20 +250,54 @@ describe('sessions', () => {
   });
 });
 
+// Iteration 2: a user can never read, change or delete another user's sessions.
+describe('data isolation between users', () => {
+  it("never shows another user's sessions or statistics", async () => {
+    const { json } = await createTestApp();
+    const sessions = (await (await json('GET', '/api/sessions', undefined, OTHER)).json()) as [];
+    expect(sessions).toEqual([]);
+    const dashboard = (await (
+      await json('GET', '/api/dashboard', undefined, OTHER)
+    ).json()) as Dashboard;
+    expect(dashboard.periods.allTime.compak.count).toBe(0);
+  });
+
+  it("returns 404 when updating or deleting another user's session, and leaves it intact", async () => {
+    const { json } = await createTestApp();
+    const [ownerSession] = (await (await json('GET', '/api/sessions')).json()) as Session[];
+    const id = ownerSession!.id;
+    expect((await json('PUT', `/api/sessions/${id}`, newSession, OTHER)).status).toBe(404);
+    expect((await json('DELETE', `/api/sessions/${id}`, undefined, OTHER)).status).toBe(404);
+    const after = (await (await json('GET', '/api/sessions')).json()) as Session[];
+    expect(after.find((s) => s.id === id)).toEqual(ownerSession);
+  });
+
+  it('stores new sessions under the signed-in user only', async () => {
+    const { json } = await createTestApp();
+    await json('POST', '/api/sessions', newSession, OTHER);
+    const other = (await (await json('GET', '/api/sessions', undefined, OTHER)).json()) as [];
+    expect(other).toHaveLength(1);
+    const owner = (await (await json('GET', '/api/sessions')).json()) as [];
+    expect(owner).toHaveLength(historyRows().length);
+  });
+});
+
 describe('import', () => {
   it('is idempotent', async () => {
     const db = await createMemoryDb();
+    await createProfilesRepo(db).ensure({ ...OWNER, emailVerified: true, image: null });
     const rows = historyRows();
-    expect(await importHistory(db, rows)).toBe(rows.length);
-    expect(await importHistory(db, rows)).toBe(0);
+    expect(await importHistory(db, rows, OWNER.id)).toBe(rows.length);
+    expect(await importHistory(db, rows, OWNER.id)).toBe(0);
   });
 });
 
 // R11
 describe('test-only endpoints', () => {
-  it('POST /api/__test__/reset does not exist outside E2E mode', async () => {
+  it('/api/__test__/* do not exist outside E2E mode', async () => {
     const { json } = await createTestApp({ empty: true });
     expect((await json('POST', '/api/__test__/reset')).status).toBe(404);
+    expect((await json('POST', '/api/__test__/token', OWNER)).status).toBe(404);
   });
 
   it('E2E mode and APP_NOW are ignored in production', () => {
@@ -192,17 +306,19 @@ describe('test-only endpoints', () => {
     expect(config.appNow).toBeUndefined();
   });
 
-  it('POST /api/__test__/reset reseeds when E2E mode provides it', async () => {
-    const { db } = await createTestApp({ empty: true });
-    let resets = 0;
-    const app = createApp({
-      db,
-      now: () => new Date(),
-      resetForTests: async () => {
-        resets++;
+  it('test routes are registered when E2E mode provides them, without auth', async () => {
+    let calls = 0;
+    const { app } = await createTestApp({
+      empty: true,
+      deps: {
+        testRoutes: (a) =>
+          a.post('/__test__/reset', (c) => {
+            calls++;
+            return c.json({ ok: true });
+          }),
       },
     });
     expect((await app.request('/api/__test__/reset', { method: 'POST' })).status).toBe(200);
-    expect(resets).toBe(1);
+    expect(calls).toBe(1);
   });
 });

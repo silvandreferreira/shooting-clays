@@ -9,7 +9,13 @@ describe('request logging', () => {
       { env: 'test', release: 'abc', logsSourceToken: undefined, logsIngestUrl: '' },
       (line) => lines.push(line),
     );
-    const app = createApp({ db: {} as never, now: () => new Date(), logger });
+    const app = createApp({
+      db: {} as never,
+      now: () => new Date(),
+      verifyToken: () => Promise.reject(new Error('unused')),
+      adminEmails: [],
+      logger,
+    });
     await app.request('/api/health');
     expect(lines).toHaveLength(1);
     const entry = JSON.parse(lines[0]!);

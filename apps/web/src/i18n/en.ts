@@ -65,6 +65,19 @@ export const en = {
     deleteError: 'Could not delete the session. Try again.',
     notFound: 'Session not found.',
   },
+  auth: {
+    tagline: 'Log your clay shooting series and track your progress per discipline.',
+    signInWithGoogle: 'Sign in with Google',
+    signingIn: 'Opening Google…',
+    signInError: 'Could not start the sign-in. Check your connection and try again.',
+    loading: 'Loading…',
+    welcome: (name: string) => `Welcome, ${name}`,
+    accountMenu: 'Account',
+    signOut: 'Sign out',
+    accessNotOpenTitle: 'Access is not open yet',
+    accessNotOpenMessage:
+      'This app is not open to new users yet. If you think you should have access, contact the owner.',
+  },
   notFound: 'Page not found.',
   errorBoundary: 'Something went wrong. Reload the app to continue.',
 };

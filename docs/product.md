@@ -1,6 +1,6 @@
 # Product specification
 
-> Status: **iteration 1 — implemented** (not yet deployed). Keep this document in sync with the implementation.
+> Status: **iterations 1–2 — implemented** (not yet deployed). Keep this document in sync with the implementation.
 
 ## Goal
 
@@ -56,14 +56,18 @@ Charts:
 
 ## Screens (mobile-first)
 
-| Route          | Screen       | Content                                                                                                                                                                                                                    |
-| -------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`            | Dashboard    | Period switcher (All time · Last month · This month), discipline cards, charts                                                                                                                                             |
-| `/add`         | Add session  | Date, discipline (large buttons), score stepper 0–25, A–F checkboxes (**only** for disciplines with target letters; cleared when switching discipline), notes, **Save** → back to Dashboard                                |
-| `/history`     | History      | List (newest first) with discipline filter (kept in the URL: `?discipline=`); each item shows date, discipline, score, **Hardest targets: A, C and F** (only when recorded) and notes; edit and delete (with confirmation) |
-| `/history/:id` | Edit session | Same form as Add, pre-filled; **Save** → back to History with the same filter                                                                                                                                              |
-| `/admin`       | Admin        | Iteration 3, admins only — see `roadmap.md`                                                                                                                                                                                |
-| `/community`   | Community    | Iteration 4 — see `roadmap.md`                                                                                                                                                                                             |
+| Route           | Screen          | Content                                                                                                                                                                                                                    |
+| --------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| _(signed out)_  | Sign in         | App name, short description, **Sign in with Google**. Every route shows it while signed out                                                                                                                                |
+| _(not allowed)_ | Access not open | "Access is not open yet", the signed-in email and **Sign out** (iteration 2: email not in `ADMIN_EMAILS`)                                                                                                                  |
+| `/`             | Dashboard       | Period switcher (All time · Last month · This month), discipline cards, charts                                                                                                                                             |
+| `/add`          | Add session     | Date, discipline (large buttons), score stepper 0–25, A–F checkboxes (**only** for disciplines with target letters; cleared when switching discipline), notes, **Save** → back to Dashboard                                |
+| `/history`      | History         | List (newest first) with discipline filter (kept in the URL: `?discipline=`); each item shows date, discipline, score, **Hardest targets: A, C and F** (only when recorded) and notes; edit and delete (with confirmation) |
+| `/history/:id`  | Edit session    | Same form as Add, pre-filled; **Save** → back to History with the same filter                                                                                                                                              |
+| `/admin`        | Admin           | Iteration 3, admins only — see `roadmap.md`                                                                                                                                                                                |
+| `/community`    | Community       | Iteration 4 — see `roadmap.md`                                                                                                                                                                                             |
+
+Every signed-in screen has a header with **"Welcome, <first name>"** and an account button (Google photo, or the name's initial) that opens a menu with the email and **Sign out**.
 
 UI requirements: touch targets ≥ 44 px, readable in sunlight (high contrast), one-handed use, dark mode, installable as a PWA.
 

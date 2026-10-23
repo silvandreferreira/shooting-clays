@@ -173,17 +173,29 @@ Nothing reaches production without passing the tests. To recreate it with the Gi
 
 > Neon branches are independent copies of the database: break `dev` as much as you like without touching real data.
 
+**Sign-in (Neon Auth), on each branch (`dev` and `main`):**
+
+1. Neon Console → select the branch → **Auth** → **Enable Auth** (Managed Better Auth).
+2. Copy the **Auth Base URL** from the Configuration tab: that is the branch's `NEON_AUTH_URL`.
+3. **Disable "Email & password"** (only Google is used; otherwise anyone could register an unverified account).
+4. Google: the `dev` branch can use Neon's **shared** Google credentials. For `main` (production) create your own OAuth client — see 4.7.
+5. Add the app's domain under **Auth → Configuration → Domains** (production URL; `localhost` is allowed by default on development branches).
+
 ### 4.4 Local environment variables
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` and set the **`dev`** branch connection string:
+Edit `.env` and set the **`dev`** branch values:
 
 ```dotenv
 DATABASE_URL=postgresql://...@...neon.tech/neondb?sslmode=require
+NEON_AUTH_URL=https://ep-....neonauth....neon.tech/neondb/auth
+ADMIN_EMAILS=you@example.com
 ```
+
+`ADMIN_EMAILS` are the Google accounts allowed to sign in (iteration 2); the first one owns the imported history.
 
 > ⚠️ `.env` is **never** committed (it is in `.gitignore`).
 
@@ -205,6 +217,17 @@ Then:
 
 Follow the step-by-step guide in [`docs/observability.md`](docs/observability.md) → "One-time setup": Better Stack account, uptime monitors, log token, error capture and alerts. In GitHub, add the secrets `PROD_URL` and `SMOKE_HEARTBEAT_URL` (Settings → Secrets and variables → Actions).
 
+### 4.7 Google sign-in for production (own OAuth client)
+
+Neon's shared Google credentials are for development only (Neon Auth production checklist). For the `main` branch:
+
+1. <https://console.cloud.google.com> → create (or pick) a project → **APIs & Services → OAuth consent screen**: External, app name "Shooting Clays", your email as support/developer contact. Scopes: `openid`, `email`, `profile`.
+2. **Credentials → Create credentials → OAuth client ID** → _Web application_.
+   - **Authorized JavaScript origins:** the production URL (e.g. `https://shooting-clays.vercel.app`).
+   - **Authorized redirect URIs:** `<NEON_AUTH_URL of main>/callback/google`.
+3. Neon Console → branch `main` → **Auth → OAuth providers → Google**: switch from shared to your **Client ID** and **Client secret** (the secret is stored only in Neon, never in the repository).
+4. Auth → Configuration: add the production domain under **Domains**, and turn off **Allow localhost**.
+
 ---
 
 ## 5. Running locally
@@ -213,32 +236,35 @@ Follow the step-by-step guide in [`docs/observability.md`](docs/observability.md
 pnpm install                                 # install all workspace dependencies (also installs Git hooks)
 pnpm exec playwright install --with-deps     # first time only: browsers for E2E tests
 pnpm db:migrate                              # create/update tables on the Neon dev branch
-pnpm db:import                               # import data/clays-results.csv (safe to re-run, no duplicates)
-pnpm dev                                     # start web + api
+pnpm dev                                     # start web + api, then sign in once with Google
+pnpm db:import                               # import data/clays-results.csv for you (safe to re-run, no duplicates)
 ```
+
+`pnpm db:import` needs you (the first `ADMIN_EMAILS` address) to have signed in once on that branch. On a database that already had history from before sign-in existed, run `pnpm db:assign-owner` instead (moves those sessions to you; safe to re-run).
 
 | What            | URL                                |
 | --------------- | ---------------------------------- |
 | App (front end) | <http://localhost:5173>            |
 | API             | <http://localhost:3000/api/health> |
 
-To test on your **phone** on the same Wi-Fi: run `pnpm dev:host` and open `http://<computer-ip>:5173`.
+To test on your **phone** on the same Wi-Fi: run `pnpm dev:host` and open `http://<computer-ip>:5173`. Sign-in does **not** work there: Neon Auth's session cookie is `Secure`, which browsers only accept over HTTPS or on `localhost`. Use a Vercel preview to test sign-in on the phone.
 
 Sanity check: the dashboard under "All time" should show Compak Sporting 16 / 8 / 23.
 
 ### Using the app
 
-| Screen                   | How to use it                                                                                                                                                                                                                                                          |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Dashboard** (`/`)      | Choose **All time**, **Last month** or **This month**. Each discipline you have shot has a card: average (large), min, max and number of series; "—" means no series in that period. Below: scores over time (tap a point for details) and the average per discipline. |
-| **Add** (`/add`)         | Date (today by default), discipline, score with **−**/**+** or typed (0–25), hardest targets A–F (only Compak Sporting and Sporting), notes. **Save** returns to the dashboard, already updated. If saving fails, the form keeps what you typed and shows an error.    |
-| **History** (`/history`) | Every series, newest first, with its hardest targets (e.g. "Hardest targets: A, C and F", hidden when none were recorded) and notes. Filter by discipline. **Edit** opens the same form pre-filled; **Delete** asks for confirmation. Both update the dashboard.       |
+| Screen                   | How to use it                                                                                                                                                                                                                                                                                |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Sign in**              | **Sign in with Google**. Only the accounts in `ADMIN_EMAILS` get in for now; others see "Access is not open yet". The header then greets you ("Welcome, <first name>"); the round button with your photo opens the menu with **Sign out** (which also clears the data stored on the device). |
+| **Dashboard** (`/`)      | Choose **All time**, **Last month** or **This month**. Each discipline you have shot has a card: average (large), min, max and number of series; "—" means no series in that period. Below: scores over time (tap a point for details) and the average per discipline.                       |
+| **Add** (`/add`)         | Date (today by default), discipline, score with **−**/**+** or typed (0–25), hardest targets A–F (only Compak Sporting and Sporting), notes. **Save** returns to the dashboard, already updated. If saving fails, the form keeps what you typed and shows an error.                          |
+| **History** (`/history`) | Every series, newest first, with its hardest targets (e.g. "Hardest targets: A, C and F", hidden when none were recorded) and notes. Filter by discipline. **Edit** opens the same form pre-filled; **Delete** asks for confirmation. Both update the dashboard.                             |
 
 - **Offline / slow network:** the dashboard opens instantly from the copy stored in the browser and refreshes in the background. Adding, editing and deleting need a connection.
 - **Install on the phone:** open the app in the browser, then _Share → Add to Home Screen_ (iPhone, Safari) or _⋮ → Install app_ (Android, Chrome).
 - **Dark mode** follows the phone/computer setting.
 
-Known limitations (no sign-in until iteration 2, not deployed yet, and more): [`docs/roadmap.md`](docs/roadmap.md) → "Known limitations and pending work".
+Known limitations (not deployed yet, sign-in over the local network, and more): [`docs/roadmap.md`](docs/roadmap.md) → "Known limitations and pending work".
 
 ### Development servers
 

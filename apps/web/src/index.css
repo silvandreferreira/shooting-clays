@@ -44,6 +44,12 @@
     }
   }
 
+  /* Scrolling to a focused or targeted element keeps it clear of the fixed bottom navigation
+     (WCAG 2.4.11 Focus Not Obscured). */
+  html {
+    scroll-padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+  }
+
   body {
     background: var(--color-surface);
     color: var(--color-ink);

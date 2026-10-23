@@ -4,6 +4,15 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Iteration 2
+
+- **Added:** Google sign-in with Neon Auth (through `/auth` on our own origin), sign-in screen, "Access is not open yet" screen, header with "Welcome, <first name>" and an account menu (Google photo, Sign out).
+- **Added:** API authentication (Bearer JWT verified with the Neon Auth JWKS), access limited to verified emails in `ADMIN_EMAILS`, all data per user; `GET/PUT /api/me/profile`.
+- **Added:** table `profiles` (migration 0001) and `pnpm db:assign-owner`; `pnpm db:import` now imports for the owner.
+- **Changed:** the device cache belongs to one user and is deleted on sign out.
+- **Fixed:** focused or scrolled-to elements are no longer hidden behind the bottom navigation (scroll padding).
+- **Added:** E2E R13–R16 (sign-in flows, access, sign out, account switch) and API tests R17; R3 now also covers Neon Auth being unreachable.
+
 ### Iteration 1
 
 - **Added:** pnpm monorepo (`apps/web`, `apps/api`, `packages/shared`) with TypeScript strict, ESLint, Prettier, Lefthook hooks and GitHub Actions (CI, production smoke tests, snapshot update).

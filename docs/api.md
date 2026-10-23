@@ -1,11 +1,13 @@
 # REST API
 
-> Status: **iteration 1 — implemented** (not yet deployed). Keep in sync with `apps/api/src/app.ts`.
+> Status: **iterations 1–2 — implemented** (not yet deployed). Keep in sync with `apps/api/src/app.ts`.
 
 - Base path: `/api` (locally `http://localhost:3000/api`)
 - Format: JSON (`Content-Type: application/json`)
 - Dates: `YYYY-MM-DD`; months: `YYYY-MM`; periods are computed in the **Europe/Lisbon** time zone
-- Authentication: none in iteration 1; Neon Auth session from iteration 2 (every endpoint except health requires it)
+- Authentication (iteration 2): every endpoint except `/api/health` and `/api/health/db` requires `Authorization: Bearer <JWT>`. The JWT comes from Neon Auth (the web app gets it with `authClient.token()`, valid 15 minutes) and is verified against the branch's JWKS (`NEON_AUTH_URL/.well-known/jwks.json`, EdDSA, issuer = origin of `NEON_AUTH_URL`).
+- Access (iteration 2, until iteration 3): only **verified** emails listed in `ADMIN_EMAILS` get in; everyone else gets `403 ACCESS_NOT_OPEN`. The first authenticated request creates the user's profile.
+- Every query is filtered by the signed-in user's id: another user's session is reported as `404 NOT_FOUND`.
 
 ## Errors
 
@@ -22,7 +24,8 @@
 | HTTP | `code`             | When                                                                 |
 | ---- | ------------------ | -------------------------------------------------------------------- |
 | 400  | `VALIDATION_ERROR` | Request fails schema validation                                      |
-| 401  | `UNAUTHENTICATED`  | (iteration 2+) No valid session                                      |
+| 401  | `UNAUTHENTICATED`  | No token, or invalid/expired token                                   |
+| 403  | `ACCESS_NOT_OPEN`  | (iteration 2) Email not verified or not in `ADMIN_EMAILS`            |
 | 403  | `ACCOUNT_PENDING`  | (iteration 3+) Account waiting for admin approval                    |
 | 403  | `ACCOUNT_DISABLED` | (iteration 3+) Account disabled by the admin                         |
 | 403  | `FORBIDDEN`        | (iteration 3+) Not an admin, or an admin acting on their own account |
@@ -30,24 +33,27 @@
 | 500  | `INTERNAL_ERROR`   | Unexpected error (details only in logs)                              |
 | 503  | `UNAVAILABLE`      | Database unreachable (`/api/health/db`)                              |
 
-## Endpoints — iteration 1
+## Endpoints
 
-| Method   | Path                                  | Description                                                    | Success                      |
-| -------- | ------------------------------------- | -------------------------------------------------------------- | ---------------------------- |
-| `GET`    | `/api/health`                         | Liveness; **does not touch the database** (safe to poll often) | `200 { "ok": true }`         |
-| `GET`    | `/api/health/db`                      | Runs `SELECT 1`; **poll rarely** (wakes Neon)                  | `200 { "ok": true }` / `503` |
-| `GET`    | `/api/disciplines`                    | Disciplines and whether they have A–F targets                  | `200 Discipline[]`           |
-| `GET`    | `/api/dashboard`                      | Stats per discipline × period + chart series                   | `200 Dashboard`              |
-| `GET`    | `/api/sessions?from=&to=&discipline=` | History                                                        | `200 Session[]`              |
-| `POST`   | `/api/sessions`                       | Create a session                                               | `201 { session, dashboard }` |
-| `PUT`    | `/api/sessions/:id`                   | Update a session                                               | `200 { session, dashboard }` |
-| `DELETE` | `/api/sessions/:id`                   | Delete a session                                               | `200 { dashboard }`          |
+| Method   | Path                                  | Description                                                                                                         | Success                      |
+| -------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| `GET`    | `/api/health`                         | Liveness; **does not touch the database** (safe to poll often)                                                      | `200 { "ok": true }`         |
+| `GET`    | `/api/health/db`                      | Runs `SELECT 1`; **poll rarely** (wakes Neon)                                                                       | `200 { "ok": true }` / `503` |
+| `GET`    | `/api/disciplines`                    | Disciplines and whether they have A–F targets                                                                       | `200 Discipline[]`           |
+| `GET`    | `/api/dashboard`                      | Stats per discipline × period + chart series                                                                        | `200 Dashboard`              |
+| `GET`    | `/api/sessions?from=&to=&discipline=` | History                                                                                                             | `200 Session[]`              |
+| `POST`   | `/api/sessions`                       | Create a session                                                                                                    | `201 { session, dashboard }` |
+| `PUT`    | `/api/sessions/:id`                   | Update a session                                                                                                    | `200 { session, dashboard }` |
+| `DELETE` | `/api/sessions/:id`                   | Delete a session                                                                                                    | `200 { dashboard }`          |
+| `GET`    | `/api/me/profile`                     | Current user's profile (iteration 2)                                                                                | `200 Profile`                |
+| `PUT`    | `/api/me/profile`                     | Update `{ "displayName" }` (1–50 characters, trimmed); community opt-in from iteration 4, `locale` from iteration 6 | `200 Profile`                |
 
 ### E2E mode only (`E2E=1`)
 
-| Method | Path                  | Description                                                                                                   |
-| ------ | --------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `POST` | `/api/__test__/reset` | Reseeds the in-memory PGlite database from the CSV. **Never registered outside E2E mode** (covered by a test) |
+| Method | Path                  | Description                                                                                                                               |
+| ------ | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST` | `/api/__test__/reset` | Reseeds the in-memory PGlite database from the CSV (owner `e2e-owner`). **Never registered outside E2E mode** (covered by a test)         |
+| `POST` | `/api/__test__/token` | `{ id, email, name, emailVerified? }` → `{ token }`: a JWT signed with the E2E key, so browser tests sign in without Google. **E2E only** |
 
 ### Example — create a session
 
@@ -115,12 +121,25 @@ Every discipline in `packages/shared/src/disciplines.ts` is present in every per
 
 When a discipline has no sessions in a period, `avg`, `min` and `max` are `null` and `count` is `0`; the UI shows "—".
 
-## Planned — iteration 2
+### `Profile` shape
 
-| Method | Path              | Description                                                                                 |
-| ------ | ----------------- | ------------------------------------------------------------------------------------------- |
-| `GET`  | `/api/me/profile` | Current user's profile                                                                      |
-| `PUT`  | `/api/me/profile` | Update display name (community opt-in from iteration 4; language `locale` from iteration 6) |
+```json
+{ "displayName": "Test Owner", "avatarUrl": null, "email": "owner@example.test" }
+```
+
+`displayName` and `avatarUrl` come from Google on the first sign-in; afterwards the user's own changes are kept. `email` comes from the token and is only ever returned to its owner.
+
+### Example — authenticated request
+
+```bash
+curl http://localhost:3000/api/dashboard -H "Authorization: Bearer <JWT>"
+```
+
+Without the header:
+
+```json
+{ "error": { "code": "UNAUTHENTICATED", "message": "Sign in required", "details": {} } }
+```
 
 ## Planned — iteration 3
 

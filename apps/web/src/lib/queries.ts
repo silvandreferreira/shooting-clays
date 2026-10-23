@@ -3,9 +3,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from './api';
 
 export const queryKeys = {
+  profile: ['profile'] as const,
   dashboard: ['dashboard'] as const,
   sessions: (filters: SessionsQuery = {}) => ['sessions', filters] as const,
 };
+
+export function useProfile() {
+  return useQuery({ queryKey: queryKeys.profile, queryFn: api.profile, staleTime: 5 * 60_000 });
+}
 
 export const DASHBOARD_FRESH_MS = 30_000;
 

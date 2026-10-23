@@ -1,4 +1,7 @@
-export const LOCAL_USER_ID = 'local';
+import { parseAdminEmails } from './auth';
+
+/** Owner of all sessions before iteration 2 (see scripts/assign-owner.ts). */
+export const LEGACY_LOCAL_USER_ID = 'local';
 
 export interface Config {
   databaseUrl: string | undefined;
@@ -10,6 +13,10 @@ export interface Config {
   logsSourceToken: string | undefined;
   logsIngestUrl: string;
   sentryDsn: string | undefined;
+  /** Neon Auth base URL of this environment's branch (JWKS and issuer). */
+  neonAuthUrl: string | undefined;
+  /** Lower-case emails allowed to use the app (iteration 2 safeguard). */
+  adminEmails: string[];
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
@@ -23,6 +30,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     logsSourceToken: env.LOGS_SOURCE_TOKEN || undefined,
     logsIngestUrl: env.LOGS_INGEST_URL || 'https://in.logs.betterstack.com',
     sentryDsn: env.SENTRY_DSN || undefined,
+    neonAuthUrl: env.NEON_AUTH_URL?.replace(/\/$/, '') || undefined,
+    adminEmails: parseAdminEmails(env.ADMIN_EMAILS),
   };
 }
 

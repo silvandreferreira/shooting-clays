@@ -24,7 +24,8 @@
     "test:all": "pnpm check && pnpm build && pnpm test:e2e",
     "db:generate": "pnpm --filter @shooting-clays/api db:generate",
     "db:migrate": "pnpm --filter @shooting-clays/api db:migrate",
-    "db:import": "pnpm --filter @shooting-clays/api db:import"
+    "db:import": "pnpm --filter @shooting-clays/api db:import",
+    "db:assign-owner": "pnpm --filter @shooting-clays/api db:assign-owner"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
