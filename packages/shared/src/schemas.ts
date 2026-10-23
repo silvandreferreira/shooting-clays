@@ -70,8 +70,37 @@ export const profileUpdateSchema = z.object({
 
 export type ProfileUpdate = z.infer<typeof profileUpdateSchema>;
 
-export interface Profile {
+export const ROLES = ['user', 'admin'] as const;
+export type Role = (typeof ROLES)[number];
+
+/** pending: waiting for approval; active: can use the app; disabled: blocked by an admin. */
+export const ACCOUNT_STATUSES = ['pending', 'active', 'disabled'] as const;
+export type AccountStatus = (typeof ACCOUNT_STATUSES)[number];
+
+/** The signed-in user (`GET /api/me`). `email` is only ever returned to its owner. */
+export interface Me {
   displayName: string;
   avatarUrl: string | null;
   email: string;
+  role: Role;
+  status: AccountStatus;
 }
+
+/** A row of the admin's user list (`GET /api/admin/users`). */
+export interface AdminUser {
+  userId: string;
+  displayName: string;
+  avatarUrl: string | null;
+  email: string | null;
+  role: Role;
+  status: AccountStatus;
+  signedUpAt: string;
+  sessionCount: number;
+  lastActivityAt: string | null;
+}
+
+export const adminUserUpdateSchema = z.object({
+  status: z.enum(ACCOUNT_STATUSES, { error: 'status must be pending, active or disabled' }),
+});
+
+export type AdminUserUpdate = z.infer<typeof adminUserUpdateSchema>;

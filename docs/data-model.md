@@ -1,6 +1,6 @@
 # Data model
 
-> Status: **iterations 1–2 — implemented** (not yet deployed). The source of truth is the Drizzle schema in `apps/api/src/db/schema.ts`; this document must always match it.
+> Status: **iterations 1–3 — implemented**; iterations 1–2 in production. The source of truth is the Drizzle schema in `apps/api/src/db/schema.ts`; this document must always match it.
 
 ## Table `sessions`
 
@@ -37,9 +37,13 @@ Indexes: `(user_id, date)`; from iteration 4 also `(discipline, date)`.
 
 The email address is not stored here. It is read from Neon Auth's user data and exposed **only** to admins (`/api/admin/users`), never to other users.
 
-Iteration 2 implements `user_id`, `display_name`, `avatar_url`, `created_at`, `updated_at`; the other columns arrive with their iterations. A profile is created on the user's first authenticated API request (name and photo from Google); later changes by the user are never overwritten.
+Implemented so far: `user_id`, `display_name`, `avatar_url`, `role`, `status`, `status_changed_at`, `created_at`, `updated_at`; the other columns arrive with their iterations. A profile is created on the user's first authenticated API request (name and photo from Google, `pending`); later changes by the user are never overwritten. Verified emails in `ADMIN_EMAILS` are set to `admin` / `active` on every request.
 
-`sessions.user_id` references `profiles.user_id` with `on delete cascade`, so removing a profile removes all of its sessions (iteration 3 "Remove").
+`sessions.user_id` references `profiles.user_id` with `on delete cascade`, so removing a profile removes all of its sessions.
+
+### Removing a user (iteration 3)
+
+One SQL statement (so one transaction) in `apps/api/src/admin-repo.ts`: delete the profile (its sessions go by cascade) and the user's row in `neon_auth."user"` (Neon Auth's own foreign keys then delete their sessions and linked Google account). Admin profiles are never removed. Tests and E2E run the same statement on PGlite with a stand-in `neon_auth."user"` table (`apps/api/src/db/memory.ts`).
 
 ### Sessions from before sign-in existed (`'local'`)
 
@@ -64,9 +68,10 @@ Source: `data/clays-results.csv` — columns `Data, Modalidade, Resultado X/25, 
 
 ## Migrations
 
-Generate with `pnpm db:generate` (Drizzle Kit; add `-- --name <description>` for a readable file name), apply with `pnpm db:migrate` (`apps/api/scripts/migrate.ts`, Drizzle migrator over the Neon HTTP driver). Tests and E2E apply the same migrations to PGlite. Stored in `apps/api/drizzle/` and committed. Production migrations must be backward compatible and applied **before** merging the code that needs them (see `README.md` → "Deploying").
+Generate with `pnpm db:generate` (Drizzle Kit; add `--name <description>` for a readable file name, e.g. `pnpm db:generate --name account_states`), apply with `pnpm db:migrate` (`apps/api/scripts/migrate.ts`, Drizzle migrator over the Neon HTTP driver). Tests and E2E apply the same migrations to PGlite. Stored in `apps/api/drizzle/` and committed. Production migrations must be backward compatible and applied **before** merging the code that needs them (see `README.md` → "Deploying").
 
-| #    | Date       | Description                                                                                                                                  |
-| ---- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0000 | 2026-10-23 | `0000_create_sessions.sql`: table `sessions`, index `(user_id, date)`, score check                                                           |
-| 0001 | 2026-10-23 | `0001_create_profiles.sql`: table `profiles`; placeholder profile for `'local'` sessions; FK `sessions.user_id → profiles.user_id` (cascade) |
+| #    | Date       | Description                                                                                                                                                                                                                        |
+| ---- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0000 | 2026-10-23 | `0000_create_sessions.sql`: table `sessions`, index `(user_id, date)`, score check                                                                                                                                                 |
+| 0001 | 2026-10-23 | `0001_create_profiles.sql`: table `profiles`; placeholder profile for `'local'` sessions; FK `sessions.user_id → profiles.user_id` (cascade)                                                                                       |
+| 0002 | 2026-10-23 | `0002_account_states.sql`: `profiles.role` (default `user`), `status` (default `pending`), `status_changed_at`, with checks. Existing profiles become `pending` until their next request (admins are promoted from `ADMIN_EMAILS`) |

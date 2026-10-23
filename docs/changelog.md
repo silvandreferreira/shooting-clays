@@ -4,6 +4,18 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Iteration 3
+
+- **Added:** account states: new users are `pending` (approval banner, sample dashboard, Add disabled, no History), `active` or `disabled` ("Your account is inactive"); enforced by the API (`403 ACCOUNT_PENDING` / `ACCOUNT_DISABLED`); the app re-checks on open and focus.
+- **Added:** admin screen (`/admin`) with a pending badge: user list with email, sign-up date, sessions and last activity; approve/disable with undo; permanent removal (profile, sessions and Neon Auth user) after typing the name.
+- **Added:** `GET /api/me`, `GET/PATCH/DELETE /api/admin/users`; migration 0002 (`profiles.role`, `status`, `status_changed_at`).
+- **Changed:** `ADMIN_EMAILS` now names the admins (always active) instead of the only accounts allowed in; `GET /api/me/profile` replaced by `GET /api/me`; "Access is not open yet" removed (R14 retired).
+- **Added:** API tests R19 and E2E R20–R23.
+- **Fixed:** `pnpm db:generate --name …` documented without the `--` that pnpm 12 passes through.
+- **Changed:** Vercel sends deployment events to GitHub (`repository_dispatch`), so the production smoke tests run after each deploy (README 4.5).
+
+## 2026-10-23 — first production release (iterations 1 and 2)
+
 ### Deployment
 
 - **Fixed:** production smoke test S1 checks the signed-out app (sign-in screen, API 401, `/auth` proxy) instead of the dashboard, and the smoke workflow now starts on Vercel's `repository_dispatch` event (Vercel creates no GitHub Deployments).

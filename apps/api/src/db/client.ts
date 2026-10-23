@@ -11,3 +11,8 @@ export const MIGRATIONS_FOLDER = fileURLToPath(new URL('../../drizzle', import.m
 export function createNeonDb(databaseUrl: string): Db {
   return drizzleNeon({ client: neon(databaseUrl), schema });
 }
+
+/** Rows of a raw `db.execute(sql…)`: both drivers (Neon HTTP, PGlite) return `{ rows }`. */
+export function rowsOf<T>(result: unknown): T[] {
+  return (result as { rows: T[] }).rows;
+}

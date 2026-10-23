@@ -1,12 +1,15 @@
 # REST API
 
-> Status: **iterations 1–2 — implemented** (not yet deployed). Keep in sync with `apps/api/src/app.ts`.
+> Status: **iterations 1–3 — implemented**; iterations 1–2 in production. Keep in sync with `apps/api/src/app.ts`.
 
 - Base path: `/api` (locally `http://localhost:3000/api`)
 - Format: JSON (`Content-Type: application/json`)
 - Dates: `YYYY-MM-DD`; months: `YYYY-MM`; periods are computed in the **Europe/Lisbon** time zone
 - Authentication (iteration 2): every endpoint except `/api/health` and `/api/health/db` requires `Authorization: Bearer <JWT>`. The JWT comes from Neon Auth (the web app gets it with `authClient.token()`, valid 15 minutes) and is verified against the branch's JWKS (`NEON_AUTH_URL/.well-known/jwks.json`, EdDSA, issuer = origin of `NEON_AUTH_URL`).
-- Access (iteration 2, until iteration 3): only **verified** emails listed in `ADMIN_EMAILS` get in; everyone else gets `403 ACCESS_NOT_OPEN`. The first authenticated request creates the user's profile.
+- Accounts (iteration 3): the first authenticated request creates the user's profile as `pending`. Every request reads the profile, so status changes apply at once:
+  - `pending` → `403 ACCOUNT_PENDING` and `disabled` → `403 ACCOUNT_DISABLED` on every endpoint except `GET /api/me`;
+  - **verified** emails in `ADMIN_EMAILS` are always `role = 'admin'`, `status = 'active'`;
+  - a valid token whose user no longer exists in Neon Auth (removed by the admin) gets `401`, so no new profile is created for it.
 - Every query is filtered by the signed-in user's id: another user's session is reported as `404 NOT_FOUND`.
 
 ## Errors
@@ -25,10 +28,9 @@
 | ---- | ------------------ | -------------------------------------------------------------------- |
 | 400  | `VALIDATION_ERROR` | Request fails schema validation                                      |
 | 401  | `UNAUTHENTICATED`  | No token, or invalid/expired token                                   |
-| 403  | `ACCESS_NOT_OPEN`  | (iteration 2) Email not verified or not in `ADMIN_EMAILS`            |
-| 403  | `ACCOUNT_PENDING`  | (iteration 3+) Account waiting for admin approval                    |
-| 403  | `ACCOUNT_DISABLED` | (iteration 3+) Account disabled by the admin                         |
-| 403  | `FORBIDDEN`        | (iteration 3+) Not an admin, or an admin acting on their own account |
+| 403  | `ACCOUNT_PENDING`  | Account waiting for admin approval                                   |
+| 403  | `ACCOUNT_DISABLED` | Account disabled by the admin                                        |
+| 403  | `FORBIDDEN`        | Not an admin, or an admin acting on an admin account (their own too) |
 | 404  | `NOT_FOUND`        | Id does not exist or belongs to another user                         |
 | 500  | `INTERNAL_ERROR`   | Unexpected error (details only in logs)                              |
 | 503  | `UNAVAILABLE`      | Database unreachable (`/api/health/db`)                              |
@@ -45,15 +47,18 @@
 | `POST`   | `/api/sessions`                       | Create a session                                                                                                    | `201 { session, dashboard }` |
 | `PUT`    | `/api/sessions/:id`                   | Update a session                                                                                                    | `200 { session, dashboard }` |
 | `DELETE` | `/api/sessions/:id`                   | Delete a session                                                                                                    | `200 { dashboard }`          |
-| `GET`    | `/api/me/profile`                     | Current user's profile (iteration 2)                                                                                | `200 Profile`                |
-| `PUT`    | `/api/me/profile`                     | Update `{ "displayName" }` (1–50 characters, trimmed); community opt-in from iteration 4, `locale` from iteration 6 | `200 Profile`                |
+| `GET`    | `/api/me`                             | Current user: profile, role and status. **Works for pending and disabled users**                                    | `200 Me`                     |
+| `PUT`    | `/api/me/profile`                     | Update `{ "displayName" }` (1–50 characters, trimmed); community opt-in from iteration 4, `locale` from iteration 6 | `200 Me`                     |
+| `GET`    | `/api/admin/users`                    | All users, pending first, then newest sign-up first (admin only)                                                    | `200 AdminUser[]`            |
+| `PATCH`  | `/api/admin/users/:userId`            | `{ "status": "active" \| "disabled" \| "pending" }` (admin only; `pending` is for undo)                             | `200 { userId, status }`     |
+| `DELETE` | `/api/admin/users/:userId`            | Permanently deletes the user and all their data, Neon Auth included (admin only)                                    | `200 { removed: true }`      |
 
 ### E2E mode only (`E2E=1`)
 
-| Method | Path                  | Description                                                                                                                               |
-| ------ | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `POST` | `/api/__test__/reset` | Reseeds the in-memory PGlite database from the CSV (owner `e2e-owner`). **Never registered outside E2E mode** (covered by a test)         |
-| `POST` | `/api/__test__/token` | `{ id, email, name, emailVerified? }` → `{ token }`: a JWT signed with the E2E key, so browser tests sign in without Google. **E2E only** |
+| Method | Path                  | Description                                                                                                                                                                                                                           |
+| ------ | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST` | `/api/__test__/reset` | Reseeds the in-memory PGlite database from the CSV (owner `e2e-owner`). **Never registered outside E2E mode** (covered by a test)                                                                                                     |
+| `POST` | `/api/__test__/token` | `{ id, email, name, emailVerified?, status? }` → `{ token }`: records the user in the fake `neon_auth."user"` (as Google sign-in would), gives a new profile `status` if set, and returns a JWT signed with the E2E key. **E2E only** |
 
 ### Example — create a session
 
@@ -121,13 +126,37 @@ Every discipline in `packages/shared/src/disciplines.ts` is present in every per
 
 When a discipline has no sessions in a period, `avg`, `min` and `max` are `null` and `count` is `0`; the UI shows "—".
 
-### `Profile` shape
+### `Me` shape
 
 ```json
-{ "displayName": "Test Owner", "avatarUrl": null, "email": "owner@example.test" }
+{
+  "displayName": "Test Owner",
+  "avatarUrl": null,
+  "email": "owner@example.test",
+  "role": "admin",
+  "status": "active"
+}
 ```
 
-`displayName` and `avatarUrl` come from Google on the first sign-in; afterwards the user's own changes are kept. `email` comes from the token and is only ever returned to its owner.
+`displayName` and `avatarUrl` come from Google on the first sign-in; afterwards the user's own changes are kept. `email` comes from the token and is only ever returned to its owner. Types: `Me`, `AdminUser` in `packages/shared/src/schemas.ts`.
+
+### `AdminUser` shape
+
+```json
+{
+  "userId": "6a8b4c38-2103-44f0-911f-1e378645f82a",
+  "displayName": "Pat New",
+  "avatarUrl": null,
+  "email": "pat@example.test",
+  "role": "user",
+  "status": "pending",
+  "signedUpAt": "2026-10-23T21:06:07.000Z",
+  "sessionCount": 0,
+  "lastActivityAt": null
+}
+```
+
+`email` and `signedUpAt` come from Neon Auth (`neon_auth."user"`); `lastActivityAt` is the latest change to any of the user's sessions. Admin accounts are listed but cannot be changed or removed (`ADMIN_EMAILS` decides them). Status changes log `{ action: "user_status_changed", adminId, status }`; removals log only `{ action: "user_removed", adminId, at }`.
 
 ### Example — authenticated request
 
@@ -140,17 +169,6 @@ Without the header:
 ```json
 { "error": { "code": "UNAUTHENTICATED", "message": "Sign in required", "details": {} } }
 ```
-
-## Planned — iteration 3
-
-| Method   | Path                       | Description                                                                           |
-| -------- | -------------------------- | ------------------------------------------------------------------------------------- |
-| `GET`    | `/api/me`                  | Current user: role and status (works for pending and disabled users too)              |
-| `GET`    | `/api/admin/users?status=` | All users with email, status, sign-up date, session count, last activity (admin only) |
-| `PATCH`  | `/api/admin/users/:userId` | `{ "status": "active" \| "disabled" }` (admin only; not on own account)               |
-| `DELETE` | `/api/admin/users/:userId` | Permanently deletes the user and all their data (admin only; not on own account)      |
-
-Rules: `roadmap.md` → Iteration 3.
 
 ## Planned — iteration 4
 

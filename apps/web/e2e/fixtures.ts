@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { test as base, expect, type Page } from '@playwright/test';
+import { test as base, expect, type APIRequestContext, type Page } from '@playwright/test';
 
 const API_URL = 'http://localhost:3100';
 
@@ -9,18 +9,42 @@ export interface E2EUser {
   id: string;
   email: string;
   name: string;
+  /** Account state the API gives this user on first sign-in (default: pending). */
+  status?: 'pending' | 'active' | 'disabled';
 }
 
-/** Owns the CSV history; the API in E2E mode uses the same id (apps/api/src/runtime.ts). */
+/**
+ * Owns the CSV history and is the admin (the only ADMIN_EMAILS address in E2E mode); the API uses
+ * the same id (apps/api/src/e2e-runtime.ts).
+ */
 export const OWNER: E2EUser = { id: 'e2e-owner', email: 'owner@example.test', name: 'Test Owner' };
-/** Allowed (in ADMIN_EMAILS) but with no sessions. */
+/** An approved user with no sessions. */
 export const OTHER: E2EUser = {
   id: 'e2e-other',
   email: 'other@example.test',
   name: 'Other Shooter',
+  status: 'active',
 };
-/** Signs in with Google but is not in ADMIN_EMAILS. */
-export const STRANGER: E2EUser = { id: 'e2e-stranger', email: 'stranger@example.test', name: 'X' };
+/** Signs in with Google for the first time: waiting for approval. */
+export const PENDING: E2EUser = {
+  id: 'e2e-pending',
+  email: 'pending@example.test',
+  name: 'Pat New',
+};
+/** Disabled by the admin. */
+export const DISABLED: E2EUser = {
+  id: 'e2e-disabled',
+  email: 'disabled@example.test',
+  name: 'Dee Blocked',
+  status: 'disabled',
+};
+
+/** Signs the user in once on the API side, as Neon Auth would, so the admin can see them. */
+export async function registerUser(request: APIRequestContext, user: E2EUser) {
+  const data = { ...user, status: user.status ?? 'pending' };
+  const res = await request.post(`${API_URL}/api/__test__/token`, { data });
+  expect(res.ok()).toBe(true);
+}
 
 /** Who Neon Auth says is signed in; tests can change it (sign in, switch account). */
 export interface FakeNeonAuth {
@@ -39,7 +63,7 @@ async function routeFakeNeonAuth(page: Page, auth: FakeNeonAuth, nextSignIn: () 
     if (pathname.endsWith('/get-session')) {
       const body = user && {
         session: { id: `session-${user.id}`, userId: user.id, expiresAt: '2099-01-01T00:00:00Z' },
-        user: { ...user, emailVerified: true, image: null },
+        user: { id: user.id, email: user.email, name: user.name, emailVerified: true, image: null },
       };
       return route.fulfill({ json: body });
     }

@@ -1,4 +1,4 @@
-import type { Dashboard, Profile, Session } from '@shooting-clays/shared';
+import type { Dashboard, Me, Session } from '@shooting-clays/shared';
 import { describe, expect, it } from 'vitest';
 import { createApp } from './app';
 import { createTestAuth } from './auth';
@@ -6,7 +6,7 @@ import { loadConfig } from './config';
 import { createMemoryDb } from './db/memory';
 import { importHistory } from './import/history-csv';
 import { createProfilesRepo } from './profiles-repo';
-import { createTestApp, historyRows, OTHER, OWNER, STRANGER } from './test-utils';
+import { createTestApp, historyRows, NEWCOMER, OTHER, OWNER } from './test-utils';
 
 const newSession = {
   date: '2026-10-23',
@@ -48,7 +48,7 @@ describe('health', () => {
 });
 
 describe('authentication', () => {
-  it.each(['/api/dashboard', '/api/sessions', '/api/disciplines', '/api/me/profile'])(
+  it.each(['/api/dashboard', '/api/sessions', '/api/disciplines', '/api/me', '/api/admin/users'])(
     'GET %s without a token returns 401 UNAUTHENTICATED',
     async (path) => {
       const { json } = await createTestApp({ empty: true });
@@ -70,35 +70,27 @@ describe('authentication', () => {
     }
   });
 
-  it('returns 403 ACCESS_NOT_OPEN for emails outside ADMIN_EMAILS', async () => {
+  it('returns 401 for a valid token whose user no longer exists in Neon Auth (removed)', async () => {
     const { json } = await createTestApp({ empty: true });
-    const res = await json('GET', '/api/dashboard', undefined, STRANGER);
-    expect(res.status).toBe(403);
-    expect(await res.json()).toMatchObject({ error: { code: 'ACCESS_NOT_OPEN' } });
-  });
-
-  it('returns 403 ACCESS_NOT_OPEN for an allowed email that is not verified', async () => {
-    const { json } = await createTestApp({ empty: true });
-    const res = await json('GET', '/api/dashboard', undefined, { ...OWNER, emailVerified: false });
-    expect(res.status).toBe(403);
-  });
-
-  it('matches ADMIN_EMAILS case-insensitively', async () => {
-    const { json } = await createTestApp({ empty: true });
-    expect((await json('GET', '/api/dashboard', undefined, OTHER)).status).toBe(200);
+    const ghost = { id: 'ghost', email: 'ghost@example.test', name: 'Ghost' };
+    const res = await json('GET', '/api/me', undefined, ghost);
+    expect(res.status).toBe(401);
+    expect(await res.json()).toMatchObject({ error: { code: 'UNAUTHENTICATED' } });
   });
 });
 
 describe('profile', () => {
-  it('is created on the first request with the name from the token', async () => {
+  it('is created on the first request as pending, with the name from the token', async () => {
     const { json, db } = await createTestApp({ empty: true });
-    expect(await createProfilesRepo(db).get(OTHER.id)).toBeUndefined();
-    const res = await json('GET', '/api/me/profile', undefined, OTHER);
+    expect(await createProfilesRepo(db).get(NEWCOMER.id)).toBeUndefined();
+    const res = await json('GET', '/api/me', undefined, NEWCOMER);
     expect(res.status).toBe(200);
-    expect((await res.json()) as Profile).toEqual({
-      displayName: 'Other Shooter',
+    expect((await res.json()) as Me).toEqual({
+      displayName: 'New Comer',
       avatarUrl: null,
-      email: OTHER.email,
+      email: NEWCOMER.email,
+      role: 'user',
+      status: 'pending',
     });
   });
 
@@ -106,7 +98,7 @@ describe('profile', () => {
     const { json } = await createTestApp({ empty: true });
     const put = await json('PUT', '/api/me/profile', { displayName: '  Ace  ' });
     expect(await put.json()).toMatchObject({ displayName: 'Ace' });
-    const get = await json('GET', '/api/me/profile');
+    const get = await json('GET', '/api/me');
     expect(await get.json()).toMatchObject({ displayName: 'Ace' });
     expect((await json('PUT', '/api/me/profile', { displayName: ' ' })).status).toBe(400);
   });
@@ -285,7 +277,7 @@ describe('data isolation between users', () => {
 describe('import', () => {
   it('is idempotent', async () => {
     const db = await createMemoryDb();
-    await createProfilesRepo(db).ensure({ ...OWNER, emailVerified: true, image: null });
+    await createProfilesRepo(db).create({ ...OWNER, emailVerified: true, image: null });
     const rows = historyRows();
     expect(await importHistory(db, rows, OWNER.id)).toBe(rows.length);
     expect(await importHistory(db, rows, OWNER.id)).toBe(0);

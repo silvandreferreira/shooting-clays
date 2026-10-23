@@ -1,5 +1,6 @@
 import { zValidator } from '@hono/zod-validator';
 import {
+  adminUserUpdateSchema,
   DISCIPLINES,
   profileUpdateSchema,
   sessionInputSchema,
@@ -11,10 +12,11 @@ import { Hono, type Context } from 'hono';
 import { routePath } from 'hono/route';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import { z } from 'zod';
+import { createAdminRepo } from './admin-repo';
 import type { AuthUser, VerifyToken } from './auth';
 import type { Db } from './db/client';
 import { silentLogger, type Logger } from './logger';
-import { createProfilesRepo } from './profiles-repo';
+import { createProfilesRepo, toMe, type Profile } from './profiles-repo';
 import { createSessionsRepo } from './sessions-repo';
 
 export interface AppDeps {
@@ -22,7 +24,7 @@ export interface AppDeps {
   now: () => Date;
   /** Verifies the `Authorization: Bearer` JWT (Neon Auth JWKS; a local key in tests and E2E). */
   verifyToken: VerifyToken;
-  /** Lower-case emails allowed in (iteration 2 safeguard until account approval exists). */
+  /** Lower-case emails of the admins: always active, with `role = 'admin'`. */
   adminEmails: string[];
   logger?: Logger;
   /** Called with unexpected errors (e.g. Sentry). */
@@ -34,12 +36,14 @@ export interface AppDeps {
 type ErrorCode =
   | 'VALIDATION_ERROR'
   | 'UNAUTHENTICATED'
-  | 'ACCESS_NOT_OPEN'
+  | 'ACCOUNT_PENDING'
+  | 'ACCOUNT_DISABLED'
+  | 'FORBIDDEN'
   | 'NOT_FOUND'
   | 'INTERNAL_ERROR'
   | 'UNAVAILABLE';
 
-type AppEnv = { Variables: { user: AuthUser } };
+type AppEnv = { Variables: { user: AuthUser; profile: Profile } };
 
 function errorResponse(
   c: Context,
@@ -70,14 +74,14 @@ function validationHook(result: ValidationResult, c: Context) {
 }
 
 const idParamSchema = z.object({ id: z.string() });
+const userIdParamSchema = z.object({ userId: z.string() });
 
 export function createApp(deps: AppDeps) {
   const { db, now, verifyToken, adminEmails, logger = silentLogger, captureException } = deps;
   const repo = createSessionsRepo(db);
   const profilesRepo = createProfilesRepo(db);
+  const adminRepo = createAdminRepo(db);
   const dashboard = (userId: string) => repo.dashboard(userId, todayInLisbon(now()));
-  // Profiles already known to exist in this process: skips the insert on later requests.
-  const knownProfiles = new Set<string>();
 
   const app = new Hono<AppEnv>().basePath('/api');
 
@@ -122,8 +126,8 @@ export function createApp(deps: AppDeps) {
 
   if (deps.testRoutes) deps.testRoutes(app as unknown as Hono);
 
-  // Every route below requires a signed-in, allowed user. Authorization lives here, never only in
-  // the UI (CLAUDE.md → Invariants).
+  // Every route below requires a signed-in user. Authorization lives here, never only in the UI
+  // (CLAUDE.md → Invariants).
   app.use(async (c, next) => {
     const header = c.req.header('authorization');
     const token = header?.startsWith('Bearer ') ? header.slice(7).trim() : undefined;
@@ -134,35 +138,91 @@ export function createApp(deps: AppDeps) {
     } catch {
       return errorResponse(c, 401, 'UNAUTHENTICATED', 'Session expired or invalid');
     }
-    // Only verified addresses count: an unverified sign-up must not pass as an allowed email.
-    if (!user.emailVerified || !adminEmails.includes(user.email.toLowerCase())) {
-      // The reason helps diagnose sign-in problems; never log the email itself.
-      logger.log('warn', {
-        message: 'access denied',
-        reason: user.emailVerified ? 'email_not_allowed' : 'email_not_verified',
-      });
-      return errorResponse(c, 403, 'ACCESS_NOT_OPEN', 'Access is not open yet');
+    // Read on every request, so an admin's change applies at once.
+    let profile = await profilesRepo.get(user.id);
+    if (!profile) {
+      if (!(await profilesRepo.authUserExists(user.id))) {
+        return errorResponse(c, 401, 'UNAUTHENTICATED', 'Account not found');
+      }
+      profile = await profilesRepo.create(user);
     }
-    if (!knownProfiles.has(user.id)) {
-      await profilesRepo.ensure(user);
-      knownProfiles.add(user.id);
+    // Only a verified address counts: an unverified sign-up must not pass as an admin's email.
+    const isAdminEmail = user.emailVerified && adminEmails.includes(user.email.toLowerCase());
+    if (isAdminEmail && (profile.role !== 'admin' || profile.status !== 'active')) {
+      profile = await profilesRepo.promoteToAdmin(user.id);
     }
     c.set('user', user);
+    c.set('profile', profile);
     await next();
   });
 
-  app.get('/me/profile', async (c) => {
-    const user = c.get('user');
-    const profile = await profilesRepo.get(user.id);
-    if (!profile) return errorResponse(c, 404, 'NOT_FOUND', 'Profile not found');
-    return c.json({ ...profile, email: user.email });
+  // The only endpoint for pending and disabled users: it tells the app what to show.
+  app.get('/me', (c) => c.json(toMe(c.get('profile'), c.get('user').email)));
+
+  app.use(async (c, next) => {
+    const { status } = c.get('profile');
+    if (status === 'pending') {
+      return errorResponse(c, 403, 'ACCOUNT_PENDING', 'Account waiting for approval');
+    }
+    if (status === 'disabled') {
+      return errorResponse(c, 403, 'ACCOUNT_DISABLED', 'Account disabled');
+    }
+    await next();
   });
 
   app.put('/me/profile', zValidator('json', profileUpdateSchema, validationHook), async (c) => {
     const user = c.get('user');
     const profile = await profilesRepo.update(user.id, c.req.valid('json'));
     if (!profile) return errorResponse(c, 404, 'NOT_FOUND', 'Profile not found');
-    return c.json({ ...profile, email: user.email });
+    return c.json(toMe(profile, user.email));
+  });
+
+  app.use('/admin/*', async (c, next) => {
+    if (c.get('profile').role !== 'admin') {
+      return errorResponse(c, 403, 'FORBIDDEN', 'Admins only');
+    }
+    await next();
+  });
+
+  /** Admins never act on admin accounts (their own included): ADMIN_EMAILS decides those. */
+  async function targetError(c: Context, userId: string) {
+    const target = await profilesRepo.get(userId);
+    if (!target) return errorResponse(c, 404, 'NOT_FOUND', 'User not found');
+    if (target.role === 'admin') {
+      return errorResponse(c, 403, 'FORBIDDEN', 'Admin accounts cannot be changed here');
+    }
+  }
+
+  app.get('/admin/users', async (c) => c.json(await adminRepo.listUsers()));
+
+  app.patch(
+    '/admin/users/:userId',
+    zValidator('param', userIdParamSchema),
+    zValidator('json', adminUserUpdateSchema, validationHook),
+    async (c) => {
+      const adminId = c.get('user').id;
+      const { userId } = c.req.valid('param');
+      const error = await targetError(c, userId);
+      if (error) return error;
+      const { status } = c.req.valid('json');
+      const profile = await profilesRepo.setStatus(userId, status);
+      if (!profile) return errorResponse(c, 404, 'NOT_FOUND', 'User not found');
+      logger.log('info', { action: 'user_status_changed', adminId, status });
+      return c.json({ userId, status: profile.status });
+    },
+  );
+
+  app.delete('/admin/users/:userId', zValidator('param', userIdParamSchema), async (c) => {
+    const adminId = c.get('user').id;
+    const { userId } = c.req.valid('param');
+    const error = await targetError(c, userId);
+    if (error) return error;
+    if (!(await adminRepo.removeUser(userId))) {
+      return errorResponse(c, 404, 'NOT_FOUND', 'User not found');
+    }
+    // No personal data in the log (docs/roadmap.md → Iteration 3).
+    logger.log('info', { action: 'user_removed', adminId, at: now().toISOString() });
+    return c.json({ removed: true });
   });
 
   app.get('/disciplines', (c) => c.json(DISCIPLINES));

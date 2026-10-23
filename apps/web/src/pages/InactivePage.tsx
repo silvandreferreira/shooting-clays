@@ -1,12 +1,13 @@
 import { t } from '../i18n/en';
 import { useSignOut } from '../lib/sign-out';
 
-export function AccessNotOpenPage({ email }: { email: string }) {
+/** Disabled account: no personal data is loaded or shown, only this notice and Sign out. */
+export function InactivePage({ email }: { email: string }) {
   const signOut = useSignOut();
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-6 px-6 text-center">
-      <h1 className="text-2xl font-bold">{t.auth.accessNotOpenTitle}</h1>
-      <p className="text-ink-muted">{t.auth.accessNotOpenMessage}</p>
+      <h1 className="text-2xl font-bold">{t.account.inactiveTitle}</h1>
+      <p className="text-ink-muted">{t.account.inactiveMessage}</p>
       <p className="text-sm text-ink-muted">{email}</p>
       <button
         type="button"

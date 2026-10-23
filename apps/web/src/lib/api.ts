@@ -1,6 +1,8 @@
 import type {
+  AccountStatus,
+  AdminUser,
   Dashboard,
-  Profile,
+  Me,
   ProfileUpdate,
   Session,
   SessionInput,
@@ -56,9 +58,9 @@ export interface SessionMutationResult {
 }
 
 export const api = {
-  profile: () => request<Profile>('/me/profile'),
+  me: () => request<Me>('/me'),
   updateProfile: (update: ProfileUpdate) =>
-    request<Profile>('/me/profile', { method: 'PUT', body: JSON.stringify(update) }),
+    request<Me>('/me/profile', { method: 'PUT', body: JSON.stringify(update) }),
   dashboard: () => request<Dashboard>('/dashboard'),
   sessions: (query: SessionsQuery = {}) => {
     const params = new URLSearchParams(
@@ -76,4 +78,12 @@ export const api = {
     }),
   deleteSession: (id: string) =>
     request<{ dashboard: Dashboard }>(`/sessions/${id}`, { method: 'DELETE' }),
+  adminUsers: () => request<AdminUser[]>('/admin/users'),
+  setUserStatus: (userId: string, status: AccountStatus) =>
+    request<{ userId: string; status: AccountStatus }>(
+      `/admin/users/${encodeURIComponent(userId)}`,
+      { method: 'PATCH', body: JSON.stringify({ status }) },
+    ),
+  removeUser: (userId: string) =>
+    request<{ removed: true }>(`/admin/users/${encodeURIComponent(userId)}`, { method: 'DELETE' }),
 };
