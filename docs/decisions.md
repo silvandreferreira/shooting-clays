@@ -1,0 +1,31 @@
+# Decision log
+
+Each entry records what was decided and why. Entries are never deleted: when a decision changes, add a new entry that supersedes the old one (and reference it).
+
+| # | Date | Decision | Alternatives considered | Rationale |
+|---|---|---|---|---|
+| 1 | 2026-10-23 | Mobile-first web app (PWA), not a native app | Native app | One codebase; installable on the phone |
+| 2 | 2026-10-23 | Front end and back end separated, REST API only | Front end querying the DB directly | Clear separation; DB never exposed to the browser |
+| 3 | 2026-10-23 | **Vercel + Neon** | Firebase (Hosting + Functions + Firestore) | No credit card needed (Firebase Functions require the Blaze plan); Postgres fits tabular data; DB branches; Google sign-in included (Neon Auth) |
+| 4 | 2026-10-23 | React + Vite + TypeScript + Tailwind | Next.js, Vue | Simple static SPA; back end is separate anyway |
+| 5 | 2026-10-23 | TanStack Query with persisted cache | Service worker only, Redux | Instant dashboard from cache + background revalidation |
+| 6 | 2026-10-23 | Hono + Drizzle on the back end | Express, Prisma | Lightweight and typed; readable SQL migrations; good serverless support |
+| 7 | 2026-10-23 | PGlite for integration and E2E tests | Docker Postgres, Neon branch | No Docker; fast; real Postgres; deterministic |
+| 8 | 2026-10-23 | Fosso and Trap kept as separate disciplines | Merge them | Matches existing history; merging later is a simple migration |
+| 9 | 2026-10-23 | Shot load, shot size and brand not recorded | Optional fields | Not relevant for the analysis |
+| 10 | 2026-10-23 | Hardest targets as A–F checkboxes, only for disciplines with lettered targets (Compak Sporting, Sporting) | Free text | Enables per-target statistics; Fosso, Trap and Helice have no letters |
+| 11 | 2026-10-23 | Averages rounded to integers; "—" when no data | Decimals; 0 | Matches `clays-data.csv`; 0 would be misleading |
+| 12 | 2026-10-23 | `main` as the primary branch, squash-merge PRs, Conventional Commits | Direct commits | Clean history; nothing reaches production without CI |
+| 13 | 2026-10-23 | Playwright for E2E and visual regression on Android, iPhone and desktop profiles | Cypress | Includes WebKit (iPhone), built-in screenshots, clock control, CI-friendly |
+| 14 | 2026-10-23 | Better Stack for uptime, logs, errors and alerts | Sentry + UptimeRobot + Axiom | One tool, one account; free plan is enough |
+| 15 | 2026-10-23 | Logs shipped from code | Vercel log drains | Drains are not available on Hobby, which keeps only 1 hour of logs |
+| 16 | 2026-10-23 | `/api/health` without DB; `/api/health/db` polled hourly | Single health check hitting the DB | Avoid keeping Neon awake and burning the compute allowance |
+| 17 | 2026-10-23 | Everything in the repository in English; conversation with the owner in Portuguese | Portuguese docs/code | Standard for code and tooling; UI strings centralised so pt-PT can be added later |
+| 18 | 2026-10-23 | `CLAUDE.md` kept short, pointing to `docs/` per task | One large spec file | Loaded in every session: less context used, single source of truth in `docs/` |
+| 19 | 2026-10-23 | Lefthook Git hooks (pre-commit lint/format, pre-push `pnpm check`) | Husky; no hooks | Catches problems before they reach CI; fast, simple config |
+| 20 | 2026-10-23 | Community leaderboard ranks each shooter's **best monthly score** per discipline; opt-in with display name | Average-based ranking; public by default | Rewards top performance, simple to understand; privacy by default |
+| 21 | 2026-10-23 | Until iteration 4, sign-in restricted to `ADMIN_EMAILS` | Open sign-up from iteration 2 | Prevents strangers from using the app before the approval flow exists |
+| 22 | 2026-10-23 | Account states `pending` → `active` ⇄ `disabled`, approved by an admin | Open sign-up; invite links | Owner controls who joins; disabling keeps data, so it is reversible |
+| 23 | 2026-10-23 | Pending users see a demo dashboard from a front-end fixture, with Add disabled | Empty screen; real empty dashboard | Shows the value of the app while waiting, without touching the API or real data |
+| 24 | 2026-10-23 | "Remove" hard-deletes the user and all their data (cascade + Neon Auth), confirmed by typing the name | Soft delete | Clear meaning for the admin; complete erasure respects the user's data |
+| 25 | 2026-10-23 | Account status and admin role enforced in the API middleware | UI-only checks | The UI can be bypassed; the server is the source of truth |
