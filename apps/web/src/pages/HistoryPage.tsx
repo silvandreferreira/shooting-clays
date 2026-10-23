@@ -1,0 +1,117 @@
+import { DISCIPLINE_KEYS, type Session } from '@shooting-clays/shared';
+import { Link, useLocation, useSearchParams } from 'react-router';
+import { t } from '../i18n/en';
+import { disciplineColor } from '../lib/colors';
+import { formatDate } from '../lib/format';
+import { useDeleteSession, useSessions } from '../lib/queries';
+
+function SessionItem({ session }: { session: Session }) {
+  const location = useLocation();
+  const deleteSession = useDeleteSession();
+  const onDelete = () => {
+    if (window.confirm(t.history.confirmDelete)) deleteSession.mutate(session.id);
+  };
+  return (
+    <li
+      data-testid="session-item"
+      className="rounded-2xl border border-line bg-card p-4 shadow-sm"
+      aria-label={`${formatDate(session.date)}, ${t.disciplines[session.discipline]}, ${session.score}`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-sm text-ink-muted">{formatDate(session.date)}</p>
+          <p className="flex items-center gap-2 font-semibold">
+            <span
+              aria-hidden
+              className="size-2.5 rounded-full"
+              style={{ background: disciplineColor(session.discipline) }}
+            />
+            {t.disciplines[session.discipline]}
+          </p>
+        </div>
+        <p className="text-3xl font-bold tabular-nums">
+          {session.score}
+          <span className="text-base font-medium text-ink-muted">/25</span>
+        </p>
+      </div>
+      {session.hardestTargets.length > 0 && (
+        <p className="mt-2 text-sm">
+          <span className="text-ink-muted">{t.form.hardestTargets}: </span>
+          {session.hardestTargets.join(', ')}
+        </p>
+      )}
+      {session.notes && <p className="mt-2 text-sm whitespace-pre-line">{session.notes}</p>}
+      {deleteSession.isError && (
+        <p role="alert" className="mt-2 text-sm font-medium text-danger">
+          {t.history.deleteError}
+        </p>
+      )}
+      <div className="mt-3 flex gap-2">
+        <Link
+          to={`/history/${session.id}`}
+          state={{ back: `${location.pathname}${location.search}` }}
+          className="flex min-h-11 flex-1 items-center justify-center rounded-lg border border-line font-semibold"
+        >
+          {t.history.edit}
+        </Link>
+        <button
+          type="button"
+          onClick={onDelete}
+          disabled={deleteSession.isPending}
+          className="min-h-11 flex-1 rounded-lg border border-danger font-semibold text-danger disabled:opacity-60"
+        >
+          {t.history.delete}
+        </button>
+      </div>
+    </li>
+  );
+}
+
+export function HistoryPage() {
+  // The filter lives in the URL so it survives editing a session and coming back.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const param = searchParams.get('discipline');
+  const discipline = DISCIPLINE_KEYS.find((k) => k === param) ?? '';
+  const { data, isPending, isError } = useSessions(discipline ? { discipline } : {});
+
+  return (
+    <div className="space-y-4">
+      <h1 className="text-2xl font-bold">{t.history.title}</h1>
+      <div>
+        <label htmlFor="discipline-filter" className="mb-2 block text-sm font-semibold">
+          {t.history.filterLabel}
+        </label>
+        <select
+          id="discipline-filter"
+          value={discipline}
+          onChange={(e) =>
+            setSearchParams(e.target.value ? { discipline: e.target.value } : {}, { replace: true })
+          }
+          className="min-h-12 w-full rounded-xl border border-line bg-card px-3 text-base"
+        >
+          <option value="">{t.history.allDisciplines}</option>
+          {DISCIPLINE_KEYS.map((k) => (
+            <option key={k} value={k}>
+              {t.disciplines[k]}
+            </option>
+          ))}
+        </select>
+      </div>
+      {isPending ? (
+        <p className="py-8 text-center text-ink-muted">{t.history.loading}</p>
+      ) : isError ? (
+        <p role="alert" className="py-8 text-center">
+          {t.history.loadError}
+        </p>
+      ) : data.length === 0 ? (
+        <p className="py-8 text-center text-ink-muted">{t.history.empty}</p>
+      ) : (
+        <ul className="space-y-3">
+          {data.map((s) => (
+            <SessionItem key={s.id} session={s} />
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
