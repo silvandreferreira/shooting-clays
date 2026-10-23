@@ -7,6 +7,7 @@
 | 3         | Admin (user approval and management) | Planned         |
 | 4         | Community (leaderboards)             | Planned         |
 | 5         | Interactive scores chart             | Planned         |
+| 6         | Translations (English / Portuguese)  | Planned         |
 
 When an iteration starts, mark it "In progress"; when it ships, mark it "Done" with the date and update `changelog.md`.
 
@@ -229,3 +230,62 @@ No API change: `GET /api/dashboard` already returns every score per discipline i
 ### Docs
 
 `product.md` (Charts), `testing.md` (new regression rows), `changelog.md`.
+
+---
+
+## Iteration 6 — Translations (English / European Portuguese)
+
+Goal: each user chooses whether the app is shown in **English** or **European Portuguese (pt-PT)**.
+
+### Languages and default
+
+- Supported: `en` (English) and `pt-PT` (European Portuguese). Codes are BCP 47 tags.
+- First visit: follow the browser (`navigator.languages`): any `pt*` → `pt-PT`, anything else → `en`.
+- Once the user picks a language, that choice wins on every device (see "Where the choice is saved").
+
+### Language selector
+
+- In the **account menu** (header, next to "Sign out"): "Language" with two options, **English** and **Português**, each written in its own language.
+- Also on the **sign-in screen** (small switch below the button), so the choice is possible before signing in.
+- Switching applies **immediately**, without reloading; the current screen and any form keep their state.
+- `<html lang>` is updated to the active language (screen readers and hyphenation).
+
+### Where the choice is saved
+
+- Signed in: in the user's profile (`profiles.locale`, new column), via `PUT /api/me/profile`, so it follows the user to another phone or computer.
+- Always also in `localStorage`, so the right language shows instantly on start, before sign-in and offline.
+- On sign-in, the profile's value replaces the local one (if set).
+
+### What is translated
+
+| Item                                                          | How                                                                                                                                                                   |
+| ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| All UI text (labels, buttons, headings, empty states, errors) | `apps/web/src/i18n/en.ts` (source) and new `pt-PT.ts`; `pt-PT.ts` is typed `satisfies Strings`, so a missing key fails `pnpm typecheck`                               |
+| Discipline names                                              | Per language in the strings files (e.g. pt-PT: Compak Sporting, Percurso de Caça, Fosso, Trap, Hélice)                                                                |
+| Dates and numbers                                             | `Intl` with the active locale (`en-GB` / `pt-PT`): "23 Oct 2026" / "23 out. 2026"                                                                                     |
+| Lists                                                         | `Intl.ListFormat`: "A, C and F" / "A, C e F" (History → hardest targets)                                                                                              |
+| Form validation messages                                      | The shared Zod schemas identify the rule broken (e.g. score out of range); the UI shows the message for that rule in the active language, instead of the English text |
+| API errors shown to the user                                  | Mapped from the error `code` (e.g. `ACCESS_NOT_OPEN`) to translated text; the API itself keeps English messages (logs, developers)                                    |
+
+Not translated: the user's own content (notes, display name), the imported history notes (they are already in Portuguese), email addresses, and anything in the repository other than the strings files (code, docs and API messages stay in English — see `CLAUDE.md` → Language rules).
+
+### API and data
+
+- Migration: `profiles.locale text null` with `check (locale in ('en','pt-PT'))`; `null` = not chosen yet (follow the browser).
+- `GET /api/me/profile` returns `locale`; `PUT /api/me/profile` accepts `{ "locale": "en" | "pt-PT" }` (alone or with `displayName`).
+
+### Tests
+
+- Unit: every key in `en.ts` exists in `pt-PT.ts` with a non-empty value (also enforced by the type); date and list formatting per locale; browser-language detection.
+- Integration: `PUT /api/me/profile` stores and returns `locale`; invalid values return `400 VALIDATION_ERROR`.
+- E2E:
+  - switching to Português in the account menu translates the Dashboard, Add and History immediately (no reload);
+  - the choice survives a reload and a new sign-in (profile), and is used before sign-in (localStorage);
+  - a browser in Portuguese starts in pt-PT on first visit;
+  - form validation and API error messages appear in the active language;
+  - accessibility (R10) also runs in pt-PT;
+  - visual baseline for the Dashboard in pt-PT.
+
+### Docs
+
+`CLAUDE.md` (language rules: UI strings in `en.ts` and `pt-PT.ts`), `product.md` (language selector), `data-model.md` (`profiles.locale`), `api.md`, `testing.md` (new regression rows), `decisions.md`, `changelog.md`.

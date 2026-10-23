@@ -117,10 +117,10 @@ When a discipline has no sessions in a period, `avg`, `min` and `max` are `null`
 
 ## Planned — iteration 2
 
-| Method | Path              | Description                                                 |
-| ------ | ----------------- | ----------------------------------------------------------- |
-| `GET`  | `/api/me/profile` | Current user's profile                                      |
-| `PUT`  | `/api/me/profile` | Update display name (and community opt-in from iteration 4) |
+| Method | Path              | Description                                                                                 |
+| ------ | ----------------- | ------------------------------------------------------------------------------------------- |
+| `GET`  | `/api/me/profile` | Current user's profile                                                                      |
+| `PUT`  | `/api/me/profile` | Update display name (community opt-in from iteration 4; language `locale` from iteration 6) |
 
 ## Planned — iteration 3
 

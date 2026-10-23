@@ -32,6 +32,7 @@ Indexes: `(user_id, date)`; from iteration 4 also `(discipline, date)`.
 | `role`                      | `text`        | `not null default 'user'`, `check (role in ('user','admin'))` (iteration 3)                     |
 | `status`                    | `text`        | `not null default 'pending'`, `check (status in ('pending','active','disabled'))` (iteration 3) |
 | `status_changed_at`         | `timestamptz` | nullable; set whenever the admin changes the status (iteration 3)                               |
+| `locale`                    | `text`        | nullable, `check (locale in ('en','pt-PT'))`; `null` = follow the browser (iteration 6)         |
 | `created_at` / `updated_at` | `timestamptz` |                                                                                                 |
 
 The email address is not stored here. It is read from Neon Auth's user data and exposed **only** to admins (`/api/admin/users`), never to other users.
