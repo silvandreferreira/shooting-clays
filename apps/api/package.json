@@ -1,0 +1,31 @@
+{
+  "name": "@shooting-clays/api",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start:e2e": "E2E=1 APP_NOW=2026-10-23 PORT=3100 tsx src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "db:import": "tsx scripts/import-csv.ts"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "0.5.11",
+    "@hono/node-server": "2.1.5",
+    "@hono/zod-validator": "0.9.1",
+    "@neondatabase/serverless": "1.2.0",
+    "@sentry/node": "11.8.0",
+    "@shooting-clays/shared": "workspace:*",
+    "@vercel/functions": "3.10.3",
+    "csv-parse": "7.0.3",
+    "drizzle-orm": "0.45.4",
+    "hono": "4.13.13",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "drizzle-kit": "0.31.11",
+    "tsx": "4.23.15"
+  }
+}
