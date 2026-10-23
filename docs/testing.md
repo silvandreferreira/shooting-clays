@@ -42,7 +42,7 @@ First time only: `pnpm exec playwright install --with-deps` (downloads the brows
 
 ## Production smoke tests (S1)
 
-`apps/web/playwright.smoke.config.ts`, read-only, run by `.github/workflows/smoke.yml` after each production deployment. To run by hand:
+`apps/web/playwright.smoke.config.ts`, read-only and signed out, run by `.github/workflows/smoke.yml` after each production deployment (Vercel's `vercel.deployment.success` `repository_dispatch` event) or by hand from the Actions tab (_Run workflow_). To run by hand:
 
 ```bash
 PROD_URL=https://<web-domain> pnpm --filter @shooting-clays/web test:smoke
@@ -72,7 +72,7 @@ Keep this table up to date: every row maps to at least one test.
 | R16 | Switching account on the same device never shows the previous user's cached data                                                                                                                                                                                                              | `auth.spec.ts`             | active  |
 | R17 | API: no/invalid/expired token → 401; unverified or non-allowed email → 403; a user can never read, change or delete another user's sessions (404)                                                                                                                                             | API integration tests      | active  |
 | R18 | API `/auth/*` proxy: forwards path, query, method, body, cookies and Origin to `NEON_AUTH_URL` without our hop headers; returns redirects unfollowed and every cookie without `Domain`; 503 when Neon Auth is unreachable; the server app serves `/api` and `/auth` and never the test routes | API integration tests      | active  |
-| S1  | Production: `/api/health` ok, dashboard loads, navigation works                                                                                                                                                                                                                               | `smoke.spec.ts` (`@smoke`) | active  |
+| S1  | Production, signed out: `/api/health` ok, `/api/dashboard` 401, `/auth/get-session` reaches Neon Auth, a deep link shows the sign-in screen                                                                                                                                                   | `smoke.spec.ts` (`@smoke`) | active  |
 
 ¹ R9 runs only on Linux (CI) and is skipped until the "Update snapshots" workflow has created the baselines.
 
