@@ -221,7 +221,9 @@ Follow the step-by-step guide in [`docs/observability.md`](docs/observability.md
 
 Neon's shared Google credentials are for development only (Neon Auth production checklist). For the `main` branch:
 
-1. <https://console.cloud.google.com> → create (or pick) a project → **APIs & Services → OAuth consent screen**: External, app name "Shooting Clays", your email as support/developer contact. Scopes: `openid`, `email`, `profile`.
+1. <https://console.cloud.google.com> → create (or pick) a project → **APIs & Services → OAuth consent screen** (Google Auth Platform): app name "Shooting Clays", your email as support/developer contact. Scopes: `openid`, `email`, `profile`.
+   - **Audience → User type: External.** _Internal_ only admits accounts of a Google Workspace organisation; a `@gmail.com` account gets `Error 403: org_internal`.
+   - **Audience → Publish app** (status _In production_). In _Testing_ only the listed test users can sign in. These basic scopes need no Google verification.
 2. **Credentials → Create credentials → OAuth client ID** → _Web application_.
    - **Authorized JavaScript origins:** the production URL (e.g. `https://shooting-clays.vercel.app`).
    - **Authorized redirect URIs:** `<NEON_AUTH_URL of main>/callback/google`.
@@ -464,21 +466,22 @@ cd ../web && vercel --prod
 
 ## 10. Troubleshooting
 
-| Symptom                                       | Likely cause                                                                  | Fix                                                                                             |
-| --------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| First request takes 1–2 s                     | Neon Free suspends the database after 5 min idle                              | Expected; the dashboard shows cached data meanwhile                                             |
-| `DATABASE_URL is not defined`                 | Missing `.env`                                                                | `cp .env.example .env` and fill it in                                                           |
-| `pnpm: command not found`                     | pnpm not enabled                                                              | `corepack enable`                                                                               |
-| `corepack enable` fails with `EACCES` (macOS) | No write access to `/usr/local/bin`                                           | `corepack enable --install-directory ~/.local/bin pnpm` (that directory must be on your `PATH`) |
-| `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION`      | pnpm refuses package versions published in the last day (supply-chain policy) | Pin an older version of that package; do not add exclusions                                     |
-| `Port 5173 is already in use`                 | Another `pnpm dev` is running                                                 | Stop it (Ctrl+C in its terminal)                                                                |
-| Vercel preview returns 404 on `/history`      | Missing SPA fallback                                                          | Check the `/(.*)` → `/index.html` rewrite in `apps/web/vercel.json`                             |
-| `/api` returns 404 in production              | Wrong rewrite                                                                 | Check the api domain in `apps/web/vercel.json`                                                  |
-| CI fails only on GitHub                       | Environment differences                                                       | Run `pnpm test:all` locally; check the Node version                                             |
-| `Executable doesn't exist` (Playwright)       | Browsers not installed                                                        | `pnpm exec playwright install --with-deps`                                                      |
-| Visual test fails (`toHaveScreenshot`)        | A screen's look changed                                                       | See section 7, "How to read the result"                                                         |
-| Git hook blocks a commit/push                 | Lint, format or tests failing                                                 | Read the output and fix it; do not bypass hooks with `--no-verify`                              |
-| Better Stack alert received                   | Site down, errors or slowness                                                 | Follow the runbook in [`docs/observability.md`](docs/observability.md)                          |
+| Symptom                                        | Likely cause                                                                  | Fix                                                                                             |
+| ---------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| First request takes 1–2 s                      | Neon Free suspends the database after 5 min idle                              | Expected; the dashboard shows cached data meanwhile                                             |
+| `DATABASE_URL is not defined`                  | Missing `.env`                                                                | `cp .env.example .env` and fill it in                                                           |
+| `pnpm: command not found`                      | pnpm not enabled                                                              | `corepack enable`                                                                               |
+| `corepack enable` fails with `EACCES` (macOS)  | No write access to `/usr/local/bin`                                           | `corepack enable --install-directory ~/.local/bin pnpm` (that directory must be on your `PATH`) |
+| `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION`       | pnpm refuses package versions published in the last day (supply-chain policy) | Pin an older version of that package; do not add exclusions                                     |
+| `Port 5173 is already in use`                  | Another `pnpm dev` is running                                                 | Stop it (Ctrl+C in its terminal)                                                                |
+| Vercel preview returns 404 on `/history`       | Missing SPA fallback                                                          | Check the `/(.*)` → `/index.html` rewrite in `apps/web/vercel.json`                             |
+| `/api` returns 404 in production               | Wrong rewrite                                                                 | Check the api domain in `apps/web/vercel.json`                                                  |
+| Google sign-in shows `Error 403: org_internal` | OAuth consent screen audience is _Internal_                                   | Set it to External and publish the app (section 4.7)                                            |
+| CI fails only on GitHub                        | Environment differences                                                       | Run `pnpm test:all` locally; check the Node version                                             |
+| `Executable doesn't exist` (Playwright)        | Browsers not installed                                                        | `pnpm exec playwright install --with-deps`                                                      |
+| Visual test fails (`toHaveScreenshot`)         | A screen's look changed                                                       | See section 7, "How to read the result"                                                         |
+| Git hook blocks a commit/push                  | Lint, format or tests failing                                                 | Read the output and fix it; do not bypass hooks with `--no-verify`                              |
+| Better Stack alert received                    | Site down, errors or slowness                                                 | Follow the runbook in [`docs/observability.md`](docs/observability.md)                          |
 
 ---
 
