@@ -32,34 +32,34 @@ Front end and back end are separate apps that only talk through a **REST API**. 
 
 ### Front end — `apps/web`
 
-| Tool | Purpose | How it is used here |
-|---|---|---|
-| **React** | UI library | Dashboard, Add, History (and Community in iteration 3) screens |
-| **Vite** | Dev server and build | `pnpm dev` serves `http://localhost:5173` and proxies `/api` to the local API |
-| **TypeScript** | Typed JavaScript | `strict` mode; shared types from `packages/shared` |
-| **Tailwind CSS** | Utility-first styling | Mobile-first layout, dark mode |
-| **React Router** | Navigation | `/`, `/add`, `/history` |
-| **TanStack Query** | API calls and caching | Shows cached data instantly and refreshes in the background; after saving, updates the cache with the API response |
-| **Recharts** | Charts | Score trends and average comparison |
-| **React Hook Form + Zod** | Forms and validation | Same validation rules as the API |
-| **vite-plugin-pwa** | Installable app | Add to the phone home screen |
-| **Sentry SDK** | Error capture | Sends unhandled browser errors to Better Stack/Sentry |
-| **Vitest + Testing Library** | Component tests | Isolated component behaviour |
-| **Playwright** | E2E and regression tests | Drives the whole app on Android, iPhone and desktop profiles, including visual snapshots — see [`docs/testing.md`](docs/testing.md) |
+| Tool                         | Purpose                  | How it is used here                                                                                                                 |
+| ---------------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **React**                    | UI library               | Dashboard, Add, History (and Community in iteration 3) screens                                                                      |
+| **Vite**                     | Dev server and build     | `pnpm dev` serves `http://localhost:5173` and proxies `/api` to the local API                                                       |
+| **TypeScript**               | Typed JavaScript         | `strict` mode; shared types from `packages/shared`                                                                                  |
+| **Tailwind CSS**             | Utility-first styling    | Mobile-first layout, dark mode                                                                                                      |
+| **React Router**             | Navigation               | `/`, `/add`, `/history`                                                                                                             |
+| **TanStack Query**           | API calls and caching    | Shows cached data instantly and refreshes in the background; after saving, updates the cache with the API response                  |
+| **Recharts**                 | Charts                   | Score trends and average comparison                                                                                                 |
+| **React Hook Form + Zod**    | Forms and validation     | Same validation rules as the API                                                                                                    |
+| **vite-plugin-pwa**          | Installable app          | Add to the phone home screen                                                                                                        |
+| **Sentry SDK**               | Error capture            | Sends unhandled browser errors to Better Stack/Sentry                                                                               |
+| **Vitest + Testing Library** | Component tests          | Isolated component behaviour                                                                                                        |
+| **Playwright**               | E2E and regression tests | Drives the whole app on Android, iPhone and desktop profiles, including visual snapshots — see [`docs/testing.md`](docs/testing.md) |
 
 ### Back end — `apps/api`
 
-| Tool | Purpose | How it is used here |
-|---|---|---|
-| **Node.js + TypeScript** | Runtime | Runs locally and on Vercel Functions |
-| **Hono** | HTTP framework | Defines the `/api/...` routes |
-| **Zod** | Validation | Validates every request; schemas shared with the front end |
-| **Drizzle ORM** | Typed database access | Queries |
-| **Drizzle Kit** | Migrations | `pnpm db:generate` creates a migration; `pnpm db:migrate` applies it |
-| **@neondatabase/serverless** | Postgres driver for serverless | Connects Vercel Functions to Neon |
-| **PGlite** | In-memory Postgres | Integration and E2E tests without Docker or a real database |
-| **Structured logger** | JSON logs | One line per request (route, status, duration), shipped to Better Stack |
-| **Vitest** | Tests | Unit and integration tests |
+| Tool                         | Purpose                        | How it is used here                                                     |
+| ---------------------------- | ------------------------------ | ----------------------------------------------------------------------- |
+| **Node.js + TypeScript**     | Runtime                        | Runs locally and on Vercel Functions                                    |
+| **Hono**                     | HTTP framework                 | Defines the `/api/...` routes                                           |
+| **Zod**                      | Validation                     | Validates every request; schemas shared with the front end              |
+| **Drizzle ORM**              | Typed database access          | Queries                                                                 |
+| **Drizzle Kit**              | Migrations                     | `pnpm db:generate` creates a migration; `pnpm db:migrate` applies it    |
+| **@neondatabase/serverless** | Postgres driver for serverless | Connects Vercel Functions to Neon                                       |
+| **PGlite**                   | In-memory Postgres             | Integration and E2E tests without Docker or a real database             |
+| **Structured logger**        | JSON logs                      | One line per request (route, status, duration), shipped to Better Stack |
+| **Vitest**                   | Tests                          | Unit and integration tests                                              |
 
 ### Shared — `packages/shared`
 
@@ -67,20 +67,20 @@ Disciplines (and which have A–F targets), Zod schemas, types and the **statist
 
 ### External services
 
-| Service | Purpose | Plan |
-|---|---|---|
-| **GitHub** | Code, pull requests, CI (GitHub Actions) | Free |
-| **Vercel** | Hosts the front end and the API; deploys automatically from GitHub | Hobby (free, personal use) |
-| **Neon** | Postgres database; Google sign-in from iteration 2 (Neon Auth) | Free (no credit card) |
-| **Better Stack** | Uptime monitors, logs, errors and alerts | Free (personal projects) |
+| Service          | Purpose                                                            | Plan                       |
+| ---------------- | ------------------------------------------------------------------ | -------------------------- |
+| **GitHub**       | Code, pull requests, CI (GitHub Actions)                           | Free                       |
+| **Vercel**       | Hosts the front end and the API; deploys automatically from GitHub | Hobby (free, personal use) |
+| **Neon**         | Postgres database; Google sign-in from iteration 2 (Neon Auth)     | Free (no credit card)      |
+| **Better Stack** | Uptime monitors, logs, errors and alerts                           | Free (personal projects)   |
 
 ### Quality
 
-| Tool | Purpose |
-|---|---|
-| **ESLint** | Finds bugs and bad practices |
-| **Prettier** | Consistent formatting |
-| **Lefthook** | Git hooks: on commit, formats and lints staged files; on push, runs `pnpm check` |
+| Tool               | Purpose                                                                                             |
+| ------------------ | --------------------------------------------------------------------------------------------------- |
+| **ESLint**         | Finds bugs and bad practices                                                                        |
+| **Prettier**       | Consistent formatting                                                                               |
+| **Lefthook**       | Git hooks: on commit, formats and lints staged files; on push, runs `pnpm check`                    |
 | **GitHub Actions** | On every push/PR: checks, build and E2E regression suite; after each deploy: production smoke tests |
 
 ---
@@ -115,13 +115,13 @@ shooting-clays/
 
 Install once:
 
-| Tool | Check | Install |
-|---|---|---|
-| **Git** | `git --version` | macOS: `xcode-select --install` · Windows: <https://git-scm.com> |
-| **Node.js LTS** | `node --version` | <https://nodejs.org> (LTS version) |
-| **pnpm** | `pnpm --version` | `corepack enable` (ships with Node) |
-| **GitHub CLI** (recommended) | `gh --version` | <https://cli.github.com>, then `gh auth login` |
-| **Vercel CLI** (optional) | `vercel --version` | `pnpm add -g vercel`, then `vercel login` |
+| Tool                         | Check              | Install                                                               |
+| ---------------------------- | ------------------ | --------------------------------------------------------------------- |
+| **Git**                      | `git --version`    | macOS: `xcode-select --install` · Windows: <https://git-scm.com>      |
+| **Node.js 24 LTS**           | `node --version`   | <https://nodejs.org> (LTS version; see `.nvmrc`)                      |
+| **pnpm**                     | `pnpm --version`   | `corepack enable` (ships with Node; version pinned in `package.json`) |
+| **GitHub CLI** (recommended) | `gh --version`     | <https://cli.github.com>, then `gh auth login`                        |
+| **Vercel CLI** (optional)    | `vercel --version` | `pnpm add -g vercel`, then `vercel login`                             |
 
 Accounts: **GitHub**, **Vercel** (sign in with GitHub), **Neon** (sign in with GitHub or Google), **Better Stack** (after the first deploy).
 
@@ -154,8 +154,8 @@ cd shooting-clays
 
 **GitHub → Settings → Branches → Add rule** for `main`:
 
-- ✅ *Require a pull request before merging*
-- ✅ *Require status checks to pass* (select the CI jobs, including E2E)
+- ✅ _Require a pull request before merging_
+- ✅ _Require status checks to pass_ (select the CI jobs, including E2E)
 
 Nothing reaches production without passing the tests.
 
@@ -186,10 +186,10 @@ DATABASE_URL=postgresql://...@...neon.tech/neondb?sslmode=require
 
 At <https://vercel.com/new>, import the repository **twice**:
 
-| Project | Root Directory | Environment variables |
-|---|---|---|
-| `shooting-clays-api` | `apps/api` | `DATABASE_URL` = Neon **main** branch (Production) and **dev** branch (Preview) |
-| `shooting-clays-web` | `apps/web` | `VITE_SENTRY_DSN` (optional, see 4.6) |
+| Project              | Root Directory | Environment variables                                                           |
+| -------------------- | -------------- | ------------------------------------------------------------------------------- |
+| `shooting-clays-api` | `apps/api`     | `DATABASE_URL` = Neon **main** branch (Production) and **dev** branch (Preview) |
+| `shooting-clays-web` | `apps/web`     | `VITE_SENTRY_DSN` (optional, see 4.6)                                           |
 
 Then:
 
@@ -212,14 +212,16 @@ pnpm db:import                               # import data/clays-results.csv (sa
 pnpm dev                                     # start web + api
 ```
 
-| What | URL |
-|---|---|
-| App (front end) | <http://localhost:5173> |
-| API | <http://localhost:3000/api/health> |
+| What            | URL                                |
+| --------------- | ---------------------------------- |
+| App (front end) | <http://localhost:5173>            |
+| API             | <http://localhost:3000/api/health> |
 
 To test on your **phone** on the same Wi-Fi: run `pnpm dev:host` and open `http://<computer-ip>:5173`.
 
 Sanity check: the dashboard under "All time" should show Compak Sporting 16 / 8 / 23.
+
+`pnpm dev` runs the API with `tsx watch` (restarts on change) and Vite with hot reload. Both log to the same terminal, prefixed `[api]` and `[web]`; the API prints one JSON line per request.
 
 ---
 
@@ -227,25 +229,26 @@ Sanity check: the dashboard under "All time" should show Compak Sporting 16 / 8 
 
 Run everything from the **repository root**.
 
-| Command | What it does |
-|---|---|
-| `pnpm dev` | Starts web and api in development mode |
-| `pnpm dev:host` | Same, reachable from other devices on the network (phone) |
-| `pnpm build` | Production build of all packages |
-| `pnpm format` | Formats the code with Prettier |
-| `pnpm format:check` | Checks formatting without changing files |
-| `pnpm lint` | ESLint on all code |
-| `pnpm typecheck` | TypeScript type check |
-| `pnpm test` | Unit + integration + component tests (fast) |
-| `pnpm test:watch` | Tests in watch mode |
-| `pnpm test:e2e` | **E2E regression suite** (Playwright): build + API in E2E mode + all browser profiles |
-| `pnpm test:e2e:ui` | Playwright interactive mode, to watch and debug tests |
-| `pnpm test:e2e:report` | Opens the HTML report of the last `test:e2e` run |
-| `pnpm check` | Quick gate: `format:check` + `lint` + `typecheck` + `test` (runs automatically on `git push`) |
-| `pnpm test:all` | **Full gate:** `check` + `build` + `test:e2e` — run before every PR (see section 7) |
-| `pnpm db:generate` | Generates a migration from schema changes |
-| `pnpm db:migrate` | Applies migrations to the database in `DATABASE_URL` |
-| `pnpm db:import` | Imports the CSV history into the database in `DATABASE_URL` |
+| Command                                                           | What it does                                                                                          |
+| ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `pnpm dev`                                                        | Starts web and api in development mode                                                                |
+| `pnpm dev:host`                                                   | Same, reachable from other devices on the network (phone)                                             |
+| `pnpm build`                                                      | Production build of all packages                                                                      |
+| `pnpm format`                                                     | Formats the code with Prettier                                                                        |
+| `pnpm format:check`                                               | Checks formatting without changing files                                                              |
+| `pnpm lint`                                                       | ESLint on all code                                                                                    |
+| `pnpm typecheck`                                                  | TypeScript type check                                                                                 |
+| `pnpm test`                                                       | Unit + integration + component tests (fast)                                                           |
+| `pnpm test:watch`                                                 | Tests in watch mode                                                                                   |
+| `pnpm test:e2e`                                                   | **E2E regression suite** (Playwright): build + API in E2E mode + all browser profiles                 |
+| `pnpm test:e2e:ui`                                                | Playwright interactive mode, to watch and debug tests                                                 |
+| `pnpm test:e2e:report`                                            | Opens the HTML report of the last `test:e2e` run                                                      |
+| `pnpm check`                                                      | Quick gate: `format:check` + `lint` + `typecheck` + `test` (runs automatically on `git push`)         |
+| `pnpm test:all`                                                   | **Full gate:** `check` + `build` + `test:e2e` — run before every PR (see section 7)                   |
+| `pnpm db:generate`                                                | Generates a migration from schema changes                                                             |
+| `pnpm db:migrate`                                                 | Applies migrations to the database in `DATABASE_URL`                                                  |
+| `pnpm db:import`                                                  | Imports the CSV history into the database in `DATABASE_URL`                                           |
+| `PROD_URL=https://… pnpm --filter @shooting-clays/web test:smoke` | Read-only smoke tests against a deployed environment (run automatically after each production deploy) |
 
 ---
 
@@ -257,14 +260,14 @@ Run everything from the **repository root**.
 
 It stops at the first failing step.
 
-| # | Step | Command | What it checks | If it fails |
-|---|---|---|---|---|
-| 1 | Formatting | `pnpm format:check` | Code is formatted by Prettier | Run `pnpm format` and commit |
-| 2 | Lint | `pnpm lint` | No ESLint errors (bugs, bad practices, React hooks rules) | Fix the reported lines; `pnpm lint --fix` fixes some automatically |
-| 3 | Types | `pnpm typecheck` | No TypeScript errors in any package | Fix the reported types |
-| 4 | Unit/integration/component tests | `pnpm test` | Statistics (including the reference values), schemas, API endpoints against PGlite, components | Read the failing test; `pnpm test:watch` to iterate |
-| 5 | Build | `pnpm build` | Web and API build for production | Fix build errors (often imports or env usage) |
-| 6 | E2E regression | `pnpm test:e2e` | The whole app still works on Android, iPhone and desktop: dashboard values, cache, add/edit/delete, A–F rules, visuals, accessibility | `pnpm test:e2e:report` to see screenshots, video and trace; `pnpm test:e2e:ui` to debug |
+| #   | Step                             | Command             | What it checks                                                                                                                        | If it fails                                                                             |
+| --- | -------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| 1   | Formatting                       | `pnpm format:check` | Code is formatted by Prettier                                                                                                         | Run `pnpm format` and commit                                                            |
+| 2   | Lint                             | `pnpm lint`         | No ESLint errors (bugs, bad practices, React hooks rules)                                                                             | Fix the reported lines; `pnpm lint --fix` fixes some automatically                      |
+| 3   | Types                            | `pnpm typecheck`    | No TypeScript errors in any package                                                                                                   | Fix the reported types                                                                  |
+| 4   | Unit/integration/component tests | `pnpm test`         | Statistics (including the reference values), schemas, API endpoints against PGlite, components                                        | Read the failing test; `pnpm test:watch` to iterate                                     |
+| 5   | Build                            | `pnpm build`        | Web and API build for production                                                                                                      | Fix build errors (often imports or env usage)                                           |
+| 6   | E2E regression                   | `pnpm test:e2e`     | The whole app still works on Android, iPhone and desktop: dashboard values, cache, add/edit/delete, A–F rules, visuals, accessibility | `pnpm test:e2e:report` to see screenshots, video and trace; `pnpm test:e2e:ui` to debug |
 
 ### How to read the result
 
@@ -284,10 +287,10 @@ It stops at the first failing step.
 
 Installed by `pnpm install` (Lefthook):
 
-| Hook | Runs | Purpose |
-|---|---|---|
-| `pre-commit` | Prettier + ESLint on staged files | Every commit is formatted and lint-clean |
-| `pre-push` | `pnpm check` | Nothing obviously broken leaves your machine |
+| Hook         | Runs                              | Purpose                                      |
+| ------------ | --------------------------------- | -------------------------------------------- |
+| `pre-commit` | Prettier + ESLint on staged files | Every commit is formatted and lint-clean     |
+| `pre-push`   | `pnpm check`                      | Nothing obviously broken leaves your machine |
 
 The hooks are a quick net; they **do not** replace `pnpm test:all` (they skip build and E2E to stay fast).
 
@@ -414,18 +417,21 @@ cd ../web && vercel --prod
 
 ## 10. Troubleshooting
 
-| Symptom | Likely cause | Fix |
-|---|---|---|
-| First request takes 1–2 s | Neon Free suspends the database after 5 min idle | Expected; the dashboard shows cached data meanwhile |
-| `DATABASE_URL is not defined` | Missing `.env` | `cp .env.example .env` and fill it in |
-| `pnpm: command not found` | pnpm not enabled | `corepack enable` |
-| Vercel preview returns 404 on `/history` | Missing SPA fallback | Check the `/(.*)` → `/index.html` rewrite in `apps/web/vercel.json` |
-| `/api` returns 404 in production | Wrong rewrite | Check the api domain in `apps/web/vercel.json` |
-| CI fails only on GitHub | Environment differences | Run `pnpm test:all` locally; check the Node version |
-| `Executable doesn't exist` (Playwright) | Browsers not installed | `pnpm exec playwright install --with-deps` |
-| Visual test fails (`toHaveScreenshot`) | A screen's look changed | See section 7, "How to read the result" |
-| Git hook blocks a commit/push | Lint, format or tests failing | Read the output and fix it; do not bypass hooks with `--no-verify` |
-| Better Stack alert received | Site down, errors or slowness | Follow the runbook in [`docs/observability.md`](docs/observability.md) |
+| Symptom                                       | Likely cause                                                                  | Fix                                                                                             |
+| --------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| First request takes 1–2 s                     | Neon Free suspends the database after 5 min idle                              | Expected; the dashboard shows cached data meanwhile                                             |
+| `DATABASE_URL is not defined`                 | Missing `.env`                                                                | `cp .env.example .env` and fill it in                                                           |
+| `pnpm: command not found`                     | pnpm not enabled                                                              | `corepack enable`                                                                               |
+| `corepack enable` fails with `EACCES` (macOS) | No write access to `/usr/local/bin`                                           | `corepack enable --install-directory ~/.local/bin pnpm` (that directory must be on your `PATH`) |
+| `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION`      | pnpm refuses package versions published in the last day (supply-chain policy) | Pin an older version of that package; do not add exclusions                                     |
+| `Port 5173 is already in use`                 | Another `pnpm dev` is running                                                 | Stop it (Ctrl+C in its terminal)                                                                |
+| Vercel preview returns 404 on `/history`      | Missing SPA fallback                                                          | Check the `/(.*)` → `/index.html` rewrite in `apps/web/vercel.json`                             |
+| `/api` returns 404 in production              | Wrong rewrite                                                                 | Check the api domain in `apps/web/vercel.json`                                                  |
+| CI fails only on GitHub                       | Environment differences                                                       | Run `pnpm test:all` locally; check the Node version                                             |
+| `Executable doesn't exist` (Playwright)       | Browsers not installed                                                        | `pnpm exec playwright install --with-deps`                                                      |
+| Visual test fails (`toHaveScreenshot`)        | A screen's look changed                                                       | See section 7, "How to read the result"                                                         |
+| Git hook blocks a commit/push                 | Lint, format or tests failing                                                 | Read the output and fix it; do not bypass hooks with `--no-verify`                              |
+| Better Stack alert received                   | Site down, errors or slowness                                                 | Follow the runbook in [`docs/observability.md`](docs/observability.md)                          |
 
 ---
 

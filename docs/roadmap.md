@@ -1,11 +1,11 @@
 # Roadmap
 
-| Iteration | Name | Status |
-|---|---|---|
-| 1 | Core app | **Planned — current** |
-| 2 | Authentication (Google sign-in) | Planned |
-| 3 | Community (leaderboards) | Planned |
-| 4 | Admin (user approval and management) | Planned |
+| Iteration | Name                                 | Status          |
+| --------- | ------------------------------------ | --------------- |
+| 1         | Core app                             | **In progress** |
+| 2         | Authentication (Google sign-in)      | Planned         |
+| 3         | Community (leaderboards)             | Planned         |
+| 4         | Admin (user approval and management) | Planned         |
 
 When an iteration starts, mark it "In progress"; when it ships, mark it "Done" with the date and update `changelog.md`.
 
@@ -104,12 +104,12 @@ Goal: the owner (admin) decides who can use the app. New users can sign in but m
 
 ### Account states
 
-| State | How a user gets there | What the user sees | Their data |
-|---|---|---|---|
-| `pending` | First Google sign-in (default for everyone not in `ADMIN_EMAILS`) | **Demo dashboard** with sample data, a clear banner and a disabled **Add** button | None yet |
-| `active` | Admin switches the toggle on | The normal app (Dashboard, Add, History, Community) | Kept |
-| `disabled` | Admin switches the toggle off for a previously active user | "Your account is inactive" screen; no dashboard, no Add, no History, no Community | **Kept** in the database |
-| *(removed)* | Admin clicks **Remove** and confirms | The account no longer exists; signing in again starts over as `pending` | **Deleted permanently** |
+| State       | How a user gets there                                             | What the user sees                                                                | Their data               |
+| ----------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------ |
+| `pending`   | First Google sign-in (default for everyone not in `ADMIN_EMAILS`) | **Demo dashboard** with sample data, a clear banner and a disabled **Add** button | None yet                 |
+| `active`    | Admin switches the toggle on                                      | The normal app (Dashboard, Add, History, Community)                               | Kept                     |
+| `disabled`  | Admin switches the toggle off for a previously active user        | "Your account is inactive" screen; no dashboard, no Add, no History, no Community | **Kept** in the database |
+| _(removed)_ | Admin clicks **Remove** and confirms                              | The account no longer exists; signing in again starts over as `pending`           | **Deleted permanently**  |
 
 Admins: users whose email is in `ADMIN_EMAILS` get `role = 'admin'` and `status = 'active'` on sign-in. The admin email is configured only as an environment variable, never in the repository.
 
