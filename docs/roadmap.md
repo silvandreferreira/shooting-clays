@@ -29,6 +29,35 @@ Work plan:
 
 All sessions use `user_id = 'local'` in this iteration.
 
+### Status (2026-10-23)
+
+| Step   | State                                                                                                                                                                                            |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1–7, 9 | Done on branch `feat/iteration-1-core-app` (`pnpm test:all` green, runs locally against the Neon `dev` branch)                                                                                   |
+| 8      | Partly done: `apps/web/vercel.json` and `apps/api/vercel.json` exist; the Vercel projects, their environment variables and the setup in `README.md` → 4.5 have **not** been done or verified yet |
+
+### Known limitations and pending work
+
+Deployment and operations:
+
+- **Not deployed yet.** Pending: Vercel projects (README 4.5), migrations on the Neon `main` branch (`DATABASE_URL=<main> pnpm db:migrate`, then `pnpm db:import` if the history should be in production), Better Stack setup (`observability.md` → "One-time setup") and the GitHub secrets `PROD_URL` and `SMOKE_HEARTBEAT_URL`.
+- **No authentication until iteration 2.** Once deployed, anyone who knows the URL can read, add, edit and delete sessions. Until then, keep the URL private and consider enabling Vercel Deployment Protection on both projects.
+- `apps/web/vercel.json` assumes the api project is served at `https://shooting-clays-api.vercel.app`. If Vercel assigns another domain, update the rewrite.
+- The API "build" (`pnpm build` in `apps/api`) is a type check only; Vercel bundles `src/index.ts` itself. The Vercel build has not been tried yet.
+
+Tests:
+
+- **Visual regression (R9) is inactive until baselines exist.** Baselines are Linux-only: after the first push, run the "Update snapshots" workflow once on the branch. Until then, and always on macOS/Windows, R9 is skipped (`testing.md`).
+- Production smoke tests (S1) need `PROD_URL`; they only run after a production deployment.
+
+Product:
+
+- Hardest-target counts (A–F) chart (_nice to have_ in `product.md`) is not implemented.
+- No offline queue: saving without a connection fails and keeps the form filled in (out of scope, see `product.md`).
+- Imported history has no hardest targets (A–F); the old free text is kept in the notes, in Portuguese (`data-model.md` → Import).
+- History loads every session at once (no pagination) and the edit screen finds the session in that list. Fine for hundreds of sessions; revisit if the history grows a lot.
+- The production JavaScript bundle is about 840 kB (about 250 kB gzipped) in a single file; Vite warns about chunk size. Splitting the charts (Recharts) into a separate chunk is a possible improvement.
+
 ---
 
 ## Iteration 2 — Authentication

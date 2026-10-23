@@ -221,6 +221,22 @@ To test on your **phone** on the same Wi-Fi: run `pnpm dev:host` and open `http:
 
 Sanity check: the dashboard under "All time" should show Compak Sporting 16 / 8 / 23.
 
+### Using the app
+
+| Screen                   | How to use it                                                                                                                                                                                                                                                          |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Dashboard** (`/`)      | Choose **All time**, **Last month** or **This month**. Each discipline you have shot has a card: average (large), min, max and number of series; "—" means no series in that period. Below: scores over time (tap a point for details) and the average per discipline. |
+| **Add** (`/add`)         | Date (today by default), discipline, score with **−**/**+** or typed (0–25), hardest targets A–F (only Compak Sporting and Sporting), notes. **Save** returns to the dashboard, already updated. If saving fails, the form keeps what you typed and shows an error.    |
+| **History** (`/history`) | Every series, newest first. Filter by discipline. **Edit** opens the same form pre-filled; **Delete** asks for confirmation. Both update the dashboard.                                                                                                                |
+
+- **Offline / slow network:** the dashboard opens instantly from the copy stored in the browser and refreshes in the background. Adding, editing and deleting need a connection.
+- **Install on the phone:** open the app in the browser, then _Share → Add to Home Screen_ (iPhone, Safari) or _⋮ → Install app_ (Android, Chrome).
+- **Dark mode** follows the phone/computer setting.
+
+Known limitations (no sign-in until iteration 2, not deployed yet, and more): [`docs/roadmap.md`](docs/roadmap.md) → "Known limitations and pending work".
+
+### Development servers
+
 `pnpm dev` runs the API with `tsx watch` (restarts on change) and Vite with hot reload. Both log to the same terminal, prefixed `[api]` and `[web]`; the API prints one JSON line per request.
 
 ---
