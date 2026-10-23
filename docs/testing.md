@@ -4,28 +4,28 @@
 
 ## Layers
 
-| Layer | Location | Tools | What it guarantees |
-|---|---|---|---|
-| Unit | `packages/shared` | Vitest | Statistics, schemas, discipline rules (later: ranking) |
-| Unit | `apps/api` | Vitest | CSV mapping, utilities |
-| Integration | `apps/api` | Vitest + Hono `app.request()` + PGlite | Full endpoints against a real in-memory Postgres with migrations applied |
-| Component | `apps/web` | Vitest + Testing Library | Isolated component behaviour |
-| **E2E / regression** | `apps/web/e2e` | **Playwright** | The whole app (web + API + DB) in real browsers, phone and desktop |
-| **Visual regression** | `apps/web/e2e` | Playwright `toHaveScreenshot` | Screens do not change look by accident |
-| Accessibility | `apps/web/e2e` | `@axe-core/playwright` | No serious violations |
-| **Smoke (production)** | `apps/web/e2e` (tag `@smoke`) | Playwright | After each deploy: production responds and the dashboard loads (read-only) |
+| Layer                  | Location                      | Tools                                  | What it guarantees                                                         |
+| ---------------------- | ----------------------------- | -------------------------------------- | -------------------------------------------------------------------------- |
+| Unit                   | `packages/shared`             | Vitest                                 | Statistics, schemas, discipline rules (later: ranking)                     |
+| Unit                   | `apps/api`                    | Vitest                                 | CSV mapping, utilities                                                     |
+| Integration            | `apps/api`                    | Vitest + Hono `app.request()` + PGlite | Full endpoints against a real in-memory Postgres with migrations applied   |
+| Component              | `apps/web`                    | Vitest + Testing Library               | Isolated component behaviour                                               |
+| **E2E / regression**   | `apps/web/e2e`                | **Playwright**                         | The whole app (web + API + DB) in real browsers, phone and desktop         |
+| **Visual regression**  | `apps/web/e2e`                | Playwright `toHaveScreenshot`          | Screens do not change look by accident                                     |
+| Accessibility          | `apps/web/e2e`                | `@axe-core/playwright`                 | No serious violations                                                      |
+| **Smoke (production)** | `apps/web/e2e` (tag `@smoke`) | Playwright                             | After each deploy: production responds and the dashboard loads (read-only) |
 
 ## Commands
 
-| Command | What it runs | When |
-|---|---|---|
-| `pnpm test` | Unit + integration + component tests | Constantly while developing |
-| `pnpm test:watch` | Same, in watch mode | While developing |
-| `pnpm test:e2e` | Builds web, starts the API in E2E mode, runs Playwright on all browser profiles | After any UI or API change |
-| `pnpm test:e2e:ui` | Playwright interactive UI | Writing or debugging E2E tests |
-| `pnpm test:e2e:report` | Opens the last HTML report | After a failure |
-| `pnpm check` | `format:check` + `lint` + `typecheck` + `test` (no E2E) | Runs automatically on `git push` |
-| `pnpm test:all` | `check` + `build` + `test:e2e` | **Before opening a PR** (see `README.md`) |
+| Command                | What it runs                                                                    | When                                      |
+| ---------------------- | ------------------------------------------------------------------------------- | ----------------------------------------- |
+| `pnpm test`            | Unit + integration + component tests                                            | Constantly while developing               |
+| `pnpm test:watch`      | Same, in watch mode                                                             | While developing                          |
+| `pnpm test:e2e`        | Builds web, starts the API in E2E mode, runs Playwright on all browser profiles | After any UI or API change                |
+| `pnpm test:e2e:ui`     | Playwright interactive UI                                                       | Writing or debugging E2E tests            |
+| `pnpm test:e2e:report` | Opens the last HTML report                                                      | After a failure                           |
+| `pnpm check`           | `format:check` + `lint` + `typecheck` + `test` (no E2E)                         | Runs automatically on `git push`          |
+| `pnpm test:all`        | `check` + `build` + `test:e2e`                                                  | **Before opening a PR** (see `README.md`) |
 
 First time only: `pnpm exec playwright install --with-deps` (downloads the browsers).
 
@@ -35,25 +35,39 @@ First time only: `pnpm exec playwright install --with-deps` (downloads the brows
 - The reference date is fixed to **2026-10-23** (`APP_NOW` in the API, `page.clock` in the browser), so expected numbers never change.
 - `POST /api/__test__/reset` reseeds the data between tests. It exists **only** in E2E mode.
 - Browser profiles: **Pixel (Chromium)**, **iPhone (WebKit)**, **Desktop Chrome**.
+- Playwright starts both servers (`apps/web/playwright.config.ts`): the API in E2E mode on port **3100** and a production build of the web app (`vite build && vite preview`) on port **4173**, proxying `/api` to 3100. They do not clash with `pnpm dev` (3000/5173).
+- All tests share one database and reset it before each test (fixture in `apps/web/e2e/fixtures.ts`), so they run **serially** (one worker).
+- The service worker is blocked in tests; the app cache under test is the TanStack Query cache in IndexedDB.
+
+## Production smoke tests (S1)
+
+`apps/web/playwright.smoke.config.ts`, read-only, run by `.github/workflows/smoke.yml` after each production deployment. To run by hand:
+
+```bash
+PROD_URL=https://<web-domain> pnpm --filter @shooting-clays/web test:smoke
+```
 
 ## Regression suite
 
 Keep this table up to date: every row maps to at least one test.
 
-| # | Scenario | File | Status |
-|---|---|---|---|
-| R1 | Dashboard shows the reference values for all 3 periods | `dashboard.spec.ts` | planned |
-| R2 | A period without data shows "—" | `dashboard.spec.ts` | planned |
-| R3 | With the API down, the dashboard opens from the cache | `cache.spec.ts` | planned |
-| R4 | Adding a session updates the dashboard without a reload | `add-session.spec.ts` | planned |
-| R5 | A–F checkboxes only for Compak Sporting and Sporting; cleared when switching discipline | `add-session.spec.ts` | planned |
-| R6 | Score outside 0–25 is rejected | `add-session.spec.ts` | planned |
-| R7 | API error on save keeps the form filled in | `add-session.spec.ts` | planned |
-| R8 | Editing and deleting in History updates the dashboard | `history.spec.ts` | planned |
-| R9 | Visual baselines for Dashboard and Add (phone + desktop) | `visual.spec.ts` | planned |
-| R10 | No serious accessibility violations | `a11y.spec.ts` | planned |
-| R11 | `/api/__test__/reset` does not exist outside E2E mode | API integration test | planned |
-| S1 | Production: `/api/health` ok, dashboard loads, navigation works | `smoke.spec.ts` (`@smoke`) | planned |
+| #   | Scenario                                                                                          | File                       | Status  |
+| --- | ------------------------------------------------------------------------------------------------- | -------------------------- | ------- |
+| R1  | Dashboard shows the reference values for all 3 periods                                            | `dashboard.spec.ts`        | active  |
+| R2  | A period without data shows "—"                                                                   | `dashboard.spec.ts`        | active  |
+| R3  | With the API down, the dashboard opens from the cache                                             | `cache.spec.ts`            | active  |
+| R4  | Adding a session updates the dashboard without a reload and without a second `GET /api/dashboard` | `add-session.spec.ts`      | active  |
+| R5  | A–F checkboxes only for Compak Sporting and Sporting; cleared when switching discipline           | `add-session.spec.ts`      | active  |
+| R6  | Score outside 0–25 is rejected                                                                    | `add-session.spec.ts`      | active  |
+| R7  | API error on save keeps the form filled in                                                        | `add-session.spec.ts`      | active  |
+| R8  | Editing and deleting in History updates the dashboard                                             | `history.spec.ts`          | active  |
+| R9  | Visual baselines for Dashboard and Add (phone + desktop)                                          | `visual.spec.ts`           | active¹ |
+| R10 | No serious accessibility violations, in light and dark mode                                       | `a11y.spec.ts`             | active  |
+| R11 | `/api/__test__/reset` does not exist outside E2E mode                                             | API integration test       | active  |
+| R12 | History shows hardest targets as "A, C and F", only when recorded                                 | `history.spec.ts`          | active  |
+| S1  | Production: `/api/health` ok, dashboard loads, navigation works                                   | `smoke.spec.ts` (`@smoke`) | active  |
+
+¹ R9 runs only on Linux (CI) and is skipped until the "Update snapshots" workflow has created the baselines.
 
 Iterations 2, 3 and 4 add their own rows when they start (planned scenarios are listed in `roadmap.md` under each iteration's "Tests").
 
@@ -61,12 +75,12 @@ Iterations 2, 3 and 4 add their own rows when they start (planned scenarios are 
 
 With `data/clays-results.csv` and reference date **2026-10-23** (rounded average / min / max):
 
-| Discipline | All time | Last month (Sep 2026) | This month (Oct 2026) |
-|---|---|---|---|
-| Compak Sporting | 16 / 8 / 23 | 18 / 14 / 23 | 16 / 13 / 18 |
-| Fosso | 10 / 5 / 16 | 10 / 5 / 16 | — |
-| Helice | 4 / 4 / 4 | 4 / 4 / 4 | — |
-| Trap | 17 / 15 / 19 | — | 17 / 15 / 19 |
+| Discipline      | All time     | Last month (Sep 2026) | This month (Oct 2026) |
+| --------------- | ------------ | --------------------- | --------------------- |
+| Compak Sporting | 16 / 8 / 23  | 18 / 14 / 23          | 16 / 13 / 18          |
+| Fosso           | 10 / 5 / 16  | 10 / 5 / 16           | —                     |
+| Helice          | 4 / 4 / 4    | 4 / 4 / 4             | —                     |
+| Trap            | 17 / 15 / 19 | —                     | 17 / 15 / 19          |
 
 Source: `data/clays-data.csv`.
 
@@ -75,13 +89,13 @@ Source: `data/clays-data.csv`.
 1. **New feature** → E2E tests for its main flow + a new row in the regression table.
 2. **Bug fix** → a test that reproduces the bug (fails before the fix, passes after) + a new row.
 3. **Never delete or skip a test to make CI pass.** If behaviour changed on purpose, update the test and explain it in the PR.
-4. **Visual baselines** are generated on Linux (same as CI). After an intentional visual change, run the manual workflow **"Update snapshots"** in GitHub Actions and explain the change in the PR.
+4. **Visual baselines** are generated on Linux (same as CI) and stored next to `visual.spec.ts`. On macOS/Windows the visual tests are skipped. Until a baseline exists, its test is skipped too. After an intentional visual change, run the manual workflow **"Update snapshots"** in GitHub Actions and explain the change in the PR.
 
 ## CI (GitHub Actions)
 
-| When | What runs |
-|---|---|
-| Every push and PR | `check` → `build` → `test:e2e` (all required to merge into `main`) |
-| An E2E test fails | Playwright report (screenshots, video, trace) uploaded as a job artifact |
+| When                         | What runs                                                                         |
+| ---------------------------- | --------------------------------------------------------------------------------- |
+| Every push and PR            | `check` → `build` → `test:e2e` (all required to merge into `main`)                |
+| An E2E test fails            | Playwright report (screenshots, video, trace) uploaded as a job artifact          |
 | After each production deploy | `@smoke` tests against production; on failure an alert fires (`observability.md`) |
-| Manually | "Update snapshots" workflow |
+| Manually                     | "Update snapshots" workflow                                                       |

@@ -4,14 +4,14 @@ This file is loaded automatically at the start of every Claude Code session. It 
 
 ## 1. Project in one paragraph
 
-A mobile-first web app (PWA) to log clay shooting results (date, discipline, score out of 25, hardest targets, notes) and see a dashboard per discipline for **all time**, **last month** and **this month**. React front end and a separate REST API (Hono) on Vercel, Postgres on Neon. Roadmap: iteration 1 = core app, iteration 2 = Google sign-in, iteration 3 = community leaderboard, iteration 4 = admin approval and user management (see `docs/roadmap.md`).
+A mobile-first web app (PWA) to log clay shooting results (date, discipline, score out of 25, hardest targets, notes) and see a dashboard per discipline for **all time**, **last month** and **this month**. React front end and a separate REST API (Hono) on Vercel, Postgres on Neon. Roadmap: iteration 1 = core app, iteration 2 = Google sign-in, iteration 3 = community leaderboard, iteration 4 = admin approval and user management, iteration 5 = interactive scores chart (see `docs/roadmap.md`).
 
 ## 2. Language rules (strict)
 
-| What | Language |
-|---|---|
-| Conversation with the owner (chat in Orca) | **European Portuguese (pt-PT)** |
-| Everything in the repository: code, identifiers, comments, commit messages, branch names, PR titles and descriptions, documentation, test names, UI text, log messages, error messages | **English** |
+| What                                                                                                                                                                                   | Language                        |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| Conversation with the owner (chat in Orca)                                                                                                                                             | **European Portuguese (pt-PT)** |
+| Everything in the repository: code, identifiers, comments, commit messages, branch names, PR titles and descriptions, documentation, test names, UI text, log messages, error messages | **English**                     |
 
 UI strings live in one place (`apps/web/src/i18n/en.ts`) so a Portuguese translation can be added later without touching components.
 
@@ -19,18 +19,18 @@ UI strings live in one place (`apps/web/src/i18n/en.ts`) so a Portuguese transla
 
 Read only what the task needs; these files are the source of truth.
 
-| If the task involves… | Read first |
-|---|---|
-| Anything (first task in a session) | `README.md` (tools, commands, workflow) and `docs/roadmap.md` (current iteration) |
-| Product behaviour, disciplines, statistics rules, screens | `docs/product.md` |
-| Architecture, stack, caching, folder layout | `docs/architecture.md` |
-| Database schema or migrations | `docs/data-model.md` |
-| API endpoints | `docs/api.md` |
-| Environment variables, secrets, environments | `docs/environments.md` |
-| Writing or running tests, regression suite | `docs/testing.md` |
-| Logging, monitoring, alerts | `docs/observability.md` |
-| "Why was X done this way?" or changing a past decision | `docs/decisions.md` |
-| Source data / import | `data/` and `docs/data-model.md` (Import section) |
+| If the task involves…                                     | Read first                                                                        |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Anything (first task in a session)                        | `README.md` (tools, commands, workflow) and `docs/roadmap.md` (current iteration) |
+| Product behaviour, disciplines, statistics rules, screens | `docs/product.md`                                                                 |
+| Architecture, stack, caching, folder layout               | `docs/architecture.md`                                                            |
+| Database schema or migrations                             | `docs/data-model.md`                                                              |
+| API endpoints                                             | `docs/api.md`                                                                     |
+| Environment variables, secrets, environments              | `docs/environments.md`                                                            |
+| Writing or running tests, regression suite                | `docs/testing.md`                                                                 |
+| Logging, monitoring, alerts                               | `docs/observability.md`                                                           |
+| "Why was X done this way?" or changing a past decision    | `docs/decisions.md`                                                               |
+| Source data / import                                      | `data/` and `docs/data-model.md` (Import section)                                 |
 
 ## 4. How to work
 

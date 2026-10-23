@@ -1,0 +1,36 @@
+name: Production smoke tests
+
+# Runs after each successful Vercel production deployment (and on demand).
+on:
+  deployment_status:
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.deployment_status.state == 'success' &&
+       github.event.deployment.environment == 'Production')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm --filter @shooting-clays/web test:smoke
+        env:
+          PROD_URL: ${{ secrets.PROD_URL }}
+      - name: Ping Better Stack heartbeat
+        if: success() && env.SMOKE_HEARTBEAT_URL != ''
+        run: curl -fsS --retry 3 "$SMOKE_HEARTBEAT_URL"
+        env:
+          SMOKE_HEARTBEAT_URL: ${{ secrets.SMOKE_HEARTBEAT_URL }}
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-smoke
+          path: apps/web/playwright-report-smoke

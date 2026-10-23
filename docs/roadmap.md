@@ -1,11 +1,12 @@
 # Roadmap
 
-| Iteration | Name | Status |
-|---|---|---|
-| 1 | Core app | **Planned — current** |
-| 2 | Authentication (Google sign-in) | Planned |
-| 3 | Community (leaderboards) | Planned |
-| 4 | Admin (user approval and management) | Planned |
+| Iteration | Name                                 | Status          |
+| --------- | ------------------------------------ | --------------- |
+| 1         | Core app                             | **In progress** |
+| 2         | Authentication (Google sign-in)      | Planned         |
+| 3         | Community (leaderboards)             | Planned         |
+| 4         | Admin (user approval and management) | Planned         |
+| 5         | Interactive scores chart             | Planned         |
 
 When an iteration starts, mark it "In progress"; when it ships, mark it "Done" with the date and update `changelog.md`.
 
@@ -28,6 +29,34 @@ Work plan:
 9. Final review: `pnpm test:all`, open the app at phone size, confirm reference values on screen.
 
 All sessions use `user_id = 'local'` in this iteration.
+
+### Status (2026-10-23)
+
+| Step   | State                                                                                                                                                                                            |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1–7, 9 | Done on branch `feat/iteration-1-core-app` (`pnpm test:all` green, runs locally against the Neon `dev` branch)                                                                                   |
+| 8      | Partly done: `apps/web/vercel.json` and `apps/api/vercel.json` exist; the Vercel projects, their environment variables and the setup in `README.md` → 4.5 have **not** been done or verified yet |
+
+### Known limitations and pending work
+
+Deployment and operations:
+
+- **Not deployed yet.** Pending: Vercel projects (README 4.5), migrations on the Neon `main` branch (`DATABASE_URL=<main> pnpm db:migrate`, then `pnpm db:import` if the history should be in production), Better Stack setup (`observability.md` → "One-time setup") and the GitHub secrets `PROD_URL` and `SMOKE_HEARTBEAT_URL`.
+- **No authentication until iteration 2.** Once deployed, anyone who knows the URL can read, add, edit and delete sessions. Until then, keep the URL private and consider enabling Vercel Deployment Protection on both projects.
+- `apps/web/vercel.json` assumes the api project is served at `https://shooting-clays-api.vercel.app`. If Vercel assigns another domain, update the rewrite.
+- The API "build" (`pnpm build` in `apps/api`) is a type check only; Vercel bundles `src/index.ts` itself. The Vercel build has not been tried yet.
+
+Tests:
+
+- **Visual regression (R9) is inactive until baselines exist.** Baselines are Linux-only: after the first push, run the "Update snapshots" workflow once on the branch. Until then, and always on macOS/Windows, R9 is skipped (`testing.md`).
+- Production smoke tests (S1) need `PROD_URL`; they only run after a production deployment.
+
+Product:
+
+- No offline queue: saving without a connection fails and keeps the form filled in (out of scope, see `product.md`).
+- Imported history has no hardest targets (A–F); the old free text is kept in the notes, in Portuguese (`data-model.md` → Import).
+- History loads every session at once (no pagination) and the edit screen finds the session in that list. Fine for hundreds of sessions; revisit if the history grows a lot.
+- The production JavaScript bundle is about 840 kB (about 250 kB gzipped) in a single file; Vite warns about chunk size. Splitting the charts (Recharts) into a separate chunk is a possible improvement.
 
 ---
 
@@ -104,12 +133,12 @@ Goal: the owner (admin) decides who can use the app. New users can sign in but m
 
 ### Account states
 
-| State | How a user gets there | What the user sees | Their data |
-|---|---|---|---|
-| `pending` | First Google sign-in (default for everyone not in `ADMIN_EMAILS`) | **Demo dashboard** with sample data, a clear banner and a disabled **Add** button | None yet |
-| `active` | Admin switches the toggle on | The normal app (Dashboard, Add, History, Community) | Kept |
-| `disabled` | Admin switches the toggle off for a previously active user | "Your account is inactive" screen; no dashboard, no Add, no History, no Community | **Kept** in the database |
-| *(removed)* | Admin clicks **Remove** and confirms | The account no longer exists; signing in again starts over as `pending` | **Deleted permanently** |
+| State       | How a user gets there                                             | What the user sees                                                                | Their data               |
+| ----------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------ |
+| `pending`   | First Google sign-in (default for everyone not in `ADMIN_EMAILS`) | **Demo dashboard** with sample data, a clear banner and a disabled **Add** button | None yet                 |
+| `active`    | Admin switches the toggle on                                      | The normal app (Dashboard, Add, History, Community)                               | Kept                     |
+| `disabled`  | Admin switches the toggle off for a previously active user        | "Your account is inactive" screen; no dashboard, no Add, no History, no Community | **Kept** in the database |
+| _(removed)_ | Admin clicks **Remove** and confirms                              | The account no longer exists; signing in again starts over as `pending`           | **Deleted permanently**  |
 
 Admins: users whose email is in `ADMIN_EMAILS` get `role = 'admin'` and `status = 'active'` on sign-in. The admin email is configured only as an environment variable, never in the repository.
 
@@ -161,3 +190,43 @@ See `api.md` → "Planned — iteration 4".
 ### Backlog ideas (not committed)
 
 Email the admin when someone new signs up; email the user when approved; admin view of a user's statistics.
+
+---
+
+## Iteration 5 — Interactive scores chart
+
+Goal: make the "Scores over time" chart on the Dashboard easier to read by choosing its time range and which disciplines it shows. Independent of iterations 2–4: it only touches the front end and can be done before them if preferred.
+
+### Time range
+
+- The chart gets **its own range selector**, above the chart: **3 months** (default) · **6 months** · **1 year** · **All time**.
+- The chart no longer follows the Dashboard period switcher (All time · Last month · This month); that switcher keeps controlling the cards and the "Average by discipline" chart.
+- Ranges are rolling and inclusive, counted back from the reference date in Europe/Lisbon: e.g. "3 months" on 2026-10-23 covers 2026-07-23 to 2026-10-23. When the earlier month is shorter (31 May − 3 months), use the last day of that month.
+- The range calculation lives in `packages/shared` and receives the reference date as a parameter (deterministic and unit-tested, like `stats.ts`).
+- If no discipline has scores in the selected range, show "No series in this period." instead of an empty chart.
+
+### Show/hide disciplines
+
+- The chart legend becomes a row of **toggle buttons**, one per discipline in the chart, each with the discipline's colour swatch and name.
+- **All disciplines are shown by default.** Tapping a legend item hides that discipline's line; tapping it again shows it.
+- A hidden discipline stays in the legend, visibly "off" (outlined/greyed swatch and struck-through name), so it is not shown by colour alone.
+- Buttons are accessible: `aria-pressed`, keyboard operable, touch targets ≥ 44 px.
+- Hiding a line does not change other lines' colours (colour follows the discipline) and does not change the Y axis (always 0–25).
+- If every discipline is hidden, the chart shows a short hint to tap a discipline to show it.
+- The selection is per visit (not persisted); opening the app again shows all disciplines and the 3-month range.
+
+### API and data
+
+No API change: `GET /api/dashboard` already returns every score per discipline in `series`; the front end filters it by range and visibility.
+
+### Tests
+
+- Unit (`packages/shared`): range boundaries (inclusive start, month-end clamping, year boundary), "All time" includes everything.
+- Component: legend toggles hide/show a line and update `aria-pressed`.
+- E2E (fixed date 2026-10-23, reference CSV): default range is 3 months (no points before 2026-07-23); switching to 6 months / 1 year / All time adds the older points (the first series, 2026-04-12, appears only from 1 year); hiding Compak Sporting removes its line and showing it again restores it; all visible after reload.
+- Visual baseline (R9) updated for the new Dashboard.
+- Accessibility (R10) still passes in light and dark mode.
+
+### Docs
+
+`product.md` (Charts), `testing.md` (new regression rows), `changelog.md`.
