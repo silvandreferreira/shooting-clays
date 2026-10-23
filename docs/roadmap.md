@@ -44,8 +44,7 @@ Deployment and operations:
 
 - **Not deployed yet.** Pending: Vercel projects (README 4.5), migrations on the Neon `main` branch (`DATABASE_URL=<main> pnpm db:migrate`, then `pnpm db:import` if the history should be in production), Better Stack setup (`observability.md` → "One-time setup") and the GitHub secrets `PROD_URL` and `SMOKE_HEARTBEAT_URL`.
 - **No authentication until iteration 2.** Once deployed, anyone who knows the URL can read, add, edit and delete sessions. Until then, keep the URL private and consider enabling Vercel Deployment Protection on both projects.
-- `apps/web/vercel.json` assumes the api project is served at `https://shooting-clays-api.vercel.app`. If Vercel assigns another domain, update the rewrite.
-- The API "build" (`pnpm build` in `apps/api`) is a type check only; Vercel bundles `src/index.ts` itself. The Vercel build has not been tried yet.
+- Vercel setup replaced by one project (decision #46, README 4.5).
 
 Tests:
 
@@ -84,7 +83,8 @@ Implemented on branch `feat/iteration-2-auth`: Neon Auth on the `dev` branch, si
 ### Known limitations and pending work
 
 - **Production:** enable Neon Auth on the `main` branch, own Google OAuth client (README 4.7), disable email & password, add the domain; run `pnpm db:migrate` then, after the owner's first sign-in, `pnpm db:assign-owner` on `main`.
-- **Vercel:** `/auth/*` must be rewritten to the Neon Auth URL of the right branch. A static `vercel.json` rewrite cannot vary per environment, and the existing `/api/*` rewrite already points previews at the production API. Decide at deploy time (for example one Vercel project that serves the web app and the API together).
+- **Production setup done (2026-10-23):** Neon Auth on `main` with our own Google OAuth client (email & password off), migration 0001 and `db:assign-owner` on `main` (48 sessions). Vercel: one project (decision #46), README 4.5. Still pending: production domain in Neon Auth and turning off "Allow localhost" on `main`.
+- **Sign-in on preview deployments** needs each preview domain trusted by the `dev` branch's Neon Auth (README 4.7).
 - **Sign-in on the local network** (`pnpm dev:host` on a phone) does not work: the session cookie is `Secure` (HTTPS or `localhost` only).
 - The display name can be changed through the API (`PUT /api/me/profile`) but there is no screen for it yet.
 

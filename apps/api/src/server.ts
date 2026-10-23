@@ -2,7 +2,7 @@
 import { serve } from '@hono/node-server';
 import { fileURLToPath } from 'node:url';
 import { loadConfig } from './config';
-import { createE2eApp, createNeonApp } from './runtime';
+import { createServerApp } from './runtime';
 
 try {
   process.loadEnvFile(fileURLToPath(new URL('../../../.env', import.meta.url)));
@@ -11,7 +11,10 @@ try {
 }
 
 const config = loadConfig();
-const app = config.e2e ? await createE2eApp(config) : createNeonApp(config);
+// Imported only in E2E mode, so normal runs never load PGlite or the test routes.
+const app = config.e2e
+  ? await (await import('./e2e-runtime')).createE2eApp(config)
+  : createServerApp(config);
 const port = Number(process.env.PORT ?? 3000);
 
 serve({ fetch: app.fetch, port }, () => {
