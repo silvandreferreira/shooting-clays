@@ -62,8 +62,8 @@ Charts:
 | `/add`         | Add session  | Date, discipline (large buttons), score stepper 0–25, A–F checkboxes (**only** for disciplines with target letters; cleared when switching discipline), notes, **Save** → back to Dashboard                                |
 | `/history`     | History      | List (newest first) with discipline filter (kept in the URL: `?discipline=`); each item shows date, discipline, score, **Hardest targets: A, C and F** (only when recorded) and notes; edit and delete (with confirmation) |
 | `/history/:id` | Edit session | Same form as Add, pre-filled; **Save** → back to History with the same filter                                                                                                                                              |
-| `/community`   | Community    | Iteration 3 — see `roadmap.md`                                                                                                                                                                                             |
-| `/admin`       | Admin        | Iteration 4, admins only — see `roadmap.md`                                                                                                                                                                                |
+| `/admin`       | Admin        | Iteration 3, admins only — see `roadmap.md`                                                                                                                                                                                |
+| `/community`   | Community    | Iteration 4 — see `roadmap.md`                                                                                                                                                                                             |
 
 UI requirements: touch targets ≥ 44 px, readable in sunlight (high contrast), one-handed use, dark mode, installable as a PWA.
 
@@ -76,6 +76,6 @@ UI requirements: touch targets ≥ 44 px, readable in sunlight (high contrast), 
 
 Implementation details: `architecture.md`.
 
-## Account states (iteration 4)
+## Account states (iteration 3)
 
-From iteration 4 every signed-in user is `pending`, `active` or `disabled`. Pending users see a demo dashboard with sample data, an approval banner and a disabled Add button; disabled users see an "account inactive" notice. Full rules: `roadmap.md` → Iteration 4.
+From iteration 3 every signed-in user is `pending`, `active` or `disabled`. Pending users see a demo dashboard with sample data, an approval banner and a disabled Add button; disabled users see an "account inactive" notice. Full rules: `roadmap.md` → Iteration 3.

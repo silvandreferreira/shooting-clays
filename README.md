@@ -34,7 +34,7 @@ Front end and back end are separate apps that only talk through a **REST API**. 
 
 | Tool                         | Purpose                  | How it is used here                                                                                                                 |
 | ---------------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| **React**                    | UI library               | Dashboard, Add, History (and Community in iteration 3) screens                                                                      |
+| **React**                    | UI library               | Dashboard, Add, History (and Community in iteration 4) screens                                                                      |
 | **Vite**                     | Dev server and build     | `pnpm dev` serves `http://localhost:5173` and proxies `/api` to the local API                                                       |
 | **TypeScript**               | Typed JavaScript         | `strict` mode; shared types from `packages/shared`                                                                                  |
 | **Tailwind CSS**             | Utility-first styling    | Mobile-first layout, dark mode                                                                                                      |

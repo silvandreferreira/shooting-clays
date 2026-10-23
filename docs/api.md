@@ -23,9 +23,9 @@
 | ---- | ------------------ | -------------------------------------------------------------------- |
 | 400  | `VALIDATION_ERROR` | Request fails schema validation                                      |
 | 401  | `UNAUTHENTICATED`  | (iteration 2+) No valid session                                      |
-| 403  | `ACCOUNT_PENDING`  | (iteration 4+) Account waiting for admin approval                    |
-| 403  | `ACCOUNT_DISABLED` | (iteration 4+) Account disabled by the admin                         |
-| 403  | `FORBIDDEN`        | (iteration 4+) Not an admin, or an admin acting on their own account |
+| 403  | `ACCOUNT_PENDING`  | (iteration 3+) Account waiting for admin approval                    |
+| 403  | `ACCOUNT_DISABLED` | (iteration 3+) Account disabled by the admin                         |
+| 403  | `FORBIDDEN`        | (iteration 3+) Not an admin, or an admin acting on their own account |
 | 404  | `NOT_FOUND`        | Id does not exist or belongs to another user                         |
 | 500  | `INTERNAL_ERROR`   | Unexpected error (details only in logs)                              |
 | 503  | `UNAVAILABLE`      | Database unreachable (`/api/health/db`)                              |
@@ -120,18 +120,9 @@ When a discipline has no sessions in a period, `avg`, `min` and `max` are `null`
 | Method | Path              | Description                                                 |
 | ------ | ----------------- | ----------------------------------------------------------- |
 | `GET`  | `/api/me/profile` | Current user's profile                                      |
-| `PUT`  | `/api/me/profile` | Update display name (and community opt-in from iteration 3) |
+| `PUT`  | `/api/me/profile` | Update display name (and community opt-in from iteration 4) |
 
 ## Planned — iteration 3
-
-| Method | Path                                                   | Description                                                |
-| ------ | ------------------------------------------------------ | ---------------------------------------------------------- |
-| `GET`  | `/api/community/leaderboard?month=YYYY-MM&discipline=` | Ranked list: each opted-in shooter's best score that month |
-| `GET`  | `/api/community/champions?month=YYYY-MM`               | Shooter of the month per discipline                        |
-
-Rules: `roadmap.md` → Iteration 3.
-
-## Planned — iteration 4
 
 | Method   | Path                       | Description                                                                           |
 | -------- | -------------------------- | ------------------------------------------------------------------------------------- |
@@ -139,5 +130,14 @@ Rules: `roadmap.md` → Iteration 3.
 | `GET`    | `/api/admin/users?status=` | All users with email, status, sign-up date, session count, last activity (admin only) |
 | `PATCH`  | `/api/admin/users/:userId` | `{ "status": "active" \| "disabled" }` (admin only; not on own account)               |
 | `DELETE` | `/api/admin/users/:userId` | Permanently deletes the user and all their data (admin only; not on own account)      |
+
+Rules: `roadmap.md` → Iteration 3.
+
+## Planned — iteration 4
+
+| Method | Path                                                   | Description                                                |
+| ------ | ------------------------------------------------------ | ---------------------------------------------------------- |
+| `GET`  | `/api/community/leaderboard?month=YYYY-MM&discipline=` | Ranked list: each opted-in shooter's best score that month |
+| `GET`  | `/api/community/champions?month=YYYY-MM`               | Shooter of the month per discipline                        |
 
 Rules: `roadmap.md` → Iteration 4.

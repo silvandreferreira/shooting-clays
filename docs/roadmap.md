@@ -4,8 +4,8 @@
 | --------- | ------------------------------------ | --------------- |
 | 1         | Core app                             | **In progress** |
 | 2         | Authentication (Google sign-in)      | Planned         |
-| 3         | Community (leaderboards)             | Planned         |
-| 4         | Admin (user approval and management) | Planned         |
+| 3         | Admin (user approval and management) | Planned         |
+| 4         | Community (leaderboards)             | Planned         |
 | 5         | Interactive scores chart             | Planned         |
 
 When an iteration starts, mark it "In progress"; when it ships, mark it "Done" with the date and update `changelog.md`.
@@ -67,7 +67,7 @@ Goal: sign in with Google; each user only sees and changes their own data.
 - **Neon Auth** (managed Better Auth) with the Google provider. Development can use Neon's shared Google credentials; production uses our own Google Cloud OAuth client.
 - Sign-in screen; signed-out users are redirected to it. Sign-out in a profile menu.
 - A `profiles` row is created on first sign-in (see `data-model.md`).
-- **Temporary safeguard until iteration 4:** only email addresses listed in `ADMIN_EMAILS` can sign in; anyone else sees "Access is not open yet". This prevents strangers from using the app before the approval flow exists. Iteration 4 replaces it with the pending/approval flow.
+- **Temporary safeguard until iteration 3:** only email addresses listed in `ADMIN_EMAILS` can sign in; anyone else sees "Access is not open yet". This prevents strangers from using the app before the approval flow exists. Iteration 3 replaces it with the pending/approval flow.
 - API middleware validates the session (cookie or JWT — confirm the mechanism in Neon Auth docs at the start of the iteration) and sets `userId`; every query is filtered by it.
 - Migration: assign all `user_id = 'local'` sessions to the owner's account (one-off, documented script).
 - Tests:
@@ -77,57 +77,7 @@ Goal: sign in with Google; each user only sees and changes their own data.
 
 ---
 
-## Iteration 3 — Community (gamification)
-
-Goal: a new **Community** tab that compares results across all users, per discipline, to make the app more fun.
-
-### Leaderboard rules
-
-- Scope: **one calendar month** (Europe/Lisbon) and **one discipline**. Default: current month; the user can browse previous months.
-- Each shooter's entry = **their best single series score** in that discipline in that month.
-- Ranking: highest best score first. Ties share the same rank (standard competition ranking: 1, 1, 3); within a tie, whoever reached that score **first** is listed first.
-- **Shooter of the month** per discipline = rank 1 (all tied shooters if there is a tie).
-- Each row shows: rank, display name, avatar, best score, date achieved, number of series that month.
-- The signed-in user's own row is always visible (pinned at the bottom if outside the visible list).
-- Only shooters with at least one series in that discipline and month appear.
-
-### Screen (`/community`)
-
-- Month picker and discipline tabs.
-- "Shooter of the month" cards (one per discipline) at the top.
-- Full ranked list below.
-
-### Privacy
-
-- Joining the leaderboard is **opt-in** (`show_in_community`, default off), with a **display name** chosen by the user. The email address is never shown.
-- Users who have not opted in are excluded from every leaderboard response (tested).
-- From iteration 4, users whose account is `pending` or `disabled` are also excluded.
-
-### API and data
-
-- `GET /api/community/leaderboard?month=YYYY-MM&discipline=…`
-- `GET /api/community/champions?month=YYYY-MM` (shooter of the month per discipline)
-- `GET /api/me/profile`, `PUT /api/me/profile` (display name, opt-in)
-- Query: per user `max(score)` and earliest date at that score, then `rank() over (order by best desc)`. Index on `sessions (discipline, date)`.
-- Cached in the front end with a short stale time (a few minutes).
-
-### Tests
-
-- Unit: ranking with ties, tie-break by earliest date, month boundaries in Europe/Lisbon.
-- Integration: non-opted-in users excluded; one entry per user.
-- E2E: seeded multi-user data; leaderboard order, own row pinned, month switching.
-
-### Known limitation
-
-Scores are self-reported (trust-based). Possible later: report/flag a result.
-
-### Backlog ideas (not committed)
-
-Personal-best badges, streaks (sessions in consecutive weeks), "most improved" of the month, history of past champions.
-
----
-
-## Iteration 4 — Admin
+## Iteration 3 — Admin
 
 Goal: the owner (admin) decides who can use the app. New users can sign in but must be approved; the admin can disable or remove accounts.
 
@@ -136,7 +86,7 @@ Goal: the owner (admin) decides who can use the app. New users can sign in but m
 | State       | How a user gets there                                             | What the user sees                                                                | Their data               |
 | ----------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------ |
 | `pending`   | First Google sign-in (default for everyone not in `ADMIN_EMAILS`) | **Demo dashboard** with sample data, a clear banner and a disabled **Add** button | None yet                 |
-| `active`    | Admin switches the toggle on                                      | The normal app (Dashboard, Add, History, Community)                               | Kept                     |
+| `active`    | Admin switches the toggle on                                      | The normal app (Dashboard, Add, History; Community from iteration 4)              | Kept                     |
 | `disabled`  | Admin switches the toggle off for a previously active user        | "Your account is inactive" screen; no dashboard, no Add, no History, no Community | **Kept** in the database |
 | _(removed)_ | Admin clicks **Remove** and confirms                              | The account no longer exists; signing in again starts over as `pending`           | **Deleted permanently**  |
 
@@ -147,7 +97,7 @@ Admins: users whose email is in `ADMIN_EMAILS` get `role = 'admin'` and `status 
 - A prominent banner at the top of every screen, for example: **"Your account is waiting for approval. The administrator needs to accept your request before you can log your sessions. Meanwhile, this is a preview of your dashboard with sample data."**
 - The dashboard renders **sample data** from a static fixture in the front end (no API call), with a "Sample data" label on every card and chart.
 - The **Add** button is visible but greyed out and disabled; tapping it shows a short explanation (tooltip/toast).
-- History and Community are hidden.
+- History (and Community, from iteration 4) are hidden.
 - The app re-checks the account status when it opens and when it regains focus, so approval takes effect without signing out.
 
 ### Disabled user experience
@@ -175,21 +125,70 @@ Inside one database transaction: delete all the user's `sessions` and their `pro
   - `disabled` → `403 ACCOUNT_DISABLED`;
   - only `GET /api/me` and sign-out work for these users.
 - `/api/admin/*` requires `role = 'admin'`; otherwise `403 FORBIDDEN`.
-- Leaderboards (iteration 3) only include `active` users who opted in.
 
 ### API
 
-See `api.md` → "Planned — iteration 4".
+See `api.md` → "Planned — iteration 3".
 
 ### Tests
 
-- Integration: pending/disabled users get 403 on every data endpoint; non-admins get 403 on `/api/admin/*`; toggling changes status; removal deletes every row for that user and nothing else; an admin cannot disable/remove themselves; disabled users are excluded from leaderboards.
+- Integration: pending/disabled users get 403 on every data endpoint; non-admins get 403 on `/api/admin/*`; toggling changes status; removal deletes every row for that user and nothing else; an admin cannot disable/remove themselves.
 - E2E: pending user sees the banner, sample data and a disabled Add button; disabled user sees the inactive notice; admin approves a user and that user then sees their real (empty) dashboard; admin removes a user after typing the name.
 - E2E mode provides test-only sign-in as a pending user, an active user and an admin.
 
 ### Backlog ideas (not committed)
 
 Email the admin when someone new signs up; email the user when approved; admin view of a user's statistics.
+
+---
+
+## Iteration 4 — Community (gamification)
+
+Goal: a new **Community** tab that compares results across all users, per discipline, to make the app more fun.
+
+### Leaderboard rules
+
+- Scope: **one calendar month** (Europe/Lisbon) and **one discipline**. Default: current month; the user can browse previous months.
+- Each shooter's entry = **their best single series score** in that discipline in that month.
+- Ranking: highest best score first. Ties share the same rank (standard competition ranking: 1, 1, 3); within a tie, whoever reached that score **first** is listed first.
+- **Shooter of the month** per discipline = rank 1 (all tied shooters if there is a tie).
+- Each row shows: rank, display name, avatar, best score, date achieved, number of series that month.
+- The signed-in user's own row is always visible (pinned at the bottom if outside the visible list).
+- Only shooters with at least one series in that discipline and month appear.
+
+### Screen (`/community`)
+
+- Month picker and discipline tabs.
+- "Shooter of the month" cards (one per discipline) at the top.
+- Full ranked list below.
+
+### Privacy
+
+- Joining the leaderboard is **opt-in** (`show_in_community`, default off), with a **display name** chosen by the user. The email address is never shown.
+- Users who have not opted in are excluded from every leaderboard response (tested).
+- Only `active` accounts (iteration 3) take part: users whose account is `pending` or `disabled` are excluded from every leaderboard response (tested).
+
+### API and data
+
+- `GET /api/community/leaderboard?month=YYYY-MM&discipline=…`
+- `GET /api/community/champions?month=YYYY-MM` (shooter of the month per discipline)
+- `GET /api/me/profile`, `PUT /api/me/profile` (display name, opt-in)
+- Query: per user `max(score)` and earliest date at that score, then `rank() over (order by best desc)`. Index on `sessions (discipline, date)`.
+- Cached in the front end with a short stale time (a few minutes).
+
+### Tests
+
+- Unit: ranking with ties, tie-break by earliest date, month boundaries in Europe/Lisbon.
+- Integration: non-opted-in users excluded; `pending` and `disabled` users excluded; one entry per user.
+- E2E: seeded multi-user data; leaderboard order, own row pinned, month switching.
+
+### Known limitation
+
+Scores are self-reported (trust-based). Possible later: report/flag a result.
+
+### Backlog ideas (not committed)
+
+Personal-best badges, streaks (sessions in consecutive weeks), "most improved" of the month, history of past champions.
 
 ---
 
