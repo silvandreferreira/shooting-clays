@@ -10,6 +10,7 @@ permissions:
 jobs:
   update:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -19,8 +20,11 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium webkit
-      - run: pnpm --filter @shooting-clays/web exec playwright test e2e/visual.spec.ts --update-snapshots
+      - run: pnpm --filter @shooting-clays/web exec playwright test e2e/visual.spec.ts --update-snapshots=all
       - name: Commit baselines
+        env:
+          # Git hooks are for developers' machines; the CI jobs run the checks.
+          LEFTHOOK: '0'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

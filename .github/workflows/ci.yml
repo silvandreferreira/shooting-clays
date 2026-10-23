@@ -13,6 +13,7 @@ jobs:
   check:
     name: Check (format, lint, types, tests) and build
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -27,6 +28,7 @@ jobs:
   e2e:
     name: E2E regression suite
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
