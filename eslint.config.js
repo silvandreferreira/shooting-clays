@@ -12,6 +12,7 @@ export default tseslint.config(
       '**/test-results/**',
       '**/dev-dist/**',
       'apps/api/drizzle/**',
+      '.vercel/**',
     ],
   },
   js.configs.recommended,

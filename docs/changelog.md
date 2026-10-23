@@ -4,6 +4,12 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Deployment
+
+- **Changed:** one Vercel project serves the web app and the API (`/api/*`, `/auth/*`); `pnpm build` writes the deployment to `.vercel/output` (decision #46). Previews use the Neon `dev` branch.
+- **Changed:** the API forwards `/auth/*` to Neon Auth (`NEON_AUTH_URL`) in development and production; Vite passes `/auth/*` to the local API.
+- **Docs:** Google OAuth consent screen must be External and published (README 4.7).
+
 ### Iteration 2
 
 - **Added:** Google sign-in with Neon Auth (through `/auth` on our own origin), sign-in screen, "Access is not open yet" screen, header with "Welcome, <first name>" and an account menu (Google photo, Sign out).

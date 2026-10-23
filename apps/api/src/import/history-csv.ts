@@ -5,6 +5,9 @@ import { sql } from 'drizzle-orm';
 import type { Db } from '../db/client';
 import { profiles, sessions } from '../db/schema';
 
+/** The owner's history before the app existed (see docs/data-model.md → Import). */
+export const HISTORY_CSV_PATH = new URL('../../../../data/clays-results.csv', import.meta.url);
+
 export interface HistoryRow {
   date: string;
   discipline: DisciplineKey;

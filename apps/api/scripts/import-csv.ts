@@ -1,7 +1,6 @@
 // Imports data/clays-results.csv for the owner into the database in DATABASE_URL. Safe to re-run.
 import { readFile } from 'node:fs/promises';
-import { importHistory, parseHistoryCsv } from '../src/import/history-csv';
-import { HISTORY_CSV_PATH } from '../src/runtime';
+import { HISTORY_CSV_PATH, importHistory, parseHistoryCsv } from '../src/import/history-csv';
 import { findOwner, loadScriptEnv } from './owner';
 
 const { db, host } = loadScriptEnv();

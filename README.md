@@ -91,18 +91,18 @@ Disciplines (and which have A–F targets), Zod schemas, types and the **statist
 shooting-clays/
 ├─ apps/
 │  ├─ web/                 # Front end (React + Vite)
-│  │  ├─ e2e/              # Playwright tests
-│  │  └─ vercel.json       # Rewrites: /api → api project; SPA → index.html
+│  │  └─ e2e/              # Playwright tests
 │  └─ api/                 # Back end (Hono)
-│     ├─ src/              # Routes, middleware, data access
+│     ├─ src/              # Routes, middleware, data access, Neon Auth proxy
 │     ├─ drizzle/          # Generated SQL migrations (committed)
-│     ├─ scripts/          # import-csv.ts
-│     └─ vercel.json       # Function region (fra1)
+│     └─ scripts/          # migrate.ts, import-csv.ts, assign-owner.ts
 ├─ packages/
 │  └─ shared/              # Disciplines, schemas, types, statistics
 ├─ data/                   # Source CSV files (history)
 ├─ docs/                   # Detailed documentation
+├─ scripts/                # build-vercel.mjs: assembles the Vercel deployment
 ├─ .github/workflows/      # CI, smoke tests, snapshot update
+├─ vercel.json             # Vercel project settings (install, build, region)
 ├─ .env.example            # Required variables (no real values)
 ├─ lefthook.yml            # Git hooks
 ├─ CLAUDE.md               # Instructions for Claude Code
@@ -199,19 +199,40 @@ ADMIN_EMAILS=you@example.com
 
 > ⚠️ `.env` is **never** committed (it is in `.gitignore`).
 
-### 4.5 Vercel (two projects from the same repository)
+### 4.5 Vercel (one project)
 
-At <https://vercel.com/new>, import the repository **twice**:
+One Vercel project serves everything: the web app as static files, and the API plus the Neon Auth proxy (`/api/*`, `/auth/*`) as one function in `fra1`. `pnpm build` writes this deployment to `.vercel/output` (`scripts/build-vercel.mjs`), and the settings live in `vercel.json` at the root, so there is nothing to choose in the Vercel dashboard. Previews use the Neon `dev` branch and production the `main` branch, each through its own environment variables (decision #46).
 
-| Project              | Root Directory | Environment variables                                                           |
-| -------------------- | -------------- | ------------------------------------------------------------------------------- |
-| `shooting-clays-api` | `apps/api`     | `DATABASE_URL` = Neon **main** branch (Production) and **dev** branch (Preview) |
-| `shooting-clays-web` | `apps/web`     | `VITE_SENTRY_DSN` (optional, see 4.6)                                           |
+1. Install the CLI and sign in (once per computer):
 
-Then:
+   ```bash
+   npm install --global --prefix ~/.local vercel
+   vercel login
+   ```
 
-- In both projects, confirm the **Production Branch** is `main` (Settings → Git).
-- Confirm `apps/web/vercel.json` rewrites `/api/*` to the api project domain (e.g. `https://shooting-clays-api.vercel.app`).
+2. From the repository root, create the project and connect it to GitHub:
+
+   ```bash
+   vercel link --yes --project shooting-clays
+   vercel git connect
+   ```
+
+   - The connection needs the **Vercel GitHub app** to have access to the repository (<https://github.com/apps/vercel/installations/new>); without it, `vercel link` creates the project but reports "Failed to connect".
+   - `vercel link` appends `.vercel` and `.env*` to `.gitignore` and writes `.env.local`. Revert the `.gitignore` change (`git checkout .gitignore`): `.env*` would hide `.env.example`, and `.env` and `.vercel/` are already ignored. Delete `.env.local` (not used).
+
+3. Environment variables (Vercel → project → Settings → Environment Variables, or `vercel env add <NAME> <production|preview>`):
+
+   | Variable                       | Production                         | Preview                           |
+   | ------------------------------ | ---------------------------------- | --------------------------------- |
+   | `DATABASE_URL`                 | Neon **main** branch               | Neon **dev** branch               |
+   | `NEON_AUTH_URL`                | Neon Auth URL of the `main` branch | Neon Auth URL of the `dev` branch |
+   | `ADMIN_EMAILS`                 | your email                         | your email                        |
+   | `ENABLE_EXPERIMENTAL_COREPACK` | `1`                                | `1`                               |
+
+   `ENABLE_EXPERIMENTAL_COREPACK=1` makes Vercel use the pnpm version in `package.json` (`packageManager`). Observability variables come later (4.6).
+
+4. Deploy: merge into `main` (or `vercel --prod` once). The production URL is `https://shooting-clays.vercel.app`.
+5. Neon Console → branch `main` → **Auth → Configuration**: add the production domain under **Domains** (see 4.7).
 
 ### 4.6 Observability and alerts (after the first deploy)
 
@@ -282,7 +303,7 @@ Run everything from the **repository root**.
 | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | `pnpm dev`                                                        | Starts web and api in development mode                                                                |
 | `pnpm dev:host`                                                   | Same, reachable from other devices on the network (phone)                                             |
-| `pnpm build`                                                      | Production build of all packages                                                                      |
+| `pnpm build`                                                      | Production build of all packages, then the Vercel deployment in `.vercel/output`                      |
 | `pnpm format`                                                     | Formats the code with Prettier                                                                        |
 | `pnpm format:check`                                               | Checks formatting without changing files                                                              |
 | `pnpm lint`                                                       | ESLint on all code                                                                                    |
@@ -431,7 +452,7 @@ In Orca, archive or delete the worktree.
 
 ### Automatic (normal path)
 
-**Merging into `main` deploys to production.** Vercel detects the new commit, builds both projects and publishes them. Follow it at <https://vercel.com/dashboard> or in the PR.
+**Merging into `main` deploys to production.** Vercel detects the new commit, builds the project and publishes it. Every PR also gets a preview deployment (Neon `dev` branch). Follow it at <https://vercel.com/dashboard> or in the PR.
 
 Right after, GitHub Actions runs the **smoke tests** against production (read-only). If they fail, you get an alert — see "Runbook" in [`docs/observability.md`](docs/observability.md).
 
@@ -458,30 +479,29 @@ Production migrations are **always applied explicitly**, never during the build:
 ### Manual deploy (exceptional)
 
 ```bash
-cd apps/api && vercel --prod
-cd ../web && vercel --prod
+vercel --prod
 ```
 
 ---
 
 ## 10. Troubleshooting
 
-| Symptom                                        | Likely cause                                                                  | Fix                                                                                             |
-| ---------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| First request takes 1–2 s                      | Neon Free suspends the database after 5 min idle                              | Expected; the dashboard shows cached data meanwhile                                             |
-| `DATABASE_URL is not defined`                  | Missing `.env`                                                                | `cp .env.example .env` and fill it in                                                           |
-| `pnpm: command not found`                      | pnpm not enabled                                                              | `corepack enable`                                                                               |
-| `corepack enable` fails with `EACCES` (macOS)  | No write access to `/usr/local/bin`                                           | `corepack enable --install-directory ~/.local/bin pnpm` (that directory must be on your `PATH`) |
-| `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION`       | pnpm refuses package versions published in the last day (supply-chain policy) | Pin an older version of that package; do not add exclusions                                     |
-| `Port 5173 is already in use`                  | Another `pnpm dev` is running                                                 | Stop it (Ctrl+C in its terminal)                                                                |
-| Vercel preview returns 404 on `/history`       | Missing SPA fallback                                                          | Check the `/(.*)` → `/index.html` rewrite in `apps/web/vercel.json`                             |
-| `/api` returns 404 in production               | Wrong rewrite                                                                 | Check the api domain in `apps/web/vercel.json`                                                  |
-| Google sign-in shows `Error 403: org_internal` | OAuth consent screen audience is _Internal_                                   | Set it to External and publish the app (section 4.7)                                            |
-| CI fails only on GitHub                        | Environment differences                                                       | Run `pnpm test:all` locally; check the Node version                                             |
-| `Executable doesn't exist` (Playwright)        | Browsers not installed                                                        | `pnpm exec playwright install --with-deps`                                                      |
-| Visual test fails (`toHaveScreenshot`)         | A screen's look changed                                                       | See section 7, "How to read the result"                                                         |
-| Git hook blocks a commit/push                  | Lint, format or tests failing                                                 | Read the output and fix it; do not bypass hooks with `--no-verify`                              |
-| Better Stack alert received                    | Site down, errors or slowness                                                 | Follow the runbook in [`docs/observability.md`](docs/observability.md)                          |
+| Symptom                                             | Likely cause                                                                  | Fix                                                                                                                     |
+| --------------------------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| First request takes 1–2 s                           | Neon Free suspends the database after 5 min idle                              | Expected; the dashboard shows cached data meanwhile                                                                     |
+| `DATABASE_URL is not defined`                       | Missing `.env`                                                                | `cp .env.example .env` and fill it in                                                                                   |
+| `pnpm: command not found`                           | pnpm not enabled                                                              | `corepack enable`                                                                                                       |
+| `corepack enable` fails with `EACCES` (macOS)       | No write access to `/usr/local/bin`                                           | `corepack enable --install-directory ~/.local/bin pnpm` (that directory must be on your `PATH`)                         |
+| `ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION`            | pnpm refuses package versions published in the last day (supply-chain policy) | Pin an older version of that package; do not add exclusions                                                             |
+| `Port 5173 is already in use`                       | Another `pnpm dev` is running                                                 | Stop it (Ctrl+C in its terminal)                                                                                        |
+| Vercel returns 404 on `/history`, `/api` or `/auth` | Deployment built without `.vercel/output`                                     | Check that the build ran `pnpm build` (`vercel.json`) and that `scripts/build-vercel.mjs` printed "Vercel output ready" |
+| Sign-in fails on a Vercel deployment                | Domain not trusted by that Neon branch's Auth                                 | Neon Console → branch → Auth → Configuration → Domains (section 4.7)                                                    |
+| Google sign-in shows `Error 403: org_internal`      | OAuth consent screen audience is _Internal_                                   | Set it to External and publish the app (section 4.7)                                                                    |
+| CI fails only on GitHub                             | Environment differences                                                       | Run `pnpm test:all` locally; check the Node version                                                                     |
+| `Executable doesn't exist` (Playwright)             | Browsers not installed                                                        | `pnpm exec playwright install --with-deps`                                                                              |
+| Visual test fails (`toHaveScreenshot`)              | A screen's look changed                                                       | See section 7, "How to read the result"                                                                                 |
+| Git hook blocks a commit/push                       | Lint, format or tests failing                                                 | Read the output and fix it; do not bypass hooks with `--no-verify`                                                      |
+| Better Stack alert received                         | Site down, errors or slowness                                                 | Follow the runbook in [`docs/observability.md`](docs/observability.md)                                                  |
 
 ---
 

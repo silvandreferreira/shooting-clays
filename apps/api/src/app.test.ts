@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { createApp } from './app';
 import { createTestAuth } from './auth';
 import { loadConfig } from './config';
-import { createMemoryDb } from './db/client';
+import { createMemoryDb } from './db/memory';
 import { importHistory } from './import/history-csv';
 import { createProfilesRepo } from './profiles-repo';
 import { createTestApp, historyRows, OTHER, OWNER, STRANGER } from './test-utils';
