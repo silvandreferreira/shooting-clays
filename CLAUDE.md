@@ -4,7 +4,7 @@ This file is loaded automatically at the start of every Claude Code session. It 
 
 ## 1. Project in one paragraph
 
-A mobile-first web app (PWA) to log clay shooting results (date, discipline, score out of 25, hardest targets, notes) and see a dashboard per discipline for **all time**, **last month** and **this month**. React front end and a separate REST API (Hono) on Vercel, Postgres on Neon. Roadmap: iteration 1 = core app, iteration 2 = Google sign-in, iteration 3 = admin approval and user management, iteration 4 = community leaderboard, iteration 5 = interactive scores chart (see `docs/roadmap.md`).
+A mobile-first web app (PWA) to log clay shooting results (date, discipline, score out of 25, hardest targets, notes) and see a dashboard per discipline for **all time**, **last month** and **this month**. React front end and a separate REST API (Hono) on Vercel, Postgres on Neon. Roadmap: iteration 1 = core app, iteration 2 = Google sign-in, iteration 3 = admin approval and user management, iteration 4 = community leaderboard, iteration 5 = interactive scores chart, iteration 6 = translations English / European Portuguese (see `docs/roadmap.md`).
 
 ## 2. Language rules (strict)
 
@@ -13,7 +13,7 @@ A mobile-first web app (PWA) to log clay shooting results (date, discipline, sco
 | Conversation with the owner (chat in Orca)                                                                                                                                             | **European Portuguese (pt-PT)** |
 | Everything in the repository: code, identifiers, comments, commit messages, branch names, PR titles and descriptions, documentation, test names, UI text, log messages, error messages | **English**                     |
 
-UI strings live in one place (`apps/web/src/i18n/en.ts`) so a Portuguese translation can be added later without touching components.
+UI strings live in one place (`apps/web/src/i18n/en.ts`) so a Portuguese translation can be added later without touching components. From iteration 6 the user can switch the UI to European Portuguese: `apps/web/src/i18n/pt-PT.ts` is the **only** file in the repository written in Portuguese (see `docs/roadmap.md` → Iteration 6).
 
 ## 3. Context: what to read before each task
 

@@ -76,6 +76,10 @@ UI requirements: touch targets ≥ 44 px, readable in sunlight (high contrast), 
 
 Implementation details: `architecture.md`.
 
+## Language (iteration 6)
+
+The user can switch the interface between English and European Portuguese (account menu and sign-in screen). The choice is saved in the profile and applies immediately. Full rules: `roadmap.md` → Iteration 6.
+
 ## Account states (iteration 3)
 
 From iteration 3 every signed-in user is `pending`, `active` or `disabled`. Pending users see a demo dashboard with sample data, an approval banner and a disabled Add button; disabled users see an "account inactive" notice. Full rules: `roadmap.md` → Iteration 3.
