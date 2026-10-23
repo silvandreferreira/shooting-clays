@@ -1,6 +1,7 @@
 import { zValidator } from '@hono/zod-validator';
 import {
   DISCIPLINES,
+  profileUpdateSchema,
   sessionInputSchema,
   sessionsQuerySchema,
   todayInLisbon,
@@ -10,22 +11,35 @@ import { Hono, type Context } from 'hono';
 import { routePath } from 'hono/route';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import { z } from 'zod';
-import { LOCAL_USER_ID } from './config';
+import type { AuthUser, VerifyToken } from './auth';
 import type { Db } from './db/client';
 import { silentLogger, type Logger } from './logger';
+import { createProfilesRepo } from './profiles-repo';
 import { createSessionsRepo } from './sessions-repo';
 
 export interface AppDeps {
   db: Db;
   now: () => Date;
+  /** Verifies the `Authorization: Bearer` JWT (Neon Auth JWKS; a local key in tests and E2E). */
+  verifyToken: VerifyToken;
+  /** Lower-case emails allowed in (iteration 2 safeguard until account approval exists). */
+  adminEmails: string[];
   logger?: Logger;
   /** Called with unexpected errors (e.g. Sentry). */
   captureException?: (error: unknown) => void;
-  /** Only provided in E2E mode: reseeds the database. Never set outside E2E. */
-  resetForTests?: () => Promise<void>;
+  /** Only provided in E2E mode: test-only routes under /api/__test__. Never set outside E2E. */
+  testRoutes?: (app: Hono) => void;
 }
 
-type ErrorCode = 'VALIDATION_ERROR' | 'NOT_FOUND' | 'INTERNAL_ERROR' | 'UNAVAILABLE';
+type ErrorCode =
+  | 'VALIDATION_ERROR'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_NOT_OPEN'
+  | 'NOT_FOUND'
+  | 'INTERNAL_ERROR'
+  | 'UNAVAILABLE';
+
+type AppEnv = { Variables: { user: AuthUser } };
 
 function errorResponse(
   c: Context,
@@ -58,12 +72,14 @@ function validationHook(result: ValidationResult, c: Context) {
 const idParamSchema = z.object({ id: z.string() });
 
 export function createApp(deps: AppDeps) {
-  const { db, now, logger = silentLogger, captureException } = deps;
+  const { db, now, verifyToken, adminEmails, logger = silentLogger, captureException } = deps;
   const repo = createSessionsRepo(db);
-  const userId = LOCAL_USER_ID;
-  const dashboard = () => repo.dashboard(userId, todayInLisbon(now()));
+  const profilesRepo = createProfilesRepo(db);
+  const dashboard = (userId: string) => repo.dashboard(userId, todayInLisbon(now()));
+  // Profiles already known to exist in this process: skips the insert on later requests.
+  const knownProfiles = new Set<string>();
 
-  const app = new Hono().basePath('/api');
+  const app = new Hono<AppEnv>().basePath('/api');
 
   app.use(async (c, next) => {
     const start = performance.now();
@@ -104,17 +120,63 @@ export function createApp(deps: AppDeps) {
     }
   });
 
+  if (deps.testRoutes) deps.testRoutes(app as unknown as Hono);
+
+  // Every route below requires a signed-in, allowed user. Authorization lives here, never only in
+  // the UI (CLAUDE.md → Invariants).
+  app.use(async (c, next) => {
+    const header = c.req.header('authorization');
+    const token = header?.startsWith('Bearer ') ? header.slice(7).trim() : undefined;
+    if (!token) return errorResponse(c, 401, 'UNAUTHENTICATED', 'Sign in required');
+    let user: AuthUser;
+    try {
+      user = await verifyToken(token);
+    } catch {
+      return errorResponse(c, 401, 'UNAUTHENTICATED', 'Session expired or invalid');
+    }
+    // Only verified addresses count: an unverified sign-up must not pass as an allowed email.
+    if (!user.emailVerified || !adminEmails.includes(user.email.toLowerCase())) {
+      // The reason helps diagnose sign-in problems; never log the email itself.
+      logger.log('warn', {
+        message: 'access denied',
+        reason: user.emailVerified ? 'email_not_allowed' : 'email_not_verified',
+      });
+      return errorResponse(c, 403, 'ACCESS_NOT_OPEN', 'Access is not open yet');
+    }
+    if (!knownProfiles.has(user.id)) {
+      await profilesRepo.ensure(user);
+      knownProfiles.add(user.id);
+    }
+    c.set('user', user);
+    await next();
+  });
+
+  app.get('/me/profile', async (c) => {
+    const user = c.get('user');
+    const profile = await profilesRepo.get(user.id);
+    if (!profile) return errorResponse(c, 404, 'NOT_FOUND', 'Profile not found');
+    return c.json({ ...profile, email: user.email });
+  });
+
+  app.put('/me/profile', zValidator('json', profileUpdateSchema, validationHook), async (c) => {
+    const user = c.get('user');
+    const profile = await profilesRepo.update(user.id, c.req.valid('json'));
+    if (!profile) return errorResponse(c, 404, 'NOT_FOUND', 'Profile not found');
+    return c.json({ ...profile, email: user.email });
+  });
+
   app.get('/disciplines', (c) => c.json(DISCIPLINES));
 
-  app.get('/dashboard', async (c) => c.json(await dashboard()));
+  app.get('/dashboard', async (c) => c.json(await dashboard(c.get('user').id)));
 
   app.get('/sessions', zValidator('query', sessionsQuerySchema, validationHook), async (c) =>
-    c.json(await repo.list(userId, c.req.valid('query'))),
+    c.json(await repo.list(c.get('user').id, c.req.valid('query'))),
   );
 
   app.post('/sessions', zValidator('json', sessionInputSchema, validationHook), async (c) => {
+    const userId = c.get('user').id;
     const session = await repo.create(userId, c.req.valid('json'));
-    return c.json({ session, dashboard: await dashboard() }, 201);
+    return c.json({ session, dashboard: await dashboard(userId) }, 201);
   });
 
   app.put(
@@ -122,30 +184,24 @@ export function createApp(deps: AppDeps) {
     zValidator('param', idParamSchema),
     zValidator('json', sessionInputSchema, validationHook),
     async (c) => {
+      const userId = c.get('user').id;
       const { id } = c.req.valid('param');
       if (!z.uuid().safeParse(id).success) return errorResponse(c, 404, 'NOT_FOUND', 'Not found');
       const session = await repo.update(userId, id, c.req.valid('json'));
       if (!session) return errorResponse(c, 404, 'NOT_FOUND', 'Session not found');
-      return c.json({ session, dashboard: await dashboard() });
+      return c.json({ session, dashboard: await dashboard(userId) });
     },
   );
 
   app.delete('/sessions/:id', zValidator('param', idParamSchema), async (c) => {
+    const userId = c.get('user').id;
     const { id } = c.req.valid('param');
     if (!z.uuid().safeParse(id).success) return errorResponse(c, 404, 'NOT_FOUND', 'Not found');
     if (!(await repo.remove(userId, id))) {
       return errorResponse(c, 404, 'NOT_FOUND', 'Session not found');
     }
-    return c.json({ dashboard: await dashboard() });
+    return c.json({ dashboard: await dashboard(userId) });
   });
-
-  if (deps.resetForTests) {
-    const reset = deps.resetForTests;
-    app.post('/__test__/reset', async (c) => {
-      await reset();
-      return c.json({ ok: true });
-    });
-  }
 
   return app;
 }

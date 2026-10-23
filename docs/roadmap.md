@@ -3,7 +3,7 @@
 | Iteration | Name                                 | Status          |
 | --------- | ------------------------------------ | --------------- |
 | 1         | Core app                             | **In progress** |
-| 2         | Authentication (Google sign-in)      | Planned         |
+| 2         | Authentication (Google sign-in)      | **In progress** |
 | 3         | Admin (user approval and management) | Planned         |
 | 4         | Community (leaderboards)             | Planned         |
 | 5         | Interactive scores chart             | Planned         |
@@ -67,6 +67,7 @@ Goal: sign in with Google; each user only sees and changes their own data.
 
 - **Neon Auth** (managed Better Auth) with the Google provider. Development can use Neon's shared Google credentials; production uses our own Google Cloud OAuth client.
 - Sign-in screen; signed-out users are redirected to it. Sign-out in a profile menu.
+- A header on every screen greets the user by first name: **"Welcome, <first name>"** (first word of the profile's display name, which comes from Google on first sign-in; string in `i18n/en.ts`).
 - A `profiles` row is created on first sign-in (see `data-model.md`).
 - **Temporary safeguard until iteration 3:** only email addresses listed in `ADMIN_EMAILS` can sign in; anyone else sees "Access is not open yet". This prevents strangers from using the app before the approval flow exists. Iteration 3 replaces it with the pending/approval flow.
 - API middleware validates the session (cookie or JWT — confirm the mechanism in Neon Auth docs at the start of the iteration) and sets `userId`; every query is filtered by it.
@@ -75,6 +76,17 @@ Goal: sign in with Google; each user only sees and changes their own data.
   - integration: a user can never read, update or delete another user's sessions (expect 404);
   - E2E: a test-only sign-in (enabled only with `E2E=1`) so tests do not depend on Google.
 - Docs: `api.md` (auth, 401), `environments.md` (auth variables), `README.md` (Google OAuth setup), `decisions.md`.
+
+### Status (2026-10-23)
+
+Implemented on branch `feat/iteration-2-auth`: Neon Auth on the `dev` branch, sign-in (verified in Chrome and Safari), API authentication and per-user data, profiles, `db:assign-owner` (run on `dev`), web screens, tests. Pending before production: see "Known limitations and pending work" below.
+
+### Known limitations and pending work
+
+- **Production:** enable Neon Auth on the `main` branch, own Google OAuth client (README 4.7), disable email & password, add the domain; run `pnpm db:migrate` then, after the owner's first sign-in, `pnpm db:assign-owner` on `main`.
+- **Vercel:** `/auth/*` must be rewritten to the Neon Auth URL of the right branch. A static `vercel.json` rewrite cannot vary per environment, and the existing `/api/*` rewrite already points previews at the production API. Decide at deploy time (for example one Vercel project that serves the web app and the API together).
+- **Sign-in on the local network** (`pnpm dev:host` on a phone) does not work: the session cookie is `Secure` (HTTPS or `localhost` only).
+- The display name can be changed through the API (`PUT /api/me/profile`) but there is no screen for it yet.
 
 ---
 

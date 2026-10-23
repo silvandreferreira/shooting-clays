@@ -1,23 +1,23 @@
 # Data model
 
-> Status: **iteration 1 — implemented** (not yet deployed). The source of truth is the Drizzle schema in `apps/api/src/db/schema.ts`; this document must always match it.
+> Status: **iterations 1–2 — implemented** (not yet deployed). The source of truth is the Drizzle schema in `apps/api/src/db/schema.ts`; this document must always match it.
 
 ## Table `sessions`
 
 One row = one series of 25 targets.
 
-| Column            | Type          | Rules                                                                                          |
-| ----------------- | ------------- | ---------------------------------------------------------------------------------------------- |
-| `id`              | `uuid`        | PK, `default gen_random_uuid()`                                                                |
-| `user_id`         | `text`        | `not null`. Iteration 1: `'local'`. Iteration 2+: Neon Auth user id                            |
-| `date`            | `date`        | `not null`                                                                                     |
-| `discipline`      | `text`        | `not null`; allowed values in `packages/shared/src/disciplines.ts`                             |
-| `score`           | `smallint`    | `not null`, `check (score between 0 and 25)`                                                   |
-| `hardest_targets` | `text[]`      | `not null default '{}'`; letters `A`–`F` only; empty when the discipline has no target letters |
-| `notes`           | `text`        | nullable; max 1000 characters (validated by the API)                                           |
-| `import_key`      | `text`        | `unique`, nullable; set only for imported history, makes the import idempotent                 |
-| `created_at`      | `timestamptz` | `not null default now()`                                                                       |
-| `updated_at`      | `timestamptz` | `not null default now()`; updated on every change                                              |
+| Column            | Type          | Rules                                                                                                                                                                  |
+| ----------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`              | `uuid`        | PK, `default gen_random_uuid()`                                                                                                                                        |
+| `user_id`         | `text`        | `not null`, references `profiles.user_id` (`on delete cascade`). Neon Auth user id; `'local'` for sessions logged before iteration 2 until `pnpm db:assign-owner` runs |
+| `date`            | `date`        | `not null`                                                                                                                                                             |
+| `discipline`      | `text`        | `not null`; allowed values in `packages/shared/src/disciplines.ts`                                                                                                     |
+| `score`           | `smallint`    | `not null`, `check (score between 0 and 25)`                                                                                                                           |
+| `hardest_targets` | `text[]`      | `not null default '{}'`; letters `A`–`F` only; empty when the discipline has no target letters                                                                         |
+| `notes`           | `text`        | nullable; max 1000 characters (validated by the API)                                                                                                                   |
+| `import_key`      | `text`        | `unique`, nullable; set only for imported history, makes the import idempotent                                                                                         |
+| `created_at`      | `timestamptz` | `not null default now()`                                                                                                                                               |
+| `updated_at`      | `timestamptz` | `not null default now()`; updated on every change                                                                                                                      |
 
 Indexes: `(user_id, date)`; from iteration 4 also `(discipline, date)`.
 
@@ -37,11 +37,17 @@ Indexes: `(user_id, date)`; from iteration 4 also `(discipline, date)`.
 
 The email address is not stored here. It is read from Neon Auth's user data and exposed **only** to admins (`/api/admin/users`), never to other users.
 
-From iteration 2, `sessions.user_id` references `profiles.user_id` with `on delete cascade`, so removing a profile removes all of its sessions (iteration 3 "Remove").
+Iteration 2 implements `user_id`, `display_name`, `avatar_url`, `created_at`, `updated_at`; the other columns arrive with their iterations. A profile is created on the user's first authenticated API request (name and photo from Google); later changes by the user are never overwritten.
+
+`sessions.user_id` references `profiles.user_id` with `on delete cascade`, so removing a profile removes all of its sessions (iteration 3 "Remove").
+
+### Sessions from before sign-in existed (`'local'`)
+
+Migration `0001` gives existing `'local'` sessions a placeholder profile (`user_id = 'local'`) so the foreign key holds. After the owner (first address in `ADMIN_EMAILS`) has signed in once in that environment, `pnpm db:assign-owner` moves those sessions to the owner and deletes the placeholder. Re-running it changes nothing. Done on the Neon `dev` branch on 2026-10-23 (48 sessions).
 
 ## Import of existing history
 
-Script: `apps/api/scripts/import-csv.ts` (`pnpm db:import`), writes to the database in `DATABASE_URL`.
+Script: `apps/api/scripts/import-csv.ts` (`pnpm db:import`), writes to the database in `DATABASE_URL`, **for the owner** (first address in `ADMIN_EMAILS`), who must have signed in once in that environment.
 
 Source: `data/clays-results.csv` — columns `Data, Modalidade, Resultado X/25, Gramas, Chumbo, Marca, Observações, Pratos mais exigentes`; dates like `26-Sep-2026`; some quoted fields contain line breaks (use a real CSV parser).
 
@@ -60,6 +66,7 @@ Source: `data/clays-results.csv` — columns `Data, Modalidade, Resultado X/25, 
 
 Generate with `pnpm db:generate` (Drizzle Kit; add `-- --name <description>` for a readable file name), apply with `pnpm db:migrate` (`apps/api/scripts/migrate.ts`, Drizzle migrator over the Neon HTTP driver). Tests and E2E apply the same migrations to PGlite. Stored in `apps/api/drizzle/` and committed. Production migrations must be backward compatible and applied **before** merging the code that needs them (see `README.md` → "Deploying").
 
-| #    | Date       | Description                                                                        |
-| ---- | ---------- | ---------------------------------------------------------------------------------- |
-| 0000 | 2026-10-23 | `0000_create_sessions.sql`: table `sessions`, index `(user_id, date)`, score check |
+| #    | Date       | Description                                                                                                                                  |
+| ---- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0000 | 2026-10-23 | `0000_create_sessions.sql`: table `sessions`, index `(user_id, date)`, score check                                                           |
+| 0001 | 2026-10-23 | `0001_create_profiles.sql`: table `profiles`; placeholder profile for `'local'` sessions; FK `sessions.user_id → profiles.user_id` (cascade) |

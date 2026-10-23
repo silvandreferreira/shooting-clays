@@ -1,4 +1,12 @@
-import type { Dashboard, Session, SessionInput, SessionsQuery } from '@shooting-clays/shared';
+import type {
+  Dashboard,
+  Profile,
+  ProfileUpdate,
+  Session,
+  SessionInput,
+  SessionsQuery,
+} from '@shooting-clays/shared';
+import { clearApiToken, getApiToken } from './auth';
 
 export class ApiError extends Error {
   constructor(
@@ -10,11 +18,26 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`/api${path}`, {
+async function send(path: string, init: RequestInit | undefined) {
+  const token = await getApiToken();
+  if (!token) throw new ApiError(401, 'UNAUTHENTICATED', 'Sign in required');
+  return fetch(`/api${path}`, {
     ...init,
-    headers: { 'Content-Type': 'application/json', ...init?.headers },
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      ...init?.headers,
+    },
   });
+}
+
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  let res = await send(path, init);
+  if (res.status === 401) {
+    // The cached JWT may have expired early (e.g. clock skew): fetch a fresh one and retry once.
+    clearApiToken();
+    res = await send(path, init);
+  }
   const body = (await res.json().catch(() => null)) as
     (T & { error?: { code: string; message: string } }) | null;
   if (!res.ok) {
@@ -33,6 +56,9 @@ export interface SessionMutationResult {
 }
 
 export const api = {
+  profile: () => request<Profile>('/me/profile'),
+  updateProfile: (update: ProfileUpdate) =>
+    request<Profile>('/me/profile', { method: 'PUT', body: JSON.stringify(update) }),
   dashboard: () => request<Dashboard>('/dashboard'),
   sessions: (query: SessionsQuery = {}) => {
     const params = new URLSearchParams(

@@ -55,3 +55,23 @@ export interface Session extends SessionData {
   createdAt: string;
   updatedAt: string;
 }
+
+export const MAX_DISPLAY_NAME_LENGTH = 50;
+
+export const profileUpdateSchema = z.object({
+  displayName: z
+    .string()
+    .trim()
+    .min(1, { error: 'displayName is required' })
+    .max(MAX_DISPLAY_NAME_LENGTH, {
+      error: `displayName must be at most ${MAX_DISPLAY_NAME_LENGTH} characters`,
+    }),
+});
+
+export type ProfileUpdate = z.infer<typeof profileUpdateSchema>;
+
+export interface Profile {
+  displayName: string;
+  avatarUrl: string | null;
+  email: string;
+}

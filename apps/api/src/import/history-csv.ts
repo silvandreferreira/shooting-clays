@@ -1,10 +1,9 @@
-import { LOCAL_USER_ID } from '../config';
 import type { DisciplineKey } from '@shooting-clays/shared';
 import { parse } from 'csv-parse/sync';
 import { createHash } from 'node:crypto';
 import { sql } from 'drizzle-orm';
 import type { Db } from '../db/client';
-import { sessions } from '../db/schema';
+import { profiles, sessions } from '../db/schema';
 
 export interface HistoryRow {
   date: string;
@@ -76,8 +75,11 @@ export function parseHistoryCsv(text: string): HistoryRow[] {
   });
 }
 
-/** Inserts the rows; rows already imported (same import_key) are skipped. Returns rows inserted. */
-export async function importHistory(db: Db, rows: HistoryRow[], userId = LOCAL_USER_ID) {
+/**
+ * Inserts the rows for `userId` (whose profile must exist); rows already imported (same
+ * import_key) are skipped. Returns rows inserted.
+ */
+export async function importHistory(db: Db, rows: HistoryRow[], userId: string) {
   if (rows.length === 0) return 0;
   const inserted = await db
     .insert(sessions)
@@ -87,8 +89,13 @@ export async function importHistory(db: Db, rows: HistoryRow[], userId = LOCAL_U
   return inserted.length;
 }
 
-/** E2E only: empties the table and re-imports the history. */
-export async function resetToHistory(db: Db, rows: HistoryRow[]) {
-  await db.execute(sql`truncate table ${sessions}`);
-  return importHistory(db, rows);
+/** Tests and E2E only: empties both tables and imports the history for the given owner. */
+export async function resetToHistory(
+  db: Db,
+  rows: HistoryRow[],
+  owner: { id: string; displayName: string },
+) {
+  await db.execute(sql`truncate table ${sessions}, ${profiles}`);
+  await db.insert(profiles).values({ userId: owner.id, displayName: owner.displayName });
+  return importHistory(db, rows, owner.id);
 }
