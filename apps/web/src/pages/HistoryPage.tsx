@@ -2,7 +2,7 @@ import { DISCIPLINE_KEYS, type Session } from '@shooting-clays/shared';
 import { Link, useLocation, useSearchParams } from 'react-router';
 import { t } from '../i18n/en';
 import { disciplineColor } from '../lib/colors';
-import { formatDate } from '../lib/format';
+import { formatDate, formatList } from '../lib/format';
 import { useDeleteSession, useSessions } from '../lib/queries';
 
 function SessionItem({ session }: { session: Session }) {
@@ -35,9 +35,9 @@ function SessionItem({ session }: { session: Session }) {
         </p>
       </div>
       {session.hardestTargets.length > 0 && (
-        <p className="mt-2 text-sm">
+        <p className="mt-2 text-sm" data-testid="hardest-targets">
           <span className="text-ink-muted">{t.form.hardestTargets}: </span>
-          {session.hardestTargets.join(', ')}
+          {formatList(session.hardestTargets)}
         </p>
       )}
       {session.notes && <p className="mt-2 text-sm whitespace-pre-line">{session.notes}</p>}

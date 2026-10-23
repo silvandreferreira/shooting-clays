@@ -52,7 +52,6 @@ Tests:
 
 Product:
 
-- Hardest-target counts (A–F) chart (_nice to have_ in `product.md`) is not implemented.
 - No offline queue: saving without a connection fails and keeps the form filled in (out of scope, see `product.md`).
 - Imported history has no hardest targets (A–F); the old free text is kept in the notes, in Portuguese (`data-model.md` → Import).
 - History loads every session at once (no pagination) and the edit screen finds the session in that list. Fine for hundreds of sessions; revisit if the history grows a lot.

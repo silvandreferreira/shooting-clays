@@ -15,6 +15,11 @@ const shortDateFormat = new Intl.DateTimeFormat('en-GB', {
   timeZone: 'UTC',
 });
 
+const listFormat = new Intl.ListFormat('en-GB', { style: 'long', type: 'conjunction' });
+
+/** ["A", "C", "F"] → "A, C and F" */
+export const formatList = (items: readonly string[]) => listFormat.format(items);
+
 /** "2026-10-23" → "23 Oct 2026" (dates are calendar days, formatted without time zone shifts). */
 export const formatDate = (iso: string) => dateFormat.format(new Date(`${iso}T00:00:00Z`));
 

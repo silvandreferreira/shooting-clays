@@ -53,18 +53,17 @@ Charts:
 - Card per discipline: average highlighted, min / max, series count, small trend line.
 - Line chart of scores over time per discipline for the selected period.
 - Bar chart comparing averages across disciplines.
-- _(nice to have, not implemented yet)_ Hardest-target counts (A–F) for Compak Sporting and Sporting.
 
 ## Screens (mobile-first)
 
-| Route          | Screen       | Content                                                                                                                                                                                     |
-| -------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`            | Dashboard    | Period switcher (All time · Last month · This month), discipline cards, charts                                                                                                              |
-| `/add`         | Add session  | Date, discipline (large buttons), score stepper 0–25, A–F checkboxes (**only** for disciplines with target letters; cleared when switching discipline), notes, **Save** → back to Dashboard |
-| `/history`     | History      | List (newest first) with discipline filter (kept in the URL: `?discipline=`); edit and delete (with confirmation)                                                                           |
-| `/history/:id` | Edit session | Same form as Add, pre-filled; **Save** → back to History with the same filter                                                                                                               |
-| `/community`   | Community    | Iteration 3 — see `roadmap.md`                                                                                                                                                              |
-| `/admin`       | Admin        | Iteration 4, admins only — see `roadmap.md`                                                                                                                                                 |
+| Route          | Screen       | Content                                                                                                                                                                                                                    |
+| -------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`            | Dashboard    | Period switcher (All time · Last month · This month), discipline cards, charts                                                                                                                                             |
+| `/add`         | Add session  | Date, discipline (large buttons), score stepper 0–25, A–F checkboxes (**only** for disciplines with target letters; cleared when switching discipline), notes, **Save** → back to Dashboard                                |
+| `/history`     | History      | List (newest first) with discipline filter (kept in the URL: `?discipline=`); each item shows date, discipline, score, **Hardest targets: A, C and F** (only when recorded) and notes; edit and delete (with confirmation) |
+| `/history/:id` | Edit session | Same form as Add, pre-filled; **Save** → back to History with the same filter                                                                                                                                              |
+| `/community`   | Community    | Iteration 3 — see `roadmap.md`                                                                                                                                                                                             |
+| `/admin`       | Admin        | Iteration 4, admins only — see `roadmap.md`                                                                                                                                                                                |
 
 UI requirements: touch targets ≥ 44 px, readable in sunlight (high contrast), one-handed use, dark mode, installable as a PWA.
 

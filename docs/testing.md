@@ -64,6 +64,7 @@ Keep this table up to date: every row maps to at least one test.
 | R9  | Visual baselines for Dashboard and Add (phone + desktop)                                | `visual.spec.ts`           | active¹ |
 | R10 | No serious accessibility violations                                                     | `a11y.spec.ts`             | active  |
 | R11 | `/api/__test__/reset` does not exist outside E2E mode                                   | API integration test       | active  |
+| R12 | History shows hardest targets as "A, C and F", only when recorded                       | `history.spec.ts`          | active  |
 | S1  | Production: `/api/health` ok, dashboard loads, navigation works                         | `smoke.spec.ts` (`@smoke`) | active  |
 
 ¹ R9 runs only on Linux (CI) and is skipped until the "Update snapshots" workflow has created the baselines.

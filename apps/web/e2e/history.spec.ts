@@ -28,3 +28,21 @@ test('R8: editing and deleting in History updates the dashboard', async ({ page 
   await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
   await expect(card(page, 'Helice')).toHaveCount(0);
 });
+
+test('R12: History shows hardest targets as "A, C and F", only when recorded', async ({ page }) => {
+  await page.goto('/add');
+  await page.getByText('Compak Sporting', { exact: true }).click();
+  const targets = page.getByRole('group', { name: 'Hardest targets' });
+  for (const letter of ['F', 'A', 'C']) await targets.getByText(letter, { exact: true }).click();
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page).toHaveURL('/');
+
+  await page.getByRole('link', { name: 'History' }).click();
+  const newest = page.getByTestId('session-item').first();
+  await expect(newest.getByTestId('hardest-targets')).toHaveText('Hardest targets: A, C and F');
+
+  // Sessions without hardest targets (e.g. imported history, Fosso) have no label.
+  await page.getByRole('combobox', { name: 'Discipline' }).selectOption({ label: 'Fosso' });
+  await expect(page.getByTestId('session-item').first()).toBeVisible();
+  await expect(page.getByTestId('hardest-targets')).toHaveCount(0);
+});

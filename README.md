@@ -227,7 +227,7 @@ Sanity check: the dashboard under "All time" should show Compak Sporting 16 / 8 
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Dashboard** (`/`)      | Choose **All time**, **Last month** or **This month**. Each discipline you have shot has a card: average (large), min, max and number of series; "—" means no series in that period. Below: scores over time (tap a point for details) and the average per discipline. |
 | **Add** (`/add`)         | Date (today by default), discipline, score with **−**/**+** or typed (0–25), hardest targets A–F (only Compak Sporting and Sporting), notes. **Save** returns to the dashboard, already updated. If saving fails, the form keeps what you typed and shows an error.    |
-| **History** (`/history`) | Every series, newest first. Filter by discipline. **Edit** opens the same form pre-filled; **Delete** asks for confirmation. Both update the dashboard.                                                                                                                |
+| **History** (`/history`) | Every series, newest first, with its hardest targets (e.g. "Hardest targets: A, C and F", hidden when none were recorded) and notes. Filter by discipline. **Edit** opens the same form pre-filled; **Delete** asks for confirmation. Both update the dashboard.       |
 
 - **Offline / slow network:** the dashboard opens instantly from the copy stored in the browser and refreshes in the background. Adding, editing and deleting need a connection.
 - **Install on the phone:** open the app in the browser, then _Share → Add to Home Screen_ (iPhone, Safari) or _⋮ → Install app_ (Android, Chrome).
@@ -329,7 +329,7 @@ main ──●──────────────────────
 ```bash
 git switch main
 git pull
-git switch -c feat/short-name        # e.g. feat/hardest-targets-chart
+git switch -c feat/short-name        # e.g. feat/history-search
 ```
 
 Branch prefixes: `feat/` (feature), `fix/` (bug fix), `docs/`, `test/`, `chore/` (maintenance).
@@ -347,7 +347,7 @@ Branch prefixes: `feat/` (feature), `fix/` (bug fix), `docs/`, `test/`, `chore/`
 ```bash
 pnpm test:all
 git add .
-git commit -m "feat: add hardest targets chart"
+git commit -m "feat: add history search"
 ```
 
 Message format: `type: short description in imperative mood` (`feat`, `fix`, `docs`, `test`, `refactor`, `chore`).
