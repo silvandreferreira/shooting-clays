@@ -10,6 +10,7 @@ permissions:
 jobs:
   update:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -19,7 +20,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium webkit
-      - run: pnpm --filter @shooting-clays/web exec playwright test e2e/visual.spec.ts --update-snapshots
+      - run: pnpm --filter @shooting-clays/web exec playwright test e2e/visual.spec.ts --update-snapshots=all
       - name: Commit baselines
         run: |
           git config user.name "github-actions[bot]"

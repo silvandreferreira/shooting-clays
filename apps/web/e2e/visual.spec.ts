@@ -8,7 +8,8 @@ test.skip(process.platform !== 'linux', 'Visual baselines are Linux-only (see do
 
 /** Until the "Update snapshots" workflow has created a baseline, there is nothing to compare. */
 function skipWithoutBaseline(testInfo: TestInfo, name: string) {
-  const updating = testInfo.config.updateSnapshots === 'all';
+  // `--update-snapshots` means 'changed' (or 'all'): then a missing baseline is written, not skipped.
+  const updating = ['all', 'changed'].includes(testInfo.config.updateSnapshots);
   test.skip(
     !updating && !existsSync(testInfo.snapshotPath(name)),
     `No baseline for ${name}: run the "Update snapshots" workflow`,
