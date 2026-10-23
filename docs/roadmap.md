@@ -6,6 +6,7 @@
 | 2         | Authentication (Google sign-in)      | Planned         |
 | 3         | Community (leaderboards)             | Planned         |
 | 4         | Admin (user approval and management) | Planned         |
+| 5         | Interactive scores chart             | Planned         |
 
 When an iteration starts, mark it "In progress"; when it ships, mark it "Done" with the date and update `changelog.md`.
 
@@ -189,3 +190,43 @@ See `api.md` → "Planned — iteration 4".
 ### Backlog ideas (not committed)
 
 Email the admin when someone new signs up; email the user when approved; admin view of a user's statistics.
+
+---
+
+## Iteration 5 — Interactive scores chart
+
+Goal: make the "Scores over time" chart on the Dashboard easier to read by choosing its time range and which disciplines it shows. Independent of iterations 2–4: it only touches the front end and can be done before them if preferred.
+
+### Time range
+
+- The chart gets **its own range selector**, above the chart: **3 months** (default) · **6 months** · **1 year** · **All time**.
+- The chart no longer follows the Dashboard period switcher (All time · Last month · This month); that switcher keeps controlling the cards and the "Average by discipline" chart.
+- Ranges are rolling and inclusive, counted back from the reference date in Europe/Lisbon: e.g. "3 months" on 2026-10-23 covers 2026-07-23 to 2026-10-23. When the earlier month is shorter (31 May − 3 months), use the last day of that month.
+- The range calculation lives in `packages/shared` and receives the reference date as a parameter (deterministic and unit-tested, like `stats.ts`).
+- If no discipline has scores in the selected range, show "No series in this period." instead of an empty chart.
+
+### Show/hide disciplines
+
+- The chart legend becomes a row of **toggle buttons**, one per discipline in the chart, each with the discipline's colour swatch and name.
+- **All disciplines are shown by default.** Tapping a legend item hides that discipline's line; tapping it again shows it.
+- A hidden discipline stays in the legend, visibly "off" (outlined/greyed swatch and struck-through name), so it is not shown by colour alone.
+- Buttons are accessible: `aria-pressed`, keyboard operable, touch targets ≥ 44 px.
+- Hiding a line does not change other lines' colours (colour follows the discipline) and does not change the Y axis (always 0–25).
+- If every discipline is hidden, the chart shows a short hint to tap a discipline to show it.
+- The selection is per visit (not persisted); opening the app again shows all disciplines and the 3-month range.
+
+### API and data
+
+No API change: `GET /api/dashboard` already returns every score per discipline in `series`; the front end filters it by range and visibility.
+
+### Tests
+
+- Unit (`packages/shared`): range boundaries (inclusive start, month-end clamping, year boundary), "All time" includes everything.
+- Component: legend toggles hide/show a line and update `aria-pressed`.
+- E2E (fixed date 2026-10-23, reference CSV): default range is 3 months (no points before 2026-07-23); switching to 6 months / 1 year / All time adds the older points (the first series, 2026-04-12, appears only from 1 year); hiding Compak Sporting removes its line and showing it again restores it; all visible after reload.
+- Visual baseline (R9) updated for the new Dashboard.
+- Accessibility (R10) still passes in light and dark mode.
+
+### Docs
+
+`product.md` (Charts), `testing.md` (new regression rows), `changelog.md`.

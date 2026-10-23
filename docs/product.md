@@ -51,7 +51,7 @@ Cards are shown only for disciplines with at least one session ever (all time); 
 Charts:
 
 - Card per discipline: average highlighted, min / max, series count, small trend line.
-- Line chart of scores over time per discipline for the selected period.
+- Line chart of scores over time per discipline for the selected period. _(Iteration 5 gives this chart its own range selector — 3 months by default, 6 months, 1 year, all time — and a legend that shows/hides each discipline; see `roadmap.md`.)_
 - Bar chart comparing averages across disciplines.
 
 ## Screens (mobile-first)
