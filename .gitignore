@@ -1,0 +1,15 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.*
+!.env.example
+.DS_Store
+*.log
+.vercel/
+playwright-report/
+test-results/
+blob-report/
+*.tsbuildinfo
+playwright-report-smoke/
+dev-dist/
