@@ -23,11 +23,14 @@ export function createQueryClient() {
   });
 }
 
+// Set on sign-out: a throttled write already scheduled must not bring the cache back.
+let writesBlocked = false;
+
 const persister = createAsyncStoragePersister({
   key: 'shooting-clays-cache',
   storage: {
     getItem: (key) => get<string>(key).then((v) => v ?? null),
-    setItem: (key, value: string) => set(key, value),
+    setItem: (key, value: string) => (writesBlocked ? Promise.resolve() : set(key, value)),
     removeItem: (key) => del(key),
   },
 });
@@ -37,11 +40,13 @@ const persister = createAsyncStoragePersister({
  * another account is discarded on restore instead of being shown.
  */
 export function persistOptionsFor(userId: string): Omit<PersistQueryClientOptions, 'queryClient'> {
+  writesBlocked = false;
   return { persister, maxAge: ONE_WEEK, buster: `${CACHE_BUSTER}:${userId}` };
 }
 
 /** Sign-out: forget everything cached in memory and on disk. */
 export async function clearCache(queryClient: QueryClient) {
+  writesBlocked = true;
   queryClient.clear();
   await persister.removeClient();
 }
