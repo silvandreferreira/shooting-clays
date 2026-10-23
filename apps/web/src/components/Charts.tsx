@@ -1,11 +1,11 @@
 import type { DisciplineKey, SeriesPoint } from '@shooting-clays/shared';
+import { useState } from 'react';
 import {
   Bar,
   BarChart,
   CartesianGrid,
   Cell,
   LabelList,
-  Legend,
   Line,
   LineChart,
   ResponsiveContainer,
@@ -69,6 +69,50 @@ export function toScoreRows(series: Partial<Record<DisciplineKey, SeriesPoint[]>
     }));
 }
 
+/**
+ * One toggle button per discipline: all shown by default; a tap hides or shows that line. A hidden
+ * discipline stays listed, greyed out with a dashed key and struck-through name, so its state is
+ * never told by colour alone. Keys mirror the mark (a short line).
+ */
+function DisciplineToggles({
+  disciplines,
+  hidden,
+  onToggle,
+}: {
+  disciplines: DisciplineKey[];
+  hidden: ReadonlySet<DisciplineKey>;
+  onToggle: (d: DisciplineKey) => void;
+}) {
+  return (
+    <div role="group" aria-label={t.dashboard.legendLabel} className="mt-2 flex flex-wrap gap-1">
+      {disciplines.map((d) => {
+        const shown = !hidden.has(d);
+        return (
+          <button
+            key={d}
+            type="button"
+            aria-pressed={shown}
+            onClick={() => onToggle(d)}
+            className={`flex min-h-11 items-center gap-2 rounded-lg px-3 text-sm font-semibold ${
+              shown ? 'text-ink' : 'text-ink-muted line-through opacity-60'
+            }`}
+          >
+            <span
+              aria-hidden
+              className="h-0 w-4 border-t-2"
+              style={{
+                borderColor: shown ? disciplineColor(d) : 'var(--color-ink-muted)',
+                borderStyle: shown ? 'solid' : 'dashed',
+              }}
+            />
+            {t.disciplines[d]}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export function ScoresChart({
   series,
   sample = false,
@@ -76,66 +120,76 @@ export function ScoresChart({
   series: Partial<Record<DisciplineKey, SeriesPoint[]>>;
   sample?: boolean;
 }) {
+  const [hidden, setHidden] = useState<ReadonlySet<DisciplineKey>>(new Set());
   const disciplines = (Object.keys(series) as DisciplineKey[]).filter((k) => series[k]?.length);
+  const visible = disciplines.filter((d) => !hidden.has(d));
   const rows = toScoreRows(series);
+  const toggle = (d: DisciplineKey) =>
+    setHidden((current) => {
+      const next = new Set(current);
+      if (!next.delete(d)) next.add(d);
+      return next;
+    });
   return (
     <ChartCard title={t.dashboard.scoresChart} sample={sample}>
       {rows.length === 0 ? (
         <p className="text-ink-muted">{t.dashboard.noChartData}</p>
       ) : (
-        <div className="h-64" role="img" aria-label={t.dashboard.scoresChart}>
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: -20 }}>
-              <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
-              <XAxis
-                dataKey="date"
-                tickFormatter={formatShortDate}
-                tick={axisTick}
-                stroke="var(--color-line)"
-                minTickGap={24}
-              />
-              <YAxis
-                domain={[0, 25]}
-                ticks={[0, 5, 10, 15, 20, 25]}
-                tick={axisTick}
-                stroke="var(--color-line)"
-              />
-              <Tooltip
-                contentStyle={tooltipStyle}
-                labelFormatter={(d) => formatShortDate(String(d))}
-                formatter={(value, name) => [value, t.disciplines[name as DisciplineKey]]}
-              />
-              {disciplines.length > 1 && (
-                <Legend
-                  formatter={(name: string) => (
-                    // Legend text uses the ink colour; the swatch carries the series colour.
-                    <span style={{ color: 'var(--color-ink)' }}>
-                      {t.disciplines[name as DisciplineKey]}
-                    </span>
-                  )}
-                />
-              )}
-              {disciplines.map((d) => (
-                <Line
-                  key={d}
-                  type="monotone"
-                  dataKey={d}
-                  stroke={disciplineColor(d)}
-                  strokeWidth={2}
-                  dot={{
-                    r: 4,
-                    strokeWidth: 2,
-                    stroke: 'var(--color-card)',
-                    fill: disciplineColor(d),
-                  }}
-                  activeDot={{ r: 6 }}
-                  connectNulls
-                  isAnimationActive={false}
-                />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+        <>
+          {visible.length === 0 ? (
+            <p className="flex h-64 items-center justify-center text-center text-ink-muted">
+              {t.dashboard.allHidden}
+            </p>
+          ) : (
+            <div className="h-64" role="img" aria-label={t.dashboard.scoresChart}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: -20 }}>
+                  <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
+                  <XAxis
+                    dataKey="date"
+                    tickFormatter={formatShortDate}
+                    tick={axisTick}
+                    stroke="var(--color-line)"
+                    minTickGap={24}
+                  />
+                  <YAxis
+                    domain={[0, 25]}
+                    ticks={[0, 5, 10, 15, 20, 25]}
+                    tick={axisTick}
+                    stroke="var(--color-line)"
+                  />
+                  <Tooltip
+                    contentStyle={tooltipStyle}
+                    labelFormatter={(d) => formatShortDate(String(d))}
+                    formatter={(value, name) => [value, t.disciplines[name as DisciplineKey]]}
+                  />
+                  {/* Hidden lines are left out; colours follow the discipline, the Y axis stays 0–25. */}
+                  {visible.map((d) => (
+                    <Line
+                      key={d}
+                      type="monotone"
+                      dataKey={d}
+                      stroke={disciplineColor(d)}
+                      strokeWidth={2}
+                      dot={{
+                        r: 4,
+                        strokeWidth: 2,
+                        stroke: 'var(--color-card)',
+                        fill: disciplineColor(d),
+                      }}
+                      activeDot={{ r: 6 }}
+                      connectNulls
+                      isAnimationActive={false}
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+          {disciplines.length > 1 && (
+            <DisciplineToggles disciplines={disciplines} hidden={hidden} onToggle={toggle} />
+          )}
+        </>
       )}
     </ChartCard>
   );

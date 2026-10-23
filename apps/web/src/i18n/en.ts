@@ -37,6 +37,8 @@ export const en = {
     scoresChart: 'Scores over time',
     averagesChart: 'Average by discipline',
     noChartData: 'No series in this period.',
+    legendLabel: 'Disciplines shown in the chart',
+    allHidden: 'All disciplines are hidden. Tap one below to show it.',
   },
   form: {
     addTitle: 'Add session',
