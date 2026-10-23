@@ -150,14 +150,19 @@ git clone https://github.com/<user>/shooting-clays.git
 cd shooting-clays
 ```
 
-### 4.2 Protect `main` on GitHub (recommended)
+### 4.2 Protect `main` on GitHub
 
-**GitHub → Settings → Branches → Add rule** for `main`:
+**Already configured** for this repository (2026-10-23). Branch protection needs a public repository or GitHub Pro, which is why the repository is public. In **GitHub → Settings → Branches**, `main` has:
 
-- ✅ _Require a pull request before merging_
-- ✅ _Require status checks to pass_ (select the CI jobs, including E2E)
+- ✅ _Require a pull request before merging_ (0 approvals: solo project)
+- ✅ _Require status checks to pass_: `Check (format, lint, types, tests) and build` and `E2E regression suite`
+- ✅ _Require branches to be up to date before merging_ (the checks must have run against the latest `main`)
+- ✅ _Do not allow bypassing the above settings_ (applies to admins too)
+- ✅ _Require linear history_; force pushes and deletion of `main` blocked
 
-Nothing reaches production without passing the tests.
+Merge settings: **squash merge only**, branches deleted after merge.
+
+Nothing reaches production without passing the tests. To recreate it with the GitHub CLI, see `docs/decisions.md` #37 and `gh api -X PUT repos/<owner>/shooting-clays/branches/main/protection`.
 
 ### 4.3 Database (Neon)
 
