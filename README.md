@@ -195,7 +195,7 @@ NEON_AUTH_URL=https://ep-....neonauth....neon.tech/neondb/auth
 ADMIN_EMAILS=you@example.com
 ```
 
-`ADMIN_EMAILS` are the Google accounts allowed to sign in (iteration 2); the first one owns the imported history.
+`ADMIN_EMAILS` are the admins' Google accounts (always active; everyone else waits for approval); the first one owns the imported history.
 
 > ⚠️ `.env` is **never** committed (it is in `.gitignore`).
 
@@ -231,8 +231,15 @@ One Vercel project serves everything: the web app as static files, and the API p
 
    `ENABLE_EXPERIMENTAL_COREPACK=1` makes Vercel use the pnpm version in `package.json` (`packageManager`). Observability variables come later (4.6).
 
-4. Deploy: merge into `main` (or `vercel --prod` once). The production URL is `https://shooting-clays.vercel.app`.
-5. Neon Console → branch `main` → **Auth → Configuration**: add the production domain under **Domains** (see 4.7).
+4. Let Vercel tell GitHub about deployments, so the production smoke tests run after each deploy (`.github/workflows/smoke.yml` listens for `vercel.deployment.success`). New projects have it off:
+
+   ```bash
+   echo '{"gitProviderOptions": {"disableRepositoryDispatchEvents": false}}' > /tmp/vercel-dispatch.json
+   vercel api /v9/projects/shooting-clays -X PATCH --input /tmp/vercel-dispatch.json
+   ```
+
+5. Deploy: merge into `main` (or `vercel --prod` once). The production URL is `https://shooting-clays.vercel.app`.
+6. Neon Console → branch `main` → **Auth → Configuration**: add the production domain under **Domains** (see 4.7).
 
 ### 4.6 Observability and alerts (after the first deploy)
 
@@ -276,12 +283,13 @@ Sanity check: the dashboard under "All time" should show Compak Sporting 16 / 8 
 
 ### Using the app
 
-| Screen                   | How to use it                                                                                                                                                                                                                                                                                |
-| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Sign in**              | **Sign in with Google**. Only the accounts in `ADMIN_EMAILS` get in for now; others see "Access is not open yet". The header then greets you ("Welcome, <first name>"); the round button with your photo opens the menu with **Sign out** (which also clears the data stored on the device). |
-| **Dashboard** (`/`)      | Choose **All time**, **Last month** or **This month**. Each discipline you have shot has a card: average (large), min, max and number of series; "—" means no series in that period. Below: scores over time (tap a point for details) and the average per discipline.                       |
-| **Add** (`/add`)         | Date (today by default), discipline, score with **−**/**+** or typed (0–25), hardest targets A–F (only Compak Sporting and Sporting), notes. **Save** returns to the dashboard, already updated. If saving fails, the form keeps what you typed and shows an error.                          |
-| **History** (`/history`) | Every series, newest first, with its hardest targets (e.g. "Hardest targets: A, C and F", hidden when none were recorded) and notes. Filter by discipline. **Edit** opens the same form pre-filled; **Delete** asks for confirmation. Both update the dashboard.                             |
+| Screen                   | How to use it                                                                                                                                                                                                                                                                                                                                                              |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Sign in**              | **Sign in with Google**. A new account waits for the admin's approval: it sees a preview with sample data, a banner and a disabled **Add**. A disabled account sees only "Your account is inactive". The header greets you ("Welcome, <first name>"); the round button with your photo opens the menu with **Sign out** (which also clears the data stored on the device). |
+| **Admin** (`/admin`)     | Admins only (`ADMIN_EMAILS`); the tab shows how many accounts wait for approval. Each user shows email, sign-up date, sessions and last activity. The switch approves (on) or disables (off) the account at once, with **Undo**. **Remove** deletes the account and all its data after you type the user's name. Admin accounts have no controls.                          |
+| **Dashboard** (`/`)      | Choose **All time**, **Last month** or **This month**. Each discipline you have shot has a card: average (large), min, max and number of series; "—" means no series in that period. Below: scores over time (tap a point for details) and the average per discipline.                                                                                                     |
+| **Add** (`/add`)         | Date (today by default), discipline, score with **−**/**+** or typed (0–25), hardest targets A–F (only Compak Sporting and Sporting), notes. **Save** returns to the dashboard, already updated. If saving fails, the form keeps what you typed and shows an error.                                                                                                        |
+| **History** (`/history`) | Every series, newest first, with its hardest targets (e.g. "Hardest targets: A, C and F", hidden when none were recorded) and notes. Filter by discipline. **Edit** opens the same form pre-filled; **Delete** asks for confirmation. Both update the dashboard.                                                                                                           |
 
 - **Offline / slow network:** the dashboard opens instantly from the copy stored in the browser and refreshes in the background. Adding, editing and deleting need a connection.
 - **Install on the phone:** open the app in the browser, then _Share → Add to Home Screen_ (iPhone, Safari) or _⋮ → Install app_ (Android, Chrome).

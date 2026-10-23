@@ -1,16 +1,28 @@
+import { ACCOUNT_STATUSES, ROLES } from '@shooting-clays/shared';
 import { sql } from 'drizzle-orm';
 import { check, index, pgTable, smallint, text, timestamp, uuid, date } from 'drizzle-orm/pg-core';
 
-export const profiles = pgTable('profiles', {
-  userId: text('user_id').primaryKey(),
-  displayName: text('display_name').notNull(),
-  avatarUrl: text('avatar_url'),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true })
-    .notNull()
-    .defaultNow()
-    .$onUpdate(() => new Date()),
-});
+export const profiles = pgTable(
+  'profiles',
+  {
+    userId: text('user_id').primaryKey(),
+    displayName: text('display_name').notNull(),
+    avatarUrl: text('avatar_url'),
+    role: text('role', { enum: ROLES }).notNull().default('user'),
+    status: text('status', { enum: ACCOUNT_STATUSES }).notNull().default('pending'),
+    /** Set whenever an admin changes the status. */
+    statusChangedAt: timestamp('status_changed_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [
+    check('profiles_role_values', sql`${t.role} in ('user', 'admin')`),
+    check('profiles_status_values', sql`${t.status} in ('pending', 'active', 'disabled')`),
+  ],
+);
 
 export type ProfileRow = typeof profiles.$inferSelect;
 

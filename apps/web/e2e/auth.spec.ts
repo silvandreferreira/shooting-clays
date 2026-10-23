@@ -1,4 +1,4 @@
-import { expect, expectCard, OTHER, OWNER, STRANGER, test } from './fixtures';
+import { expect, expectCard, OTHER, OWNER, test } from './fixtures';
 
 const CACHE_KEY = 'shooting-clays-cache';
 
@@ -40,21 +40,6 @@ test.describe('signed out', () => {
   });
 });
 
-test.describe('not allowed', () => {
-  test.use({ signedInAs: STRANGER });
-
-  test('R14: an email outside ADMIN_EMAILS sees "Access is not open yet" and can sign out', async ({
-    page,
-  }) => {
-    await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Access is not open yet' })).toBeVisible();
-    await expect(page.getByText(STRANGER.email)).toBeVisible();
-    await expect(page.getByRole('article')).toHaveCount(0);
-    await page.getByRole('button', { name: 'Sign out' }).click();
-    await expect(page.getByRole('button', { name: 'Sign in with Google' })).toBeVisible();
-  });
-});
-
 test('R15: the header greets the user by first name and signing out clears the cache', async ({
   page,
 }) => {
@@ -82,7 +67,7 @@ test("R16: switching account never shows the previous user's cached data", async
   await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
   await expect.poll(() => hasPersistedCache(page)).toBe(true);
 
-  // Another allowed user signs in on the same device, without the owner signing out first.
+  // Another (approved) user signs in on the same device, without the owner signing out first.
   auth.user = OTHER;
   await page.reload();
   await expect(page.getByTestId('welcome')).toHaveText('Welcome, Other');

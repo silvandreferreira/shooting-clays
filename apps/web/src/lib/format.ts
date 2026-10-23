@@ -1,3 +1,4 @@
+import { todayInLisbon } from '@shooting-clays/shared';
 import { t } from '../i18n/en';
 
 export const formatStat = (value: number | null) => (value === null ? t.noData : String(value));
@@ -25,3 +26,6 @@ export const formatDate = (iso: string) => dateFormat.format(new Date(`${iso}T00
 
 export const formatShortDate = (iso: string) =>
   shortDateFormat.format(new Date(`${iso}T00:00:00Z`));
+
+/** An instant ("2026-10-23T21:06:07Z") as its calendar day in Lisbon: "23 Oct 2026". */
+export const formatDay = (timestamp: string) => formatDate(todayInLisbon(new Date(timestamp)));

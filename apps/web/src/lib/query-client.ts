@@ -1,16 +1,27 @@
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
-import { QueryClient } from '@tanstack/react-query';
+import { QueryCache, QueryClient } from '@tanstack/react-query';
 import type { PersistQueryClientOptions } from '@tanstack/react-query-persist-client';
 import { del, get, set } from 'idb-keyval';
 import { ApiError } from './api';
 
 /** Bump whenever the shape of cached data changes, so old caches are discarded. */
-export const CACHE_BUSTER = 'v1';
+export const CACHE_BUSTER = 'v2';
 
 const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
 
 export function createQueryClient() {
-  return new QueryClient({
+  const queryClient: QueryClient = new QueryClient({
+    queryCache: new QueryCache({
+      // The account was put on hold or disabled since the app last checked: re-check it now.
+      onError: (error) => {
+        if (
+          error instanceof ApiError &&
+          (error.code === 'ACCOUNT_PENDING' || error.code === 'ACCOUNT_DISABLED')
+        ) {
+          void queryClient.invalidateQueries({ queryKey: ['me'] });
+        }
+      },
+    }),
     defaultOptions: {
       // Cached data must outlive the persister's maxAge, otherwise it is dropped on restore.
       queries: {
@@ -21,6 +32,7 @@ export function createQueryClient() {
       },
     },
   });
+  return queryClient;
 }
 
 // Set on sign-out: a throttled write already scheduled must not bring the cache back.

@@ -92,13 +92,18 @@ export async function importHistory(db: Db, rows: HistoryRow[], userId: string) 
   return inserted.length;
 }
 
-/** Tests and E2E only: empties both tables and imports the history for the given owner. */
+/**
+ * Tests and E2E only: empties both tables and imports the history for the given owner, an active
+ * admin.
+ */
 export async function resetToHistory(
   db: Db,
   rows: HistoryRow[],
   owner: { id: string; displayName: string },
 ) {
   await db.execute(sql`truncate table ${sessions}, ${profiles}`);
-  await db.insert(profiles).values({ userId: owner.id, displayName: owner.displayName });
+  await db
+    .insert(profiles)
+    .values({ userId: owner.id, displayName: owner.displayName, role: 'admin', status: 'active' });
   return importHistory(db, rows, owner.id);
 }

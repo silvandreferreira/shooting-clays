@@ -72,7 +72,7 @@ export async function createTestAuth() {
 
 export type TestAuth = Awaited<ReturnType<typeof createTestAuth>>;
 
-/** ADMIN_EMAILS → normalised list. Until iteration 3, only these emails may use the app. */
+/** ADMIN_EMAILS → normalised list. These users are always active admins. */
 export function parseAdminEmails(value: string | undefined): string[] {
   return (value ?? '')
     .split(',')

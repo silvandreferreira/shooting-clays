@@ -2,15 +2,17 @@ import {
   DISCIPLINE_KEYS,
   PERIODS,
   periodsForDate,
+  type Dashboard,
   type DisciplineKey,
   type Period,
 } from '@shooting-clays/shared';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { AveragesChart, ScoresChart } from '../components/Charts';
 import { DisciplineCard } from '../components/DisciplineCard';
 import { t } from '../i18n/en';
 import { useDashboard } from '../lib/queries';
+import { sampleDashboard } from '../lib/sample-dashboard';
 
 function PeriodSwitcher({ value, onChange }: { value: Period; onChange: (p: Period) => void }) {
   return (
@@ -37,7 +39,6 @@ function PeriodSwitcher({ value, onChange }: { value: Period; onChange: (p: Peri
 }
 
 export function DashboardPage() {
-  const [period, setPeriod] = useState<Period>('allTime');
   const { data, isPending, isError, refetch } = useDashboard();
 
   if (isPending) return <p className="py-8 text-center text-ink-muted">{t.dashboard.loading}</p>;
@@ -55,6 +56,18 @@ export function DashboardPage() {
       </div>
     );
   }
+
+  return <DashboardView data={data} />;
+}
+
+/** Pending account: the same dashboard with sample data from the front end (no API call). */
+export function SampleDashboardPage() {
+  const data = useMemo(() => sampleDashboard(), []);
+  return <DashboardView data={data} sample />;
+}
+
+function DashboardView({ data, sample = false }: { data: Dashboard; sample?: boolean }) {
+  const [period, setPeriod] = useState<Period>('allTime');
 
   // Cards for every discipline that has ever been shot; periods without data show "—".
   const disciplines = DISCIPLINE_KEYS.filter((k) => data.periods.allTime[k].count > 0);
@@ -84,11 +97,17 @@ export function DashboardPage() {
         <>
           <div className="grid gap-3 sm:grid-cols-2">
             {disciplines.map((k) => (
-              <DisciplineCard key={k} discipline={k} stats={stats[k]} points={series[k] ?? []} />
+              <DisciplineCard
+                key={k}
+                discipline={k}
+                stats={stats[k]}
+                points={series[k] ?? []}
+                sample={sample}
+              />
             ))}
           </div>
-          <ScoresChart series={series} />
-          <AveragesChart averages={averages} />
+          <ScoresChart series={series} sample={sample} />
+          <AveragesChart averages={averages} sample={sample} />
         </>
       )}
     </div>

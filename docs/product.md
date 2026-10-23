@@ -1,6 +1,6 @@
 # Product specification
 
-> Status: **iterations 1–2 — implemented** (not yet deployed). Keep this document in sync with the implementation.
+> Status: **iterations 1–3 — implemented**; iterations 1–2 in production. Keep this document in sync with the implementation.
 
 ## Goal
 
@@ -56,18 +56,18 @@ Charts:
 
 ## Screens (mobile-first)
 
-| Route           | Screen          | Content                                                                                                                                                                                                                    |
-| --------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| _(signed out)_  | Sign in         | App name, short description, **Sign in with Google**. Every route shows it while signed out                                                                                                                                |
-| _(not allowed)_ | Access not open | "Access is not open yet", the signed-in email and **Sign out** (iteration 2: email not in `ADMIN_EMAILS`)                                                                                                                  |
-| `/`             | Dashboard       | Period switcher (All time · Last month · This month), discipline cards, charts                                                                                                                                             |
-| `/add`          | Add session     | Date, discipline (large buttons), score stepper 0–25, A–F checkboxes (**only** for disciplines with target letters; cleared when switching discipline), notes, **Save** → back to Dashboard                                |
-| `/history`      | History         | List (newest first) with discipline filter (kept in the URL: `?discipline=`); each item shows date, discipline, score, **Hardest targets: A, C and F** (only when recorded) and notes; edit and delete (with confirmation) |
-| `/history/:id`  | Edit session    | Same form as Add, pre-filled; **Save** → back to History with the same filter                                                                                                                                              |
-| `/admin`        | Admin           | Iteration 3, admins only — see `roadmap.md`                                                                                                                                                                                |
-| `/community`    | Community       | Iteration 4 — see `roadmap.md`                                                                                                                                                                                             |
+| Route          | Screen           | Content                                                                                                                                                                                                                    |
+| -------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| _(signed out)_ | Sign in          | App name, short description, **Sign in with Google**. Every route shows it while signed out                                                                                                                                |
+| _(disabled)_   | Account inactive | "Your account is inactive. Contact the administrator if you think this is a mistake.", the signed-in email and **Sign out**; nothing else loads                                                                            |
+| `/`            | Dashboard        | Period switcher (All time · Last month · This month), discipline cards, charts                                                                                                                                             |
+| `/add`         | Add session      | Date, discipline (large buttons), score stepper 0–25, A–F checkboxes (**only** for disciplines with target letters; cleared when switching discipline), notes, **Save** → back to Dashboard                                |
+| `/history`     | History          | List (newest first) with discipline filter (kept in the URL: `?discipline=`); each item shows date, discipline, score, **Hardest targets: A, C and F** (only when recorded) and notes; edit and delete (with confirmation) |
+| `/history/:id` | Edit session     | Same form as Add, pre-filled; **Save** → back to History with the same filter                                                                                                                                              |
+| `/admin`       | Admin            | Admins only: user list (pending first) with email, sign-up date, sessions, last activity, status; switch to approve/disable (with undo); **Remove** after typing the name. Admin accounts have no controls                 |
+| `/community`   | Community        | Iteration 4 — see `roadmap.md`                                                                                                                                                                                             |
 
-Every signed-in screen has a header with **"Welcome, <first name>"** and an account button (Google photo, or the name's initial) that opens a menu with the email and **Sign out**.
+Every signed-in screen has a header with **"Welcome, <first name>"** and an account button (Google photo, or the name's initial) that opens a menu with the email and **Sign out**. Admins also get an **Admin** tab with a badge counting the accounts waiting for approval.
 
 UI requirements: touch targets ≥ 44 px, readable in sunlight (high contrast), one-handed use, dark mode, installable as a PWA.
 
@@ -86,4 +86,10 @@ The user can switch the interface between English and European Portuguese (accou
 
 ## Account states (iteration 3)
 
-From iteration 3 every signed-in user is `pending`, `active` or `disabled`. Pending users see a demo dashboard with sample data, an approval banner and a disabled Add button; disabled users see an "account inactive" notice. Full rules: `roadmap.md` → Iteration 3.
+Every signed-in user is `pending`, `active` or `disabled`; admins (`ADMIN_EMAILS`) are always active.
+
+- **Pending** (new account): approval banner on every screen, the dashboard with **sample data** built in the app (each card and chart labelled "Sample data"; no API call), **Add** visible but disabled (tapping explains why), no History.
+- **Disabled:** only the "account inactive" notice and Sign out; cached data is dropped from the device.
+- The app re-checks the account when it opens and when it regains focus, so approval applies without signing out.
+
+Full rules: `roadmap.md` → Iteration 3.

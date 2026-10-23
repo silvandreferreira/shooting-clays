@@ -1,6 +1,6 @@
 # Architecture
 
-> Status: **iterations 1–2 — implemented** (not yet deployed).
+> Status: **iterations 1–3 — implemented**; iterations 1–2 in production.
 
 ## Overview
 
@@ -45,7 +45,7 @@ shooting-clays/
 │  │  │  ├─ i18n/en.ts     # all UI strings
 │  │  │  ├─ lib/           # API client, queries, persisted query client, colours
 │  │  │  ├─ components/    # Layout, cards, charts, session form
-│  │  │  └─ pages/         # Dashboard, Add, Edit, History
+│  │  │  └─ pages/         # Dashboard (real and sample), Add, Edit, History, Admin, Inactive
 │  │  └─ e2e/              # Playwright tests (+ smoke.spec.ts for production)
 │  └─ api/                 # Hono API
 │     ├─ src/
@@ -122,7 +122,7 @@ Browser ──/api/* + Bearer JWT──► API ──verify with JWKS──► N
 - **Neon Auth** (managed Better Auth) holds users and sessions in the branch's `neon_auth` schema; each Neon branch has its own users and its own Auth URL (`NEON_AUTH_URL`). Only the Google provider is used.
 - **Same-origin proxy.** The browser talks to Neon Auth through `/auth/*` on our own origin, so the session cookie is first-party. The API forwards those requests to `NEON_AUTH_URL` (`apps/api/src/auth-proxy.ts`): on Vercel directly, in development through the Vite proxy. It drops our own hop headers (`x-forwarded-*`, `x-vercel-*`), never follows redirects and removes any cookie `Domain`. Talking to `*.neon.tech` directly would make it a third-party cookie, which Safari (ITP) blocks. Verified in Chrome and Safari on 2026-10-23.
 - **Google sign-in.** `signIn.social({ provider: 'google' })` → Google → Neon's callback → back to our origin with `?neon_auth_session_verifier=…`. On start, the app exchanges it for the session (`completeSignInRedirect()` in `apps/web/src/lib/auth.ts`) before rendering.
-- **API calls** carry `Authorization: Bearer <JWT>` from `authClient.token()` (15 minutes; cached and refreshed one minute before expiry; a 401 triggers one retry with a fresh token). The API verifies signature, issuer and expiry with `jose` against the JWKS (`apps/api/src/auth.ts`), then requires `emailVerified` and an email in `ADMIN_EMAILS`.
+- **API calls** carry `Authorization: Bearer <JWT>` from `authClient.token()` (15 minutes; cached and refreshed one minute before expiry; a 401 triggers one retry with a fresh token). The API verifies signature, issuer and expiry with `jose` against the JWKS (`apps/api/src/auth.ts`), then reads the user's profile (created `pending` on first sign-in) and applies the account status and role (iteration 3: pending/disabled → 403 except `GET /api/me`; verified `ADMIN_EMAILS` → active admin).
 - **Client:** the official `better-auth` client (`better-auth/react` + `jwtClient`); Neon's `@neondatabase/neon-js` SDK is still beta and pulls server-side dependencies.
 - **Per-user cache.** The persisted cache's `buster` includes the user id, so another account's cache is discarded instead of shown; signing out ends the session, blocks further cache writes (a throttled write may already be scheduled) and then deletes the cache. The last signed-in user is kept in `localStorage` (`shooting-clays-user`) only so the app can open offline from that user's cache; it is removed as soon as Neon Auth reports no session.
 - **Tests never touch Google or Neon Auth.** API tests and E2E mode sign tokens with a local Ed25519 key (`createTestAuth()`); in E2E, Playwright answers `/auth/*` like Neon Auth and fetches tokens from `/api/__test__/token`, so the real API verification path runs.
@@ -146,12 +146,13 @@ Browser ──/api/* + Bearer JWT──► API ──verify with JWKS──► N
 
 ## Caching
 
-| Query key                                          | Content                     | Freshness                                                                                                                                                                                                                        |
-| -------------------------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `['profile']`                                      | Display name, avatar, email | Fresh for 5 minutes; used for the header greeting                                                                                                                                                                                |
-| `['dashboard']`                                    | Statistics + chart series   | Fresh for 30 s (`DASHBOARD_FRESH_MS`): revalidated on app open (the restored cache is older) and always on window focus; data written by a mutation counts as fresh, so returning to the dashboard after saving makes no request |
-| `['sessions', filters]`                            | History list                | Revalidated when History opens                                                                                                                                                                                                   |
-| `['leaderboard', month, discipline]` (iteration 4) | Ranking                     | Stale after a few minutes                                                                                                                                                                                                        |
+| Query key                                          | Content                           | Freshness                                                                                                                                                                                                                        |
+| -------------------------------------------------- | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `['me']`                                           | Name, avatar, email, role, status | Always revalidated on app open and window focus: an approval or disable applies without signing out. A data request answered `ACCOUNT_PENDING`/`ACCOUNT_DISABLED` re-checks it too. Decides which screens are shown              |
+| `['admin', 'users']`                               | Admin's user list                 | Admins only; revalidated on open and focus; also drives the pending badge                                                                                                                                                        |
+| `['dashboard']`                                    | Statistics + chart series         | Fresh for 30 s (`DASHBOARD_FRESH_MS`): revalidated on app open (the restored cache is older) and always on window focus; data written by a mutation counts as fresh, so returning to the dashboard after saving makes no request |
+| `['sessions', filters]`                            | History list                      | Revalidated when History opens                                                                                                                                                                                                   |
+| `['leaderboard', month, discipline]` (iteration 4) | Ranking                           | Stale after a few minutes                                                                                                                                                                                                        |
 
 The persisted cache carries a version (`buster` = `CACHE_BUSTER:userId`); bump `CACHE_BUSTER` whenever the cached data shape changes.
 

@@ -16,6 +16,7 @@ import {
 import { t } from '../i18n/en';
 import { disciplineColor } from '../lib/colors';
 import { formatShortDate } from '../lib/format';
+import { SampleBadge } from './SampleBadge';
 
 const axisTick = { fill: 'var(--color-ink-muted)', fontSize: 12 };
 const tooltipStyle = {
@@ -25,10 +26,21 @@ const tooltipStyle = {
   color: 'var(--color-ink)',
 };
 
-function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
+function ChartCard({
+  title,
+  sample,
+  children,
+}: {
+  title: string;
+  sample: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <section className="rounded-2xl border border-line bg-card p-4 shadow-sm">
-      <h2 className="mb-3 text-base font-semibold">{title}</h2>
+      <h2 className="mb-3 flex items-center gap-2 text-base font-semibold">
+        {title}
+        {sample && <SampleBadge />}
+      </h2>
       {children}
     </section>
   );
@@ -57,11 +69,17 @@ export function toScoreRows(series: Partial<Record<DisciplineKey, SeriesPoint[]>
     }));
 }
 
-export function ScoresChart({ series }: { series: Partial<Record<DisciplineKey, SeriesPoint[]>> }) {
+export function ScoresChart({
+  series,
+  sample = false,
+}: {
+  series: Partial<Record<DisciplineKey, SeriesPoint[]>>;
+  sample?: boolean;
+}) {
   const disciplines = (Object.keys(series) as DisciplineKey[]).filter((k) => series[k]?.length);
   const rows = toScoreRows(series);
   return (
-    <ChartCard title={t.dashboard.scoresChart}>
+    <ChartCard title={t.dashboard.scoresChart} sample={sample}>
       {rows.length === 0 ? (
         <p className="text-ink-muted">{t.dashboard.noChartData}</p>
       ) : (
@@ -125,12 +143,14 @@ export function ScoresChart({ series }: { series: Partial<Record<DisciplineKey, 
 
 export function AveragesChart({
   averages,
+  sample = false,
 }: {
   averages: { discipline: DisciplineKey; avg: number }[];
+  sample?: boolean;
 }) {
   const rows = averages.map((a) => ({ ...a, name: t.disciplines[a.discipline] }));
   return (
-    <ChartCard title={t.dashboard.averagesChart}>
+    <ChartCard title={t.dashboard.averagesChart} sample={sample}>
       {rows.length === 0 ? (
         <p className="text-ink-muted">{t.dashboard.noChartData}</p>
       ) : (

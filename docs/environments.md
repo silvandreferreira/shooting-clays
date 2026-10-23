@@ -21,7 +21,7 @@
 | `VITE_SENTRY_DSN`   | web                       | empty                                                    | DSN                                                                                      | DSN                                |
 | `E2E`               | api                       | `1` only inside `pnpm test:e2e`                          | **never**                                                                                | **never**                          |
 | `NEON_AUTH_URL`     | api (`/auth` proxy, JWKS) | Neon Auth URL of the `dev` branch                        | Neon Auth URL of the `dev` branch                                                        | Neon Auth URL of the `main` branch |
-| `ADMIN_EMAILS`      | api, scripts              | your email (iteration 2+)                                | your email                                                                               | your email                         |
+| `ADMIN_EMAILS`      | api, scripts              | your email                                               | your email                                                                               | your email                         |
 | `APP_NOW`           | api                       | `2026-10-23` only inside `pnpm test:e2e`                 | **never**                                                                                | **never** (ignored in production)  |
 | `PORT`              | api (local)               | optional, default `3000` (`3100` inside `pnpm test:e2e`) | not used                                                                                 | not used                           |
 
@@ -29,9 +29,9 @@
 
 `NEON_AUTH_URL` is the branch's **Auth Base URL** (Neon Console → branch → Auth → Configuration, e.g. `https://ep-….neonauth.….neon.tech/neondb/auth`). Each Neon branch has its own users and its own URL. The API uses it to verify tokens (JWKS) and forwards `/auth/*` to it, so the session cookie is first-party (in development Vite passes `/auth/*` to the local API). The Google OAuth client credentials (production) are set in the Neon Console, not as variables here.
 
-In `pnpm test:e2e`, `ADMIN_EMAILS` is set to test addresses (`owner@example.test,other@example.test`) and no `NEON_AUTH_URL` is needed (local signing key).
+In `pnpm test:e2e`, `ADMIN_EMAILS` is set to `owner@example.test` and no `NEON_AUTH_URL` is needed (local signing key).
 
-`ADMIN_EMAILS` is a comma-separated list. Iteration 2: only these emails can sign in. Iteration 3: these users become admins automatically. Set it only in `.env` and Vercel — **never** commit real email addresses.
+`ADMIN_EMAILS` is a comma-separated list of the admins: on every request a verified email in this list is an active admin (iteration 3; in iteration 2 only these emails could sign in). The first one owns the imported history. Admin accounts cannot be disabled or removed from the admin screen; edit this variable instead. Set it only in `.env` and Vercel — **never** commit real email addresses.
 
 ### Vercel build setting
 

@@ -43,6 +43,7 @@ One JSON line per request:
 ```
 
 - **Never** log secrets (`DATABASE_URL`, tokens), cookies, email addresses or session notes.
+- Admin actions (iteration 3) add one line each, with ids only: `{ "action": "user_status_changed", "adminId", "status" }` and `{ "action": "user_removed", "adminId", "at" }` (the removed user is not identified).
 - Errors: `level: "error"` with message and stack, without request bodies.
 - Without a token (local, tests, E2E) logs go to the console only and the app works normally.
 - Implementation: `apps/api/src/logger.ts` (request middleware in `app.ts`). With `LOGS_SOURCE_TOKEN`, each line is also POSTed to Better Stack (`LOGS_INGEST_URL`), kept alive with `waitUntil` from `@vercel/functions`.

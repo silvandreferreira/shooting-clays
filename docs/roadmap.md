@@ -1,13 +1,13 @@
 # Roadmap
 
-| Iteration | Name                                 | Status          |
-| --------- | ------------------------------------ | --------------- |
-| 1         | Core app                             | **In progress** |
-| 2         | Authentication (Google sign-in)      | **In progress** |
-| 3         | Admin (user approval and management) | Planned         |
-| 4         | Community (leaderboards)             | Planned         |
-| 5         | Interactive scores chart             | Planned         |
-| 6         | Translations (English / Portuguese)  | Planned         |
+| Iteration | Name                                 | Status            |
+| --------- | ------------------------------------ | ----------------- |
+| 1         | Core app                             | Done (2026-10-23) |
+| 2         | Authentication (Google sign-in)      | Done (2026-10-23) |
+| 3         | Admin (user approval and management) | **In progress**   |
+| 4         | Community (leaderboards)             | Planned           |
+| 5         | Interactive scores chart             | Planned           |
+| 6         | Translations (English / Portuguese)  | Planned           |
 
 When an iteration starts, mark it "In progress"; when it ships, mark it "Done" with the date and update `changelog.md`.
 
@@ -78,12 +78,11 @@ Goal: sign in with Google; each user only sees and changes their own data.
 
 ### Status (2026-10-23)
 
-Implemented on branch `feat/iteration-2-auth`: Neon Auth on the `dev` branch, sign-in (verified in Chrome and Safari), API authentication and per-user data, profiles, `db:assign-owner` (run on `dev`), web screens, tests. Pending before production: see "Known limitations and pending work" below.
+In production since 2026-10-23 (https://shooting-clays.vercel.app): Neon Auth on `dev` and `main` (own Google OAuth client on `main`), sign-in verified in Chrome and Safari, API authentication and per-user data, profiles, `db:assign-owner` run on both branches. The `ADMIN_EMAILS` sign-in safeguard was replaced by account approval in iteration 3.
 
 ### Known limitations and pending work
 
-- **Production:** enable Neon Auth on the `main` branch, own Google OAuth client (README 4.7), disable email & password, add the domain; run `pnpm db:migrate` then, after the owner's first sign-in, `pnpm db:assign-owner` on `main`.
-- **Production setup done (2026-10-23):** Neon Auth on `main` with our own Google OAuth client (email & password off), migration 0001 and `db:assign-owner` on `main` (48 sessions). Vercel: one project (decision #46), README 4.5. Still pending: production domain in Neon Auth and turning off "Allow localhost" on `main`.
+- **Production setup (2026-10-23):** Neon Auth on `main` with our own Google OAuth client (email & password and "Allow localhost" off, domain `shooting-clays.vercel.app` trusted), migration 0001 and `db:assign-owner` on `main` (48 sessions). Vercel: one project (decision #46), README 4.5.
 - **Sign-in on preview deployments** needs each preview domain trusted by the `dev` branch's Neon Auth (README 4.7).
 - **Sign-in on the local network** (`pnpm dev:host` on a phone) does not work: the session cookie is `Secure` (HTTPS or `localhost` only).
 - The display name can be changed through the API (`PUT /api/me/profile`) but there is no screen for it yet.
@@ -141,13 +140,23 @@ Inside one database transaction: delete all the user's `sessions` and their `pro
 
 ### API
 
-See `api.md` → "Planned — iteration 3".
+See `api.md` (`/api/me`, `/api/admin/users`).
 
 ### Tests
 
 - Integration: pending/disabled users get 403 on every data endpoint; non-admins get 403 on `/api/admin/*`; toggling changes status; removal deletes every row for that user and nothing else; an admin cannot disable/remove themselves.
 - E2E: pending user sees the banner, sample data and a disabled Add button; disabled user sees the inactive notice; admin approves a user and that user then sees their real (empty) dashboard; admin removes a user after typing the name.
 - E2E mode provides test-only sign-in as a pending user, an active user and an admin.
+
+### Status (2026-10-23)
+
+Implemented on branch `feat/iteration-3-admin`: migration 0002 (applied to Neon `dev`), account states enforced in the API, `GET /api/me`, admin endpoints, pending/disabled screens, admin screen, tests R19–R23 (R14 retired). Decisions #47–#50.
+
+Notes:
+
+- Neon Auth users are removed with SQL in the same statement as our rows (decision #47), so removal is one transaction.
+- Admin accounts (`ADMIN_EMAILS`) cannot be disabled or removed from the admin screen, by anyone (decision #49).
+- Someone who signs in with Google but never reaches the API has no profile yet and is not listed; the app calls the API right after sign-in, so in practice everyone is listed.
 
 ### Backlog ideas (not committed)
 

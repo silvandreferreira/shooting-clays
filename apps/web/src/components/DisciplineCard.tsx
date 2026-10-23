@@ -3,14 +3,17 @@ import { Line, LineChart, ResponsiveContainer, YAxis } from 'recharts';
 import { t } from '../i18n/en';
 import { disciplineColor } from '../lib/colors';
 import { formatStat } from '../lib/format';
+import { SampleBadge } from './SampleBadge';
 
 interface Props {
   discipline: DisciplineKey;
   stats: PeriodStats;
   points: SeriesPoint[];
+  /** Sample data (pending account): labelled as such. */
+  sample?: boolean;
 }
 
-export function DisciplineCard({ discipline, stats, points }: Props) {
+export function DisciplineCard({ discipline, stats, points, sample = false }: Props) {
   const name = t.disciplines[discipline];
   return (
     <article
@@ -25,6 +28,7 @@ export function DisciplineCard({ discipline, stats, points }: Props) {
           style={{ background: disciplineColor(discipline) }}
         />
         {name}
+        {sample && <SampleBadge />}
       </h2>
       <div className="mt-2 flex items-end justify-between gap-4">
         <div>
