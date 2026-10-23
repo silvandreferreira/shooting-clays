@@ -217,6 +217,9 @@ One Vercel project serves everything: the web app as static files, and the API p
    vercel git connect
    ```
 
+   - The connection needs the **Vercel GitHub app** to have access to the repository (<https://github.com/apps/vercel/installations/new>); without it, `vercel link` creates the project but reports "Failed to connect".
+   - `vercel link` appends `.vercel` and `.env*` to `.gitignore` and writes `.env.local`. Revert the `.gitignore` change (`git checkout .gitignore`): `.env*` would hide `.env.example`, and `.env` and `.vercel/` are already ignored. Delete `.env.local` (not used).
+
 3. Environment variables (Vercel → project → Settings → Environment Variables, or `vercel env add <NAME> <production|preview>`):
 
    | Variable                       | Production                         | Preview                           |
