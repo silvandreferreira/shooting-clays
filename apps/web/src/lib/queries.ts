@@ -7,13 +7,17 @@ export const queryKeys = {
   sessions: (filters: SessionsQuery = {}) => ['sessions', filters] as const,
 };
 
+export const DASHBOARD_FRESH_MS = 30_000;
+
 export function useDashboard() {
   return useQuery({
     queryKey: queryKeys.dashboard,
     queryFn: api.dashboard,
-    // Always revalidate in the background; the persisted cache is shown meanwhile.
-    staleTime: 0,
-    refetchOnWindowFocus: true,
+    // Revalidate in the background when the app opens (the restored cache is older than this)
+    // and whenever the window regains focus. Data written by a mutation counts as fresh, so
+    // returning to the dashboard after saving makes no second request.
+    staleTime: DASHBOARD_FRESH_MS,
+    refetchOnWindowFocus: 'always',
   });
 }
 

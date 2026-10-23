@@ -127,11 +127,11 @@ Package manager: **pnpm workspaces**. TypeScript `strict` everywhere.
 
 ## Caching
 
-| Query key                                          | Content                   | Freshness                                |
-| -------------------------------------------------- | ------------------------- | ---------------------------------------- |
-| `['dashboard']`                                    | Statistics + chart series | Revalidated on app open and window focus |
-| `['sessions', filters]`                            | History list              | Revalidated when History opens           |
-| `['leaderboard', month, discipline]` (iteration 3) | Ranking                   | Stale after a few minutes                |
+| Query key                                          | Content                   | Freshness                                                                                                                                                                                                                        |
+| -------------------------------------------------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `['dashboard']`                                    | Statistics + chart series | Fresh for 30 s (`DASHBOARD_FRESH_MS`): revalidated on app open (the restored cache is older) and always on window focus; data written by a mutation counts as fresh, so returning to the dashboard after saving makes no request |
+| `['sessions', filters]`                            | History list              | Revalidated when History opens                                                                                                                                                                                                   |
+| `['leaderboard', month, discipline]` (iteration 3) | Ranking                   | Stale after a few minutes                                                                                                                                                                                                        |
 
 The persisted cache carries a version (`buster`); bump it whenever the cached data shape changes.
 

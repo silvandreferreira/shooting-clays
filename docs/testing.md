@@ -51,21 +51,21 @@ PROD_URL=https://<web-domain> pnpm --filter @shooting-clays/web test:smoke
 
 Keep this table up to date: every row maps to at least one test.
 
-| #   | Scenario                                                                                | File                       | Status  |
-| --- | --------------------------------------------------------------------------------------- | -------------------------- | ------- |
-| R1  | Dashboard shows the reference values for all 3 periods                                  | `dashboard.spec.ts`        | active  |
-| R2  | A period without data shows "—"                                                         | `dashboard.spec.ts`        | active  |
-| R3  | With the API down, the dashboard opens from the cache                                   | `cache.spec.ts`            | active  |
-| R4  | Adding a session updates the dashboard without a reload                                 | `add-session.spec.ts`      | active  |
-| R5  | A–F checkboxes only for Compak Sporting and Sporting; cleared when switching discipline | `add-session.spec.ts`      | active  |
-| R6  | Score outside 0–25 is rejected                                                          | `add-session.spec.ts`      | active  |
-| R7  | API error on save keeps the form filled in                                              | `add-session.spec.ts`      | active  |
-| R8  | Editing and deleting in History updates the dashboard                                   | `history.spec.ts`          | active  |
-| R9  | Visual baselines for Dashboard and Add (phone + desktop)                                | `visual.spec.ts`           | active¹ |
-| R10 | No serious accessibility violations                                                     | `a11y.spec.ts`             | active  |
-| R11 | `/api/__test__/reset` does not exist outside E2E mode                                   | API integration test       | active  |
-| R12 | History shows hardest targets as "A, C and F", only when recorded                       | `history.spec.ts`          | active  |
-| S1  | Production: `/api/health` ok, dashboard loads, navigation works                         | `smoke.spec.ts` (`@smoke`) | active  |
+| #   | Scenario                                                                                          | File                       | Status  |
+| --- | ------------------------------------------------------------------------------------------------- | -------------------------- | ------- |
+| R1  | Dashboard shows the reference values for all 3 periods                                            | `dashboard.spec.ts`        | active  |
+| R2  | A period without data shows "—"                                                                   | `dashboard.spec.ts`        | active  |
+| R3  | With the API down, the dashboard opens from the cache                                             | `cache.spec.ts`            | active  |
+| R4  | Adding a session updates the dashboard without a reload and without a second `GET /api/dashboard` | `add-session.spec.ts`      | active  |
+| R5  | A–F checkboxes only for Compak Sporting and Sporting; cleared when switching discipline           | `add-session.spec.ts`      | active  |
+| R6  | Score outside 0–25 is rejected                                                                    | `add-session.spec.ts`      | active  |
+| R7  | API error on save keeps the form filled in                                                        | `add-session.spec.ts`      | active  |
+| R8  | Editing and deleting in History updates the dashboard                                             | `history.spec.ts`          | active  |
+| R9  | Visual baselines for Dashboard and Add (phone + desktop)                                          | `visual.spec.ts`           | active¹ |
+| R10 | No serious accessibility violations, in light and dark mode                                       | `a11y.spec.ts`             | active  |
+| R11 | `/api/__test__/reset` does not exist outside E2E mode                                             | API integration test       | active  |
+| R12 | History shows hardest targets as "A, C and F", only when recorded                                 | `history.spec.ts`          | active  |
+| S1  | Production: `/api/health` ok, dashboard loads, navigation works                                   | `smoke.spec.ts` (`@smoke`) | active  |
 
 ¹ R9 runs only on Linux (CI) and is skipped until the "Update snapshots" workflow has created the baselines.
 

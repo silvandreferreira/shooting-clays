@@ -18,12 +18,19 @@ test('R4: adding a session updates the dashboard without a reload', async ({ pag
   );
   await page.getByRole('button', { name: 'Save' }).click();
   expect((await post).status()).toBe(201);
+  const dashboardRequests: string[] = [];
+  page.on('request', (r) => {
+    if (r.url().endsWith('/api/dashboard')) dashboardRequests.push(r.url());
+  });
 
   await expect(page).toHaveURL('/');
   await selectPeriod(page, 'This month');
   await expectCard(page, 'Compak Sporting', '17 / 13 / 25');
   await expect(card(page, 'Compak Sporting').getByTestId('count')).toHaveText('8');
   expect(await page.evaluate(() => (window as unknown as { marker?: number }).marker)).toBe(1);
+  // The POST response already carried the new dashboard: no second request.
+  await page.waitForLoadState('networkidle');
+  expect(dashboardRequests).toEqual([]);
 });
 
 test('R5: A–F only for Compak Sporting and Sporting, cleared when switching', async ({ page }) => {
