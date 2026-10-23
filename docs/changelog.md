@@ -4,6 +4,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Dashboard charts
+
+- **Added:** the scores chart legend is a row of toggle buttons: tap a discipline to hide or show its line (iteration 5, done early). E2E R24.
+- **Changed:** "Average by discipline" shows on each bar the average plus the lowest and highest score (whisker and "min–max" label), with a note under the chart and a tooltip listing all three. E2E R25.
+
+## 2026-10-23 — iteration 3 in production
+
 ### Iteration 3
 
 - **Added:** account states: new users are `pending` (approval banner, sample dashboard, Add disabled, no History), `active` or `disabled` ("Your account is inactive"); enforced by the API (`403 ACCOUNT_PENDING` / `ACCOUNT_DISABLED`); the app re-checks on open and focus.

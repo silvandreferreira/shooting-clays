@@ -1,6 +1,6 @@
 # Architecture
 
-> Status: **iterations 1–3 — implemented**; iterations 1–2 in production.
+> Status: **iterations 1–3 — implemented and in production**.
 
 ## Overview
 

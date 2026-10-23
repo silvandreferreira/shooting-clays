@@ -79,8 +79,8 @@ function DashboardView({ data, sample = false }: { data: Dashboard; sample?: boo
     ]),
   ) as Partial<Record<DisciplineKey, (typeof data.series)[DisciplineKey]>>;
   const averages = disciplines.flatMap((k) => {
-    const avg = stats[k].avg;
-    return avg === null ? [] : [{ discipline: k, avg }];
+    const { avg, min, max } = stats[k];
+    return avg === null || min === null || max === null ? [] : [{ discipline: k, avg, min, max }];
   });
 
   return (

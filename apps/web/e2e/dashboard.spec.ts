@@ -70,3 +70,18 @@ test('R24: tapping a discipline in the scores chart legend hides its line; tappi
   await page.reload();
   await expect(lines).toHaveCount(4);
 });
+
+test('R25: each bar of "Average by discipline" shows the average and the lowest–highest score', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const range = (d: string) => page.getByTestId(`range-${d}`);
+  await expect(range('compak')).toHaveText('168–23');
+  await expect(range('fosso')).toHaveText('105–16');
+  await expect(range('trap')).toHaveText('1715–19');
+  await expect(range('helice')).toHaveText('44–4');
+
+  await selectPeriod(page, 'This month');
+  await expect(range('compak')).toHaveText('1613–18');
+  await expect(range('fosso')).toHaveCount(0);
+});

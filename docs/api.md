@@ -1,6 +1,6 @@
 # REST API
 
-> Status: **iterations 1–3 — implemented**; iterations 1–2 in production. Keep in sync with `apps/api/src/app.ts`.
+> Status: **iterations 1–3 — implemented and in production**. Keep in sync with `apps/api/src/app.ts`.
 
 - Base path: `/api` (locally `http://localhost:3000/api`)
 - Format: JSON (`Content-Type: application/json`)

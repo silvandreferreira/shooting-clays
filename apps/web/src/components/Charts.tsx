@@ -195,11 +195,97 @@ export function ScoresChart({
   );
 }
 
+export interface AverageBar {
+  discipline: DisciplineKey;
+  avg: number;
+  min: number;
+  max: number;
+}
+
+interface BarLabelProps {
+  x?: number | string;
+  y?: number | string;
+  width?: number | string;
+  height?: number | string;
+  index?: number;
+}
+
+/**
+ * Drawn over each bar: the min–max range as a thin whisker, and above it the average (bold) with
+ * "min–max" underneath. Bar height is the average, so the whisker ends are placed with the same
+ * scale (pixels per point = bar height / average).
+ */
+function rangeLabel(rows: AverageBar[]) {
+  function RangeLabel(props: BarLabelProps) {
+    const row = rows[props.index ?? -1];
+    if (!row) return null;
+    const [x, y, width, height] = [props.x, props.y, props.width, props.height].map(Number) as [
+      number,
+      number,
+      number,
+      number,
+    ];
+    const base = y + height;
+    const perPoint = row.avg > 0 ? height / row.avg : 0;
+    const top = base - row.max * perPoint;
+    const bottom = base - row.min * perPoint;
+    const cx = x + width / 2;
+    const cap = Math.min(10, width / 2);
+    return (
+      <g data-testid={`range-${row.discipline}`}>
+        {row.max > row.min && (
+          <g stroke="var(--color-ink)" strokeWidth={1.5} strokeLinecap="round">
+            <line x1={cx} x2={cx} y1={top} y2={bottom} />
+            <line x1={cx - cap / 2} x2={cx + cap / 2} y1={top} y2={top} />
+            <line x1={cx - cap / 2} x2={cx + cap / 2} y1={bottom} y2={bottom} />
+          </g>
+        )}
+        <text
+          x={cx}
+          y={top - 20}
+          textAnchor="middle"
+          fill="var(--color-ink)"
+          fontSize={14}
+          fontWeight={700}
+        >
+          {row.avg}
+        </text>
+        <text x={cx} y={top - 6} textAnchor="middle" fill="var(--color-ink-muted)" fontSize={11}>
+          {t.dashboard.range(row.min, row.max)}
+        </text>
+      </g>
+    );
+  }
+  return RangeLabel;
+}
+
+function AverageTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: readonly { payload?: AverageBar & { name: string } }[];
+}) {
+  const row = payload?.[0]?.payload;
+  if (!active || !row) return null;
+  return (
+    <div style={tooltipStyle} className="px-3 py-2 text-sm">
+      <p className="font-semibold">{row.name}</p>
+      <p>
+        <strong>{row.avg}</strong> {t.dashboard.average.toLowerCase()}
+      </p>
+      <p className="text-ink-muted">
+        {t.dashboard.min} {row.min} · {t.dashboard.max} {row.max}
+      </p>
+    </div>
+  );
+}
+
 export function AveragesChart({
   averages,
   sample = false,
 }: {
-  averages: { discipline: DisciplineKey; avg: number }[];
+  averages: AverageBar[];
   sample?: boolean;
 }) {
   const rows = averages.map((a) => ({ ...a, name: t.disciplines[a.discipline] }));
@@ -208,41 +294,35 @@ export function AveragesChart({
       {rows.length === 0 ? (
         <p className="text-ink-muted">{t.dashboard.noChartData}</p>
       ) : (
-        <div className="h-56" role="img" aria-label={t.dashboard.averagesChart}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={rows}
-              margin={{ top: 20, right: 8, bottom: 0, left: -20 }}
-              barCategoryGap="30%"
-            >
-              <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
-              <XAxis dataKey="name" tick={axisTick} stroke="var(--color-line)" interval={0} />
-              <YAxis
-                domain={[0, 25]}
-                ticks={[0, 5, 10, 15, 20, 25]}
-                tick={axisTick}
-                stroke="var(--color-line)"
-              />
-              <Tooltip
-                cursor={{ fill: 'var(--chart-grid)' }}
-                contentStyle={tooltipStyle}
-                formatter={(value) => [value, t.dashboard.average]}
-              />
-              <Bar dataKey="avg" radius={[4, 4, 0, 0]} isAnimationActive={false}>
-                {rows.map((r) => (
-                  <Cell key={r.discipline} fill={disciplineColor(r.discipline)} />
-                ))}
-                <LabelList
-                  dataKey="avg"
-                  position="top"
-                  fill="var(--color-ink)"
-                  fontSize={13}
-                  fontWeight={600}
+        <>
+          <div className="h-64" role="img" aria-label={t.dashboard.averagesChart}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={rows}
+                // Room above the tallest whisker (a max of 25) for the two labels.
+                margin={{ top: 40, right: 8, bottom: 0, left: -20 }}
+                barCategoryGap="30%"
+              >
+                <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
+                <XAxis dataKey="name" tick={axisTick} stroke="var(--color-line)" interval={0} />
+                <YAxis
+                  domain={[0, 25]}
+                  ticks={[0, 5, 10, 15, 20, 25]}
+                  tick={axisTick}
+                  stroke="var(--color-line)"
                 />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+                <Tooltip cursor={{ fill: 'var(--chart-grid)' }} content={<AverageTooltip />} />
+                <Bar dataKey="avg" radius={[4, 4, 0, 0]} isAnimationActive={false}>
+                  {rows.map((r) => (
+                    <Cell key={r.discipline} fill={disciplineColor(r.discipline)} />
+                  ))}
+                  <LabelList dataKey="avg" content={rangeLabel(rows)} />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          <p className="mt-2 text-xs text-ink-muted">{t.dashboard.averagesKey}</p>
+        </>
       )}
     </ChartCard>
   );
