@@ -1,6 +1,6 @@
 # Observability and alerting
 
-> Status: **iteration 1 — implemented in code** (structured logger, health endpoints, Sentry SDK); the Better Stack account and monitors are set up after the first deploy. Tool: **Better Stack** (free plan for personal projects: uptime monitors, logs, error tracking and alerts by email/Slack).
+> Status: **implemented in code and in production** (structured logger, health endpoints, Sentry SDK; production smoke tests run automatically after each deploy since 2026-10-23). **Not set up yet:** the Better Stack account, monitors and log token, Sentry DSNs and `SMOKE_HEARTBEAT_URL` ("One-time setup" below), so logs only reach Vercel's 1-hour log view for now. Tool: **Better Stack** (free plan for personal projects: uptime monitors, logs, error tracking and alerts by email/Slack).
 
 ## Why Vercel and Neon alone are not enough
 

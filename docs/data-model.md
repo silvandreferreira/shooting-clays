@@ -1,6 +1,6 @@
 # Data model
 
-> Status: **iterations 1–3 — implemented**; iterations 1–2 in production. The source of truth is the Drizzle schema in `apps/api/src/db/schema.ts`; this document must always match it.
+> Status: **iterations 1–3 — implemented and in production**. The source of truth is the Drizzle schema in `apps/api/src/db/schema.ts`; this document must always match it.
 
 ## Table `sessions`
 

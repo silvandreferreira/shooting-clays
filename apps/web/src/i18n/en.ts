@@ -36,7 +36,11 @@ export const en = {
     retry: 'Retry',
     scoresChart: 'Scores over time',
     averagesChart: 'Average by discipline',
+    range: (min: number, max: number) => `${min}–${max}`,
+    averagesKey: 'Bar: average. Line and small numbers: lowest–highest score.',
     noChartData: 'No series in this period.',
+    legendLabel: 'Disciplines shown in the chart',
+    allHidden: 'All disciplines are hidden. Tap one below to show it.',
   },
   form: {
     addTitle: 'Add session',

@@ -1,13 +1,13 @@
 # Roadmap
 
-| Iteration | Name                                 | Status            |
-| --------- | ------------------------------------ | ----------------- |
-| 1         | Core app                             | Done (2026-10-23) |
-| 2         | Authentication (Google sign-in)      | Done (2026-10-23) |
-| 3         | Admin (user approval and management) | **In progress**   |
-| 4         | Community (leaderboards)             | Planned           |
-| 5         | Interactive scores chart             | Planned           |
-| 6         | Translations (English / Portuguese)  | Planned           |
+| Iteration | Name                                 | Status                                           |
+| --------- | ------------------------------------ | ------------------------------------------------ |
+| 1         | Core app                             | Done (2026-10-23)                                |
+| 2         | Authentication (Google sign-in)      | Done (2026-10-23)                                |
+| 3         | Admin (user approval and management) | Done (2026-10-23)                                |
+| 4         | Community (leaderboards)             | Planned                                          |
+| 5         | Interactive scores chart             | **In progress** (legend toggles done 2026-10-24) |
+| 6         | Translations (English / Portuguese)  | Planned                                          |
 
 When an iteration starts, mark it "In progress"; when it ships, mark it "Done" with the date and update `changelog.md`.
 
@@ -33,18 +33,16 @@ All sessions use `user_id = 'local'` in this iteration.
 
 ### Status (2026-10-23)
 
-| Step   | State                                                                                                                                                                                            |
-| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1–7, 9 | Done on branch `feat/iteration-1-core-app` (`pnpm test:all` green, runs locally against the Neon `dev` branch)                                                                                   |
-| 8      | Partly done: `apps/web/vercel.json` and `apps/api/vercel.json` exist; the Vercel projects, their environment variables and the setup in `README.md` → 4.5 have **not** been done or verified yet |
+| Step   | State                                                                                                                                             |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1–7, 9 | Done (`pnpm test:all` green)                                                                                                                      |
+| 8      | Done on 2026-10-23 as **one** Vercel project instead of two (decision #46, `README.md` → 4.5); in production at https://shooting-clays.vercel.app |
 
 ### Known limitations and pending work
 
 Deployment and operations:
 
-- **Not deployed yet.** Pending: Vercel projects (README 4.5), migrations on the Neon `main` branch (`DATABASE_URL=<main> pnpm db:migrate`, then `pnpm db:import` if the history should be in production), Better Stack setup (`observability.md` → "One-time setup") and the GitHub secrets `PROD_URL` and `SMOKE_HEARTBEAT_URL`.
-- **No authentication until iteration 2.** Once deployed, anyone who knows the URL can read, add, edit and delete sessions. Until then, keep the URL private and consider enabling Vercel Deployment Protection on both projects.
-- Vercel setup replaced by one project (decision #46, README 4.5).
+- **Deployed 2026-10-23** (one Vercel project, decision #46; migrations and the owner's history on Neon `main`; `PROD_URL` set, smoke tests run after each deploy). Still pending: Better Stack and Sentry (`observability.md` → "One-time setup") and the GitHub secret `SMOKE_HEARTBEAT_URL`.
 
 Tests:
 
@@ -150,7 +148,7 @@ See `api.md` (`/api/me`, `/api/admin/users`).
 
 ### Status (2026-10-23)
 
-Implemented on branch `feat/iteration-3-admin`: migration 0002 (applied to Neon `dev`), account states enforced in the API, `GET /api/me`, admin endpoints, pending/disabled screens, admin screen, tests R19–R23 (R14 retired). Decisions #47–#50.
+In production since 2026-10-23: migration 0002 (Neon `dev` and `main`), account states enforced in the API, `GET /api/me`, admin endpoints, pending/disabled screens, admin screen, tests R19–R23 (R14 retired). Decisions #47–#50. Production smoke tests now start automatically after each deploy (Vercel `repository_dispatch`).
 
 Notes:
 
@@ -227,6 +225,8 @@ Goal: make the "Scores over time" chart on the Dashboard easier to read by choos
 - If no discipline has scores in the selected range, show "No series in this period." instead of an empty chart.
 
 ### Show/hide disciplines
+
+**Done early (2026-10-24, decision #51)**, as specified below: toggle buttons under the chart, tests R24 (E2E) and `ScoresChart.test.tsx`. The time range above is still to do.
 
 - The chart legend becomes a row of **toggle buttons**, one per discipline in the chart, each with the discipline's colour swatch and name.
 - **All disciplines are shown by default.** Tapping a legend item hides that discipline's line; tapping it again shows it.

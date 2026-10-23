@@ -41,3 +41,47 @@ test('R2: a period without data shows "—", never 0', async ({ page }) => {
   // Disciplines never shot do not get a card.
   await expect(card(page, 'Sporting')).toHaveCount(0);
 });
+
+test('R24: tapping a discipline in the scores chart legend hides its line; tapping again shows it', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
+  const chart = page.getByRole('img', { name: 'Scores over time' });
+  const legend = page.getByRole('group', { name: 'Disciplines shown in the chart' });
+  const lines = chart.locator('.recharts-line');
+  await expect(lines).toHaveCount(4);
+  for (const button of await legend.getByRole('button').all()) {
+    await expect(button).toHaveAttribute('aria-pressed', 'true');
+  }
+
+  const fosso = legend.getByRole('button', { name: 'Fosso' });
+  await fosso.click();
+  await expect(fosso).toHaveAttribute('aria-pressed', 'false');
+  await expect(lines).toHaveCount(3);
+  await legend.getByRole('button', { name: 'Trap' }).click();
+  await expect(lines).toHaveCount(2);
+
+  await fosso.click();
+  await expect(fosso).toHaveAttribute('aria-pressed', 'true');
+  await expect(lines).toHaveCount(3);
+
+  // Per visit: everything is shown again after a reload.
+  await page.reload();
+  await expect(lines).toHaveCount(4);
+});
+
+test('R25: each bar of "Average by discipline" shows the average and the lowest–highest score', async ({
+  page,
+}) => {
+  await page.goto('/');
+  const range = (d: string) => page.getByTestId(`range-${d}`);
+  await expect(range('compak')).toHaveText('168–23');
+  await expect(range('fosso')).toHaveText('105–16');
+  await expect(range('trap')).toHaveText('1715–19');
+  await expect(range('helice')).toHaveText('44–4');
+
+  await selectPeriod(page, 'This month');
+  await expect(range('compak')).toHaveText('1613–18');
+  await expect(range('fosso')).toHaveCount(0);
+});
