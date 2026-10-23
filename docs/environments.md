@@ -28,7 +28,7 @@
 
 _(Iteration 2 adds the Neon Auth / Google OAuth variables — document them here when created.)_
 
-`ADMIN_EMAILS` is a comma-separated list. Iteration 2: only these emails can sign in. Iteration 4: these users become admins automatically. Set it only in `.env` and Vercel — **never** commit real email addresses.
+`ADMIN_EMAILS` is a comma-separated list. Iteration 2: only these emails can sign in. Iteration 3: these users become admins automatically. Set it only in `.env` and Vercel — **never** commit real email addresses.
 
 ## GitHub Actions secrets
 
