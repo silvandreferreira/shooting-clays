@@ -1,16 +1,17 @@
 name: Production smoke tests
 
-# Runs after each successful Vercel production deployment (and on demand).
+# Runs after each successful Vercel production deployment (and on demand). Vercel reports
+# deployments to GitHub as repository_dispatch events, not as GitHub Deployments.
 on:
-  deployment_status:
+  repository_dispatch:
+    types: [vercel.deployment.success]
   workflow_dispatch:
 
 jobs:
   smoke:
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      (github.event.deployment_status.state == 'success' &&
-       github.event.deployment.environment == 'Production')
+      github.event.client_payload.environment == 'production'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
