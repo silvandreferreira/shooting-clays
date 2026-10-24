@@ -1,6 +1,16 @@
 import { ACCOUNT_STATUSES, ROLES } from '@shooting-clays/shared';
 import { sql } from 'drizzle-orm';
-import { check, index, pgTable, smallint, text, timestamp, uuid, date } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  check,
+  date,
+  index,
+  pgTable,
+  smallint,
+  text,
+  timestamp,
+  uuid,
+} from 'drizzle-orm/pg-core';
 
 export const profiles = pgTable(
   'profiles',
@@ -12,6 +22,8 @@ export const profiles = pgTable(
     status: text('status', { enum: ACCOUNT_STATUSES }).notNull().default('pending'),
     /** Set whenever an admin changes the status. */
     statusChangedAt: timestamp('status_changed_at', { withTimezone: true }),
+    /** Listed on the Community leaderboards; opt-out (decision #53). */
+    showInCommunity: boolean('show_in_community').notNull().default(true),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true })
       .notNull()
@@ -50,6 +62,7 @@ export const sessions = pgTable(
   },
   (t) => [
     index('sessions_user_id_date_idx').on(t.userId, t.date),
+    index('sessions_discipline_date_idx').on(t.discipline, t.date),
     check('sessions_score_range', sql`${t.score} between 0 and 25`),
   ],
 );

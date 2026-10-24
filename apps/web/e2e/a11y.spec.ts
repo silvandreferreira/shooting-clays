@@ -14,5 +14,14 @@ for (const colorScheme of ['light', 'dark'] as const) {
     await page.goto('/history');
     await expect(page.getByTestId('session-item').first()).toBeVisible();
     expect(await seriousA11yViolations(page)).toEqual([]);
+
+    // The owner shot Compak Sporting in October: the podium has one shooter.
+    await page.goto('/community');
+    await expect(page.getByTestId('podium-1')).toBeVisible();
+    expect(await seriousA11yViolations(page)).toEqual([]);
+
+    await page.goto('/settings');
+    await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
+    expect(await seriousA11yViolations(page)).toEqual([]);
   });
 }

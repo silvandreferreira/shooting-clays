@@ -6,6 +6,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ### Iteration 4 — Community
 
+- **Added:** Community tab (`/community`): ranking per discipline for a day, week or month (month by default), stepping back to earlier periods; podium for the top three, then a list with your own row highlighted. API `GET /api/community/leaderboard`. Tests R26–R28.
+- **Added:** Settings screen (`/settings`, from the account menu): display name and "Show me in the Community" (on by default). Migration 0003 (`profiles.show_in_community`, index `sessions (discipline, date)`).
 - **Changed:** iteration 4 rules (decision #53, supersedes #20): Day / Week / Month leaderboards with Month by default; ranking by number of series at 25, then 24, down to 0; podium for the top three; appearing in the Community is opt-out from a new Settings screen.
 
 ### Roadmap

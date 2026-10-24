@@ -19,7 +19,7 @@ One row = one series of 25 targets.
 | `created_at`      | `timestamptz` | `not null default now()`                                                                                                                                               |
 | `updated_at`      | `timestamptz` | `not null default now()`; updated on every change                                                                                                                      |
 
-Indexes: `(user_id, date)`; from iteration 4 also `(discipline, date)`.
+Indexes: `(user_id, date)` and `(discipline, date)` (migration 0003, for the Community leaderboards).
 
 ## Table `profiles` (iteration 2+)
 
@@ -37,7 +37,7 @@ Indexes: `(user_id, date)`; from iteration 4 also `(discipline, date)`.
 
 The email address is not stored here. It is read from Neon Auth's user data and exposed **only** to admins (`/api/admin/users`), never to other users.
 
-Implemented so far: `user_id`, `display_name`, `avatar_url`, `role`, `status`, `status_changed_at`, `created_at`, `updated_at`; the other columns arrive with their iterations. A profile is created on the user's first authenticated API request (name and photo from Google, `pending`); later changes by the user are never overwritten. Verified emails in `ADMIN_EMAILS` are set to `admin` / `active` on every request.
+Implemented so far: `user_id`, `display_name`, `avatar_url`, `show_in_community` (migration 0003), `role`, `status`, `status_changed_at`, `created_at`, `updated_at`; the other columns arrive with their iterations. A profile is created on the user's first authenticated API request (name and photo from Google, `pending`); later changes by the user are never overwritten. Verified emails in `ADMIN_EMAILS` are set to `admin` / `active` on every request.
 
 `sessions.user_id` references `profiles.user_id` with `on delete cascade`, so removing a profile removes all of its sessions.
 

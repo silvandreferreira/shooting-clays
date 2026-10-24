@@ -1,4 +1,4 @@
-import type { DisciplineKey, Period } from '@shooting-clays/shared';
+import type { CommunityPeriod, DisciplineKey, Period } from '@shooting-clays/shared';
 
 /** All UI strings. A Portuguese translation can be added later as a sibling file. */
 export const en = {
@@ -7,6 +7,7 @@ export const en = {
     dashboard: 'Dashboard',
     add: 'Add',
     history: 'History',
+    community: 'Community',
     admin: 'Admin',
     pendingBadge: (n: number) => `${n} waiting for approval`,
   },
@@ -79,6 +80,7 @@ export const en = {
     loading: 'Loading…',
     welcome: (name: string) => `Welcome, ${name}`,
     accountMenu: 'Account',
+    settings: 'Settings',
     signOut: 'Sign out',
   },
   account: {
@@ -116,6 +118,41 @@ export const en = {
     removing: 'Removing…',
     removeError: 'Could not remove the account. Try again.',
     removed: (name: string) => `${name} has been removed.`,
+  },
+  community: {
+    title: 'Community',
+    disciplineLabel: 'Discipline',
+    periodLabel: 'Period',
+    periods: { day: 'Day', week: 'Week', month: 'Month' } satisfies Record<CommunityPeriod, string>,
+    previous: 'Previous period',
+    next: 'Next period',
+    podium: 'Podium',
+    ranking: 'Ranking',
+    place: (rank: number) =>
+      `${rank}${rank === 1 ? 'st' : rank === 2 ? 'nd' : rank === 3 ? 'rd' : 'th'}`,
+    best: (score: number, times: number) => (times > 1 ? `${score} ×${times}` : String(score)),
+    bestLabel: (score: number, times: number) =>
+      times === 1 ? `Best ${score}, once` : `Best ${score}, ${times} times`,
+    series: (n: number) => (n === 1 ? '1 series' : `${n} series`),
+    you: 'You',
+    empty: 'No results for this period yet.',
+    loading: 'Loading…',
+    loadError: 'Could not load the ranking.',
+    hidden: 'You are hidden from the Community, so you are not in this ranking.',
+    hiddenLink: 'Change in Settings',
+    rules: 'Most series at 25 first, then at 24, and so on.',
+  },
+  settings: {
+    title: 'Settings',
+    displayName: 'Display name',
+    displayNameHelp: 'Shown in the Community and in the header. Your email is never shown.',
+    save: 'Save',
+    saving: 'Saving…',
+    saved: 'Saved.',
+    saveError: 'Could not save. Try again.',
+    showInCommunity: 'Show me in the Community',
+    showInCommunityHelp:
+      'Your results appear on the Community rankings. Switch off to hide them; your own dashboard does not change.',
   },
   notFound: 'Page not found.',
   errorBoundary: 'Something went wrong. Reload the app to continue.',

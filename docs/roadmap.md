@@ -191,7 +191,7 @@ Example: A and B both have five 25s; A has two 24s and B has one → A ranks abo
 
 ### Screen (`/community`)
 
-- Discipline tabs and a period switcher (**Day · Week · Month**, Month selected), with previous / next arrows and the period label (e.g. "October 2026", "20–26 Oct 2026", "24 Oct 2026").
+- A discipline selector and a period switcher (**Day · Week · Month**, Month selected), with previous / next arrows and the period label (e.g. "October 2026", "20–26 Oct 2026", "24 Oct 2026").
 - **Podium**: the first three places as a three-step stair (2nd on the left, 1st in the middle and tallest, 3rd on the right), each with avatar, display name, rank and best score. With fewer than three shooters, the empty steps stay empty.
 - From 4th place down: a plain ranked list.
 - Each entry shows: rank, avatar, display name, best score with how many times it was reached (e.g. **25 ×5**) and the number of series in the period.
@@ -223,6 +223,10 @@ Example: A and B both have five 25s; A has two 24s and B has one → A ranks abo
 - Unit: ranking (best score first, count at the same score, next score down, the A/B example, exact ties share a rank and are ordered by who got there first); period bounds for day, week (Monday start) and month in Europe/Lisbon, including a daylight-saving change.
 - Integration: hidden users excluded; `pending` and `disabled` users excluded; one entry per user; no ids or emails in the response; only sessions in the period and discipline count.
 - E2E: seeded multi-user data; podium and list order; switching period and stepping back; own entry highlighted; switching "Show me in the Community" off removes the user from the leaderboard.
+
+### Status (2026-10-24)
+
+Built on `feat/iteration-4-community`: migration 0003 (`profiles.show_in_community`, index `sessions (discipline, date)`), `GET /api/community/leaderboard`, `showInCommunity` in `GET /api/me` and `PUT /api/me/profile`, Community and Settings screens, tests R26–R28 (R10 now also covers Community and Settings). Decision #53.
 
 ### Known limitation
 

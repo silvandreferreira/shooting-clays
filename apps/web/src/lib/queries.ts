@@ -2,6 +2,9 @@ import type {
   AccountStatus,
   AdminUser,
   Dashboard,
+  LeaderboardQuery,
+  Me,
+  ProfileUpdate,
   SessionInput,
   SessionsQuery,
 } from '@shooting-clays/shared';
@@ -13,6 +16,7 @@ export const queryKeys = {
   adminUsers: ['admin', 'users'] as const,
   dashboard: ['dashboard'] as const,
   sessions: (filters: SessionsQuery = {}) => ['sessions', filters] as const,
+  leaderboard: (query: LeaderboardQuery) => ['leaderboard', query] as const,
 };
 
 /**
@@ -80,6 +84,28 @@ export function useDeleteSession() {
   return useMutation({
     mutationFn: (id: string) => api.deleteSession(id),
     onSuccess: ({ dashboard }) => applyDashboard(dashboard),
+  });
+}
+
+export const LEADERBOARD_FRESH_MS = 3 * 60_000;
+
+export function useLeaderboard(query: LeaderboardQuery) {
+  return useQuery({
+    queryKey: queryKeys.leaderboard(query),
+    queryFn: () => api.leaderboard(query),
+    staleTime: LEADERBOARD_FRESH_MS,
+  });
+}
+
+/** Saves the display name or the Community switch; the leaderboards are fetched again. */
+export function useUpdateProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (update: ProfileUpdate) => api.updateProfile(update),
+    onSuccess: (me: Me) => {
+      queryClient.setQueryData(queryKeys.me, me);
+      void queryClient.invalidateQueries({ queryKey: ['leaderboard'] });
+    },
   });
 }
 

@@ -1,6 +1,6 @@
 import type { Me } from '@shooting-clays/shared';
 import { useEffect, useState } from 'react';
-import { NavLink, Outlet } from 'react-router';
+import { Link, NavLink, Outlet } from 'react-router';
 import { t } from '../i18n/en';
 import { useAdminUsers } from '../lib/queries';
 import { Avatar } from './Avatar';
@@ -16,6 +16,8 @@ const ICONS = {
   dashboard: 'M4 20V10M10 20V4M16 20v-7M22 20H2',
   add: 'M12 5v14M5 12h14',
   history: 'M4 6h16M4 12h16M4 18h10',
+  community:
+    'M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3',
   admin:
     'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8',
 };
@@ -28,7 +30,7 @@ function Icon({ path }: { path: string }) {
   );
 }
 
-function AccountMenu({ user }: { user: CurrentUser }) {
+function AccountMenu({ user, showSettings }: { user: CurrentUser; showSettings: boolean }) {
   const [open, setOpen] = useState(false);
   const signOut = useSignOut();
   return (
@@ -49,6 +51,16 @@ function AccountMenu({ user }: { user: CurrentUser }) {
           className="absolute right-0 z-10 mt-2 w-64 rounded-xl border border-line bg-card p-2 shadow-lg"
         >
           <p className="truncate px-3 py-2 text-sm text-ink-muted">{user.email}</p>
+          {showSettings && (
+            <Link
+              to="/settings"
+              role="menuitem"
+              onClick={() => setOpen(false)}
+              className="flex min-h-11 w-full items-center rounded-lg px-3 font-semibold hover:bg-surface"
+            >
+              {t.auth.settings}
+            </Link>
+          )}
           <button
             type="button"
             role="menuitem"
@@ -94,7 +106,7 @@ export function Layout({ user, me }: { user: CurrentUser; me: Me }) {
         <p className="truncate text-lg font-semibold" data-testid="welcome">
           {t.auth.welcome(firstName(me.displayName || user.name))}
         </p>
-        <AccountMenu user={user} />
+        <AccountMenu user={user} showSettings={!pending} />
       </header>
       {pending && (
         <p
@@ -148,6 +160,10 @@ export function Layout({ user, me }: { user: CurrentUser; me: Me }) {
               <NavLink to="/history" className={navItem}>
                 <Icon path={ICONS.history} />
                 {t.nav.history}
+              </NavLink>
+              <NavLink to="/community" className={navItem}>
+                <Icon path={ICONS.community} />
+                {t.nav.community}
               </NavLink>
             </>
           )}

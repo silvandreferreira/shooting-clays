@@ -1,6 +1,7 @@
 import type { AccountStatus, AdminUser } from '@shooting-clays/shared';
 import { useEffect, useId, useState } from 'react';
 import { Avatar } from '../components/Avatar';
+import { Switch } from '../components/Switch';
 import { t } from '../i18n/en';
 import { formatDay } from '../lib/format';
 import { useAdminUsers, useRemoveUser, useSetUserStatus } from '../lib/queries';
@@ -17,25 +18,12 @@ const nextStatus = (status: AccountStatus): AccountStatus =>
   status === 'active' ? 'disabled' : 'active';
 
 function StatusSwitch({ user, onToggle }: { user: AdminUser; onToggle: () => void }) {
-  const on = user.status === 'active';
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={on}
-      aria-label={t.admin.toggleLabel(user.displayName)}
-      onClick={onToggle}
-      className="flex min-h-11 min-w-14 items-center justify-center"
-    >
-      <span
-        aria-hidden
-        className={`flex h-7 w-12 items-center rounded-full p-1 transition-colors ${
-          on ? 'justify-end bg-accent' : 'justify-start bg-line'
-        }`}
-      >
-        <span className="size-5 rounded-full bg-card shadow" />
-      </span>
-    </button>
+    <Switch
+      checked={user.status === 'active'}
+      label={t.admin.toggleLabel(user.displayName)}
+      onChange={onToggle}
+    />
   );
 }
 
