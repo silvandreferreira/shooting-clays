@@ -8,6 +8,8 @@
 | 4         | Community (leaderboards)             | Planned                                          |
 | 5         | Interactive scores chart             | **In progress** (legend toggles done 2026-10-24) |
 | 6         | Translations (English / Portuguese)  | Planned                                          |
+| 7         | Clubs (proposal)                     | Planned                                          |
+| 8         | Official and unofficial results      | Planned                                          |
 
 When an iteration starts, mark it "In progress"; when it ships, mark it "Done" with the date and update `changelog.md`.
 
@@ -310,3 +312,89 @@ Not translated: the user's own content (notes, display name), the imported histo
 ### Docs
 
 `CLAUDE.md` (language rules: UI strings in `en.ts` and `pt-PT.ts`), `product.md` (language selector), `data-model.md` (`profiles.locale`), `api.md`, `testing.md` (new regression rows), `decisions.md`, `changelog.md`.
+
+---
+
+## Iteration 7 — Clubs (proposal)
+
+Goal: let shooting clubs exist in the app, with their own managers and members, so that iteration 8 can tell **official** results (recorded by a club) from **unofficial** ones (recorded by the shooter). This section is a proposal: confirm the open questions at the start of the iteration.
+
+### Roles
+
+| Who          | How they get it                                           | What they can do                                                                             |
+| ------------ | --------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Admin        | `ADMIN_EMAILS` (iteration 3)                              | Create, rename and delete clubs; choose each club's managers                                 |
+| Club manager | Chosen by the admin among `active` users                  | Manage their club's members (add, invite, remove); from iteration 8, record official results |
+| Member       | Added or invited by a club manager                        | Belongs to **one** club at a time; sees the club name on their profile; can leave the club   |
+| Shooter      | Every `active` user (iteration 3), with or without a club | Unchanged: logs their own (unofficial) sessions                                              |
+
+A club manager is usually also a member of the same club, but does not have to be.
+
+### Adding shooters to a club
+
+Two ways, both from the club screen:
+
+1. **Pick from the app**: a list of `active` shooters who are **not in any club yet** (avatar and display name only, never the email), with a search box. The manager ticks one or more shooters → each receives a **join request** in the app (banner + Settings) and becomes a member when they accept. Nobody joins a club without agreeing.
+2. **Invite someone new**: the manager types the shooter's name → the app creates a **member placeholder** with that name and a personal **invite link** (single use, expires after 14 days, can be renewed). The manager shares the link (phone share sheet, WhatsApp, email…). The shooter opens it, lands on the sign-in page, signs in with Google, and accepts → their account is linked to the placeholder and they become a member.
+   - An account created from a club invitation starts `active` (the club vouches for the shooter), so it skips the admin approval of iteration 3. The admin can still disable it.
+   - If the person already has an account, signing in with the link simply adds the club membership (after accepting).
+
+Members can **leave** the club from Settings; managers can **remove** members. Leaving or being removed never deletes sessions.
+
+### Screens
+
+- `/club` (club managers): members list (name, avatar, joined date, pending invites/requests with "Copy link" and "Cancel"), **Add from app**, **Invite new shooter**, **Remove**.
+- Admin screen: new **Clubs** section (create, rename, delete, choose managers).
+- Settings: "Club: <name>" with **Leave club**, and any pending join request with **Accept** / **Decline**.
+- Community and History show the club name next to a member's name.
+
+### Data (draft)
+
+- `clubs`: `id`, `name` (unique), `created_at`, `updated_at`.
+- `club_members`: `club_id`, `user_id` (nullable while it is a placeholder), `display_name` (for placeholders), `role` (`manager` / `member`), `status` (`invited` / `requested` / `active`), `joined_at`; unique `user_id` among active members (one club per shooter).
+- `club_invites`: `id`, `club_member_id`, token hash (the token itself is never stored), `expires_at`, `used_at`.
+
+### Open questions (decide when the iteration starts)
+
+- Can a club manager also **create** a club, or only the admin?
+- Can a shooter ever belong to more than one club (e.g. a federation and a local club)? Proposal: no, one club.
+- Should a club be able to see its members' unofficial results? Proposal: no, only the official results it recorded (iteration 8).
+
+### Tests
+
+- Integration: only admins manage clubs; only a club's managers manage its members; a shooter cannot be in two clubs; a join request or invite does nothing until accepted; invite tokens are single-use and expire; the list of shooters without a club never contains emails, `pending` or `disabled` users.
+- E2E: admin creates a club and a manager; manager adds a shooter from the app and the shooter accepts; manager invites a new shooter, who signs in through the link and lands active in the club; member leaves the club.
+
+---
+
+## Iteration 8 — Official and unofficial results
+
+Goal: split results into **official** (recorded by a club, iteration 7) and **unofficial** (recorded by the shooter themselves, everything until now).
+
+### Rules
+
+- A session recorded by the shooter is **unofficial**. A session recorded by a club manager for one of the club's members is **official** and carries the club.
+- Official results can be edited or deleted only by that club's managers; the shooter sees them but cannot change them. Leaving the club keeps them (still official, still the shooter's).
+- Every existing session becomes unofficial (migration default).
+
+### Filter: Unofficial · Official · All
+
+- Dashboard, History and Community get a filter **Unofficial · Official · All**.
+- Default: **Unofficial** (no clubs record results yet at the start). "All" mixes both and the ranking rules of iteration 4 apply unchanged.
+- Official sessions show an **Official** badge with the club name in History and in the leaderboard.
+
+### Club manager flow
+
+- On `/club`, **Add official result**: pick a member, date, discipline, score, hardest targets and notes (same form as Add), or several members at once for a round shot together.
+
+### Data and API (draft)
+
+- `sessions.source text not null default 'self'`, `check (source in ('self','club'))`; `sessions.club_id` (nullable, set when `source = 'club'`); `sessions.recorded_by` (user id of whoever recorded it).
+- `GET /api/dashboard`, `GET /api/sessions` and `GET /api/community/leaderboard` accept `source=self|club|all` (default `self`).
+- `POST /api/clubs/:id/sessions` for managers; the existing `PUT`/`DELETE /api/sessions/:id` refuse official sessions for non-managers (`403`).
+
+### Tests
+
+- Unit: filters and statistics per source.
+- Integration: a shooter cannot edit or delete an official session; a manager can only record for their own club's members; `source` filter on dashboard, history and leaderboard; default is unofficial.
+- E2E: manager records an official result; the shooter sees it under Official and All but not under the default Unofficial; leaderboard switches between the three.

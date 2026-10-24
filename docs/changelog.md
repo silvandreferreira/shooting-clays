@@ -4,6 +4,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Roadmap
+
+- **Added:** iteration 7 (Clubs: managers, adding shooters from the app or with an invite link) and iteration 8 (official results recorded by clubs vs unofficial results recorded by shooters, Unofficial by default). Decision #54.
+
 ### Dashboard charts
 
 - **Added:** the scores chart legend is a row of toggle buttons: tap a discipline to hide or show its line (iteration 5, done early). E2E R24.
