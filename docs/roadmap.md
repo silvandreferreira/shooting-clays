@@ -5,7 +5,7 @@
 | 1         | Core app                             | Done (2026-10-23)                                |
 | 2         | Authentication (Google sign-in)      | Done (2026-10-23)                                |
 | 3         | Admin (user approval and management) | Done (2026-10-23)                                |
-| 4         | Community (leaderboards)             | Planned                                          |
+| 4         | Community (leaderboards)             | **In progress**                                  |
 | 5         | Interactive scores chart             | **In progress** (legend toggles done 2026-10-24) |
 | 6         | Translations (English / Portuguese)  | Planned                                          |
 | 7         | Clubs (proposal)                     | Planned                                          |
@@ -168,45 +168,65 @@ Email the admin when someone new signs up; email the user when approved; admin v
 
 Goal: a new **Community** tab that compares results across all users, per discipline, to make the app more fun.
 
-### Leaderboard rules
+### Periods
 
-- Scope: **one calendar month** (Europe/Lisbon) and **one discipline**. Default: current month; the user can browse previous months.
-- Each shooter's entry = **their best single series score** in that discipline in that month.
-- Ranking: highest best score first. Ties share the same rank (standard competition ranking: 1, 1, 3); within a tie, whoever reached that score **first** is listed first.
-- **Shooter of the month** per discipline = rank 1 (all tied shooters if there is a tie).
-- Each row shows: rank, display name, avatar, best score, date achieved, number of series that month.
-- The signed-in user's own row is always visible (pinned at the bottom if outside the visible list).
-- Only shooters with at least one series in that discipline and month appear.
+- Three periods, all in Europe/Lisbon: **Day** (one calendar day), **Week** (Monday to Sunday) and **Month** (one calendar month).
+- Default: **the current month**. The user can switch to Day or Week, and step back to previous days, weeks or months (never into the future).
+- Only sessions inside the selected period and discipline count.
+
+### Ranking rules
+
+Each shooter's results in the period are compared **score by score, from 25 down to 0**:
+
+1. Whoever has **more series at 25** ranks higher.
+2. If that is tied, whoever has **more series at 24** ranks higher; then 23, 22, … down to 0.
+3. The first score where the counts differ decides.
+
+Example: A and B both have five 25s; A has two 24s and B has one → A ranks above B. A shooter whose best is 24 always ranks below anyone with at least one 25, however many 24s they have.
+
+- Consequences: the best score always decides first; among equal best scores, more series at that score (and then at the next scores) win.
+- **Exact tie** (the same number of series at every score) → the same rank (standard competition ranking: 1, 1, 3). Within an exact tie, whoever reached their best score **first** is listed first.
+- Only shooters with at least one series in that discipline and period appear.
+- The ranking is computed by one pure function in `packages/shared` (unit-tested); the API only collects each shooter's count per score.
 
 ### Screen (`/community`)
 
-- Month picker and discipline tabs.
-- "Shooter of the month" cards (one per discipline) at the top.
-- Full ranked list below.
+- Discipline tabs and a period switcher (**Day · Week · Month**, Month selected), with previous / next arrows and the period label (e.g. "October 2026", "20–26 Oct 2026", "24 Oct 2026").
+- **Podium**: the first three places as a three-step stair (2nd on the left, 1st in the middle and tallest, 3rd on the right), each with avatar, display name, rank and best score. With fewer than three shooters, the empty steps stay empty.
+- From 4th place down: a plain ranked list.
+- Each entry shows: rank, avatar, display name, best score with how many times it was reached (e.g. **25 ×5**) and the number of series in the period.
+- The signed-in user's own entry is highlighted. If they are hidden from the community, a note says so and links to Settings.
+- Empty period: "No results for this period yet."
+
+### Settings (`/settings`)
+
+- New screen, opened from the account menu.
+- **Show me in the Community** toggle: **on by default**. Off = the user disappears from every leaderboard (their sessions still count for their own dashboard).
+- **Display name** (1–50 characters): the name shown in the Community and in the header. The email address is never shown to other users.
 
 ### Privacy
 
-- Joining the leaderboard is **opt-in** (`show_in_community`, default off), with a **display name** chosen by the user. The email address is never shown.
-- Users who have not opted in are excluded from every leaderboard response (tested).
-- Only `active` accounts (iteration 3) take part: users whose account is `pending` or `disabled` are excluded from every leaderboard response (tested).
+- Appearing in the Community is **opt-out** (`show_in_community`, default on; decision #53, supersedes the opt-in of decision #20).
+- Users who switched it off are excluded from every leaderboard response (tested).
+- Only `active` accounts (iteration 3) take part: users whose account is `pending` or `disabled` are excluded from every leaderboard response (tested). Pending users do not see the Community tab.
+- Responses contain no user ids or emails: only display name, avatar, the figures above, and an `isMe` flag.
 
 ### API and data
 
-- `GET /api/community/leaderboard?month=YYYY-MM&discipline=…`
-- `GET /api/community/champions?month=YYYY-MM` (shooter of the month per discipline)
-- `GET /api/me/profile`, `PUT /api/me/profile` (display name, opt-in)
-- Query: per user `max(score)` and earliest date at that score, then `rank() over (order by best desc)`. Index on `sessions (discipline, date)`.
-- Cached in the front end with a short stale time (a few minutes).
+- Migration: `profiles.show_in_community boolean not null default true`; index on `sessions (discipline, date)`.
+- `GET /api/community/leaderboard?discipline=…&period=day|week|month&date=YYYY-MM-DD` — `date` is any day inside the period (default: today in Europe/Lisbon). Returns the period bounds, the ranked entries and whether the signed-in user is hidden.
+- `GET /api/me` also returns `showInCommunity`; `PUT /api/me/profile` accepts `displayName` and `showInCommunity`.
+- Cached in the front end with a short stale time (a few minutes); changing Settings invalidates it.
 
 ### Tests
 
-- Unit: ranking with ties, tie-break by earliest date, month boundaries in Europe/Lisbon.
-- Integration: non-opted-in users excluded; `pending` and `disabled` users excluded; one entry per user.
-- E2E: seeded multi-user data; leaderboard order, own row pinned, month switching.
+- Unit: ranking (best score first, count at the same score, next score down, the A/B example, exact ties share a rank and are ordered by who got there first); period bounds for day, week (Monday start) and month in Europe/Lisbon, including a daylight-saving change.
+- Integration: hidden users excluded; `pending` and `disabled` users excluded; one entry per user; no ids or emails in the response; only sessions in the period and discipline count.
+- E2E: seeded multi-user data; podium and list order; switching period and stepping back; own entry highlighted; switching "Show me in the Community" off removes the user from the leaderboard.
 
 ### Known limitation
 
-Scores are self-reported (trust-based). Possible later: report/flag a result.
+Scores are self-reported (trust-based). Shooting more series can only help (it adds counts), so volume is rewarded among equal best scores — accepted by the owner. Possible later: report/flag a result.
 
 ### Backlog ideas (not committed)
 

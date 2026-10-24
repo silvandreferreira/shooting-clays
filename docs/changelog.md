@@ -4,6 +4,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Iteration 4 — Community
+
+- **Changed:** iteration 4 rules (decision #53, supersedes #20): Day / Week / Month leaderboards with Month by default; ranking by number of series at 25, then 24, down to 0; podium for the top three; appearing in the Community is opt-out from a new Settings screen.
+
 ### Roadmap
 
 - **Added:** iteration 7 (Clubs: managers, adding shooters from the app or with an invite link) and iteration 8 (official results recorded by clubs vs unofficial results recorded by shooters, Unofficial by default). Decision #54.

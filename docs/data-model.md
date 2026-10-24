@@ -28,7 +28,7 @@ Indexes: `(user_id, date)`; from iteration 4 also `(discipline, date)`.
 | `user_id`                   | `text`        | PK; Neon Auth user id                                                                           |
 | `display_name`              | `text`        | `not null`; shown in the community (iteration 4)                                                |
 | `avatar_url`                | `text`        | nullable; from Google                                                                           |
-| `show_in_community`         | `boolean`     | `not null default false` (iteration 4, opt-in)                                                  |
+| `show_in_community`         | `boolean`     | `not null default true` (iteration 4, opt-out in Settings; decision #53)                        |
 | `role`                      | `text`        | `not null default 'user'`, `check (role in ('user','admin'))` (iteration 3)                     |
 | `status`                    | `text`        | `not null default 'pending'`, `check (status in ('pending','active','disabled'))` (iteration 3) |
 | `status_changed_at`         | `timestamptz` | nullable; set whenever the admin changes the status (iteration 3)                               |

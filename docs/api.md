@@ -37,21 +37,21 @@
 
 ## Endpoints
 
-| Method   | Path                                  | Description                                                                                                         | Success                      |
-| -------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| `GET`    | `/api/health`                         | Liveness; **does not touch the database** (safe to poll often)                                                      | `200 { "ok": true }`         |
-| `GET`    | `/api/health/db`                      | Runs `SELECT 1`; **poll rarely** (wakes Neon)                                                                       | `200 { "ok": true }` / `503` |
-| `GET`    | `/api/disciplines`                    | Disciplines and whether they have A–F targets                                                                       | `200 Discipline[]`           |
-| `GET`    | `/api/dashboard`                      | Stats per discipline × period + chart series                                                                        | `200 Dashboard`              |
-| `GET`    | `/api/sessions?from=&to=&discipline=` | History                                                                                                             | `200 Session[]`              |
-| `POST`   | `/api/sessions`                       | Create a session                                                                                                    | `201 { session, dashboard }` |
-| `PUT`    | `/api/sessions/:id`                   | Update a session                                                                                                    | `200 { session, dashboard }` |
-| `DELETE` | `/api/sessions/:id`                   | Delete a session                                                                                                    | `200 { dashboard }`          |
-| `GET`    | `/api/me`                             | Current user: profile, role and status. **Works for pending and disabled users**                                    | `200 Me`                     |
-| `PUT`    | `/api/me/profile`                     | Update `{ "displayName" }` (1–50 characters, trimmed); community opt-in from iteration 4, `locale` from iteration 6 | `200 Me`                     |
-| `GET`    | `/api/admin/users`                    | All users, pending first, then newest sign-up first (admin only)                                                    | `200 AdminUser[]`            |
-| `PATCH`  | `/api/admin/users/:userId`            | `{ "status": "active" \| "disabled" \| "pending" }` (admin only; `pending` is for undo)                             | `200 { userId, status }`     |
-| `DELETE` | `/api/admin/users/:userId`            | Permanently deletes the user and all their data, Neon Auth included (admin only)                                    | `200 { removed: true }`      |
+| Method   | Path                                  | Description                                                                                                          | Success                      |
+| -------- | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| `GET`    | `/api/health`                         | Liveness; **does not touch the database** (safe to poll often)                                                       | `200 { "ok": true }`         |
+| `GET`    | `/api/health/db`                      | Runs `SELECT 1`; **poll rarely** (wakes Neon)                                                                        | `200 { "ok": true }` / `503` |
+| `GET`    | `/api/disciplines`                    | Disciplines and whether they have A–F targets                                                                        | `200 Discipline[]`           |
+| `GET`    | `/api/dashboard`                      | Stats per discipline × period + chart series                                                                         | `200 Dashboard`              |
+| `GET`    | `/api/sessions?from=&to=&discipline=` | History                                                                                                              | `200 Session[]`              |
+| `POST`   | `/api/sessions`                       | Create a session                                                                                                     | `201 { session, dashboard }` |
+| `PUT`    | `/api/sessions/:id`                   | Update a session                                                                                                     | `200 { session, dashboard }` |
+| `DELETE` | `/api/sessions/:id`                   | Delete a session                                                                                                     | `200 { dashboard }`          |
+| `GET`    | `/api/me`                             | Current user: profile, role and status. **Works for pending and disabled users**                                     | `200 Me`                     |
+| `PUT`    | `/api/me/profile`                     | Update `{ "displayName" }` (1–50 characters, trimmed); `showInCommunity` from iteration 4, `locale` from iteration 6 | `200 Me`                     |
+| `GET`    | `/api/admin/users`                    | All users, pending first, then newest sign-up first (admin only)                                                     | `200 AdminUser[]`            |
+| `PATCH`  | `/api/admin/users/:userId`            | `{ "status": "active" \| "disabled" \| "pending" }` (admin only; `pending` is for undo)                              | `200 { userId, status }`     |
+| `DELETE` | `/api/admin/users/:userId`            | Permanently deletes the user and all their data, Neon Auth included (admin only)                                     | `200 { removed: true }`      |
 
 ### E2E mode only (`E2E=1`)
 
@@ -172,9 +172,10 @@ Without the header:
 
 ## Planned — iteration 4
 
-| Method | Path                                                   | Description                                                |
-| ------ | ------------------------------------------------------ | ---------------------------------------------------------- |
-| `GET`  | `/api/community/leaderboard?month=YYYY-MM&discipline=` | Ranked list: each opted-in shooter's best score that month |
-| `GET`  | `/api/community/champions?month=YYYY-MM`               | Shooter of the month per discipline                        |
+| Method | Path                                                                           | Description                                                                                          |
+| ------ | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| `GET`  | `/api/community/leaderboard?discipline=&period=day/week/month&date=YYYY-MM-DD` | Ranked shooters for one discipline and period (`date` = any day in it, default today, Europe/Lisbon) |
+
+`GET /api/me` gains `showInCommunity`; `PUT /api/me/profile` accepts `showInCommunity` as well as `displayName`.
 
 Rules: `roadmap.md` → Iteration 4.
