@@ -8,10 +8,12 @@ import type { CurrentUser } from './lib/session';
 import { useSignOut } from './lib/sign-out';
 import { AddSessionPage } from './pages/AddSessionPage';
 import { AdminPage } from './pages/AdminPage';
+import { CommunityPage } from './pages/CommunityPage';
 import { DashboardPage, SampleDashboardPage } from './pages/DashboardPage';
 import { EditSessionPage } from './pages/EditSessionPage';
 import { HistoryPage } from './pages/HistoryPage';
 import { InactivePage } from './pages/InactivePage';
+import { SettingsPage } from './pages/SettingsPage';
 
 export function App({ user }: { user: CurrentUser }) {
   const { data: me, isError, refetch } = useMe();
@@ -61,6 +63,8 @@ export function App({ user }: { user: CurrentUser }) {
             <Route path="add" element={<AddSessionPage />} />
             <Route path="history" element={<HistoryPage />} />
             <Route path="history/:id" element={<EditSessionPage />} />
+            <Route path="community" element={<CommunityPage />} />
+            <Route path="settings" element={<SettingsPage me={me} />} />
             {me.role === 'admin' && <Route path="admin" element={<AdminPage />} />}
             <Route path="*" element={<p className="py-8 text-center">{t.notFound}</p>} />
           </>

@@ -1,10 +1,13 @@
-import type { AccountStatus, Me, Role } from '@shooting-clays/shared';
+import type { AccountStatus, Me, ProfileUpdate, Role } from '@shooting-clays/shared';
 import { and, eq, ne, sql } from 'drizzle-orm';
 import type { AuthUser } from './auth';
 import { rowsOf, type Db } from './db/client';
 import { profiles, type ProfileRow } from './db/schema';
 
-export type Profile = Pick<ProfileRow, 'userId' | 'displayName' | 'avatarUrl' | 'role' | 'status'>;
+export type Profile = Pick<
+  ProfileRow,
+  'userId' | 'displayName' | 'avatarUrl' | 'role' | 'status' | 'showInCommunity'
+>;
 
 export const toMe = (profile: Profile, email: string): Me => ({
   displayName: profile.displayName,
@@ -12,6 +15,7 @@ export const toMe = (profile: Profile, email: string): Me => ({
   email,
   role: profile.role,
   status: profile.status,
+  showInCommunity: profile.showInCommunity,
 });
 
 const columns = {
@@ -20,6 +24,7 @@ const columns = {
   avatarUrl: profiles.avatarUrl,
   role: profiles.role,
   status: profiles.status,
+  showInCommunity: profiles.showInCommunity,
 };
 
 export function createProfilesRepo(db: Db) {
@@ -59,7 +64,7 @@ export function createProfilesRepo(db: Db) {
       return row!;
     },
 
-    async update(userId: string, data: { displayName: string }): Promise<Profile | undefined> {
+    async update(userId: string, data: ProfileUpdate): Promise<Profile | undefined> {
       const [row] = await db
         .update(profiles)
         .set(data)

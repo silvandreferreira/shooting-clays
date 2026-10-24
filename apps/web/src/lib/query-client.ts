@@ -5,7 +5,7 @@ import { del, get, set } from 'idb-keyval';
 import { ApiError } from './api';
 
 /** Bump whenever the shape of cached data changes, so old caches are discarded. */
-export const CACHE_BUSTER = 'v2';
+export const CACHE_BUSTER = 'v3';
 
 const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
 
