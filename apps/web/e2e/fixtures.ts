@@ -46,6 +46,32 @@ export async function registerUser(request: APIRequestContext, user: E2EUser) {
   expect(res.ok()).toBe(true);
 }
 
+export interface E2ESession {
+  date: string;
+  discipline: string;
+  score: number;
+}
+
+/** Registers the user (active unless they say otherwise) and logs sessions through the API. */
+export async function seedSessions(
+  request: APIRequestContext,
+  user: E2EUser,
+  sessions: E2ESession[],
+) {
+  const res = await request.post(`${API_URL}/api/__test__/token`, {
+    data: { ...user, status: user.status ?? 'active' },
+  });
+  expect(res.ok()).toBe(true);
+  const { token } = (await res.json()) as { token: string };
+  for (const data of sessions) {
+    const created = await request.post(`${API_URL}/api/sessions`, {
+      data,
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    expect(created.ok()).toBe(true);
+  }
+}
+
 /** Who Neon Auth says is signed in; tests can change it (sign in, switch account). */
 export interface FakeNeonAuth {
   user: E2EUser | null;

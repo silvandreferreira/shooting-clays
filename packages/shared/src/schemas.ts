@@ -58,15 +58,21 @@ export interface Session extends SessionData {
 
 export const MAX_DISPLAY_NAME_LENGTH = 50;
 
-export const profileUpdateSchema = z.object({
-  displayName: z
-    .string()
-    .trim()
-    .min(1, { error: 'displayName is required' })
-    .max(MAX_DISPLAY_NAME_LENGTH, {
-      error: `displayName must be at most ${MAX_DISPLAY_NAME_LENGTH} characters`,
-    }),
-});
+export const profileUpdateSchema = z
+  .object({
+    displayName: z
+      .string()
+      .trim()
+      .min(1, { error: 'displayName is required' })
+      .max(MAX_DISPLAY_NAME_LENGTH, {
+        error: `displayName must be at most ${MAX_DISPLAY_NAME_LENGTH} characters`,
+      })
+      .optional(),
+    showInCommunity: z.boolean({ error: 'showInCommunity must be true or false' }).optional(),
+  })
+  .refine((p) => p.displayName !== undefined || p.showInCommunity !== undefined, {
+    error: 'Nothing to update',
+  });
 
 export type ProfileUpdate = z.infer<typeof profileUpdateSchema>;
 
@@ -84,6 +90,8 @@ export interface Me {
   email: string;
   role: Role;
   status: AccountStatus;
+  /** Listed on the Community leaderboards (opt-out, on by default). */
+  showInCommunity: boolean;
 }
 
 /** A row of the admin's user list (`GET /api/admin/users`). */

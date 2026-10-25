@@ -1,0 +1,2 @@
+ALTER TABLE "profiles" ADD COLUMN "show_in_community" boolean DEFAULT true NOT NULL;--> statement-breakpoint
+CREATE INDEX "sessions_discipline_date_idx" ON "sessions" USING btree ("discipline","date");

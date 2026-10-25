@@ -34,6 +34,7 @@ test.describe('pending account', () => {
 
     const nav = page.getByRole('navigation', { name: 'Main' });
     await expect(nav.getByRole('link', { name: 'History' })).toHaveCount(0);
+    await expect(nav.getByRole('link', { name: 'Community' })).toHaveCount(0);
     await expect(nav.getByRole('link', { name: 'Admin' })).toHaveCount(0);
     const add = nav.getByRole('button', { name: 'Add' });
     await expect(add).toHaveAttribute('aria-disabled', 'true');

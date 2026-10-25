@@ -2,6 +2,8 @@ import type {
   AccountStatus,
   AdminUser,
   Dashboard,
+  Leaderboard,
+  LeaderboardQuery,
   Me,
   ProfileUpdate,
   Session,
@@ -78,6 +80,12 @@ export const api = {
     }),
   deleteSession: (id: string) =>
     request<{ dashboard: Dashboard }>(`/sessions/${id}`, { method: 'DELETE' }),
+  leaderboard: (query: LeaderboardQuery) => {
+    const params = new URLSearchParams(
+      Object.entries(query).filter((e): e is [string, string] => Boolean(e[1])),
+    );
+    return request<Leaderboard>(`/community/leaderboard?${params.toString()}`);
+  },
   adminUsers: () => request<AdminUser[]>('/admin/users'),
   setUserStatus: (userId: string, status: AccountStatus) =>
     request<{ userId: string; status: AccountStatus }>(

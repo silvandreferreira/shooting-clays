@@ -91,6 +91,7 @@ describe('profile', () => {
       email: NEWCOMER.email,
       role: 'user',
       status: 'pending',
+      showInCommunity: true,
     });
   });
 

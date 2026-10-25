@@ -2,6 +2,7 @@ import { zValidator } from '@hono/zod-validator';
 import {
   adminUserUpdateSchema,
   DISCIPLINES,
+  leaderboardQuerySchema,
   profileUpdateSchema,
   sessionInputSchema,
   sessionsQuerySchema,
@@ -13,6 +14,7 @@ import { routePath } from 'hono/route';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import { z } from 'zod';
 import { createAdminRepo } from './admin-repo';
+import { createCommunityRepo } from './community-repo';
 import type { AuthUser, VerifyToken } from './auth';
 import type { Db } from './db/client';
 import { silentLogger, type Logger } from './logger';
@@ -81,6 +83,7 @@ export function createApp(deps: AppDeps) {
   const repo = createSessionsRepo(db);
   const profilesRepo = createProfilesRepo(db);
   const adminRepo = createAdminRepo(db);
+  const communityRepo = createCommunityRepo(db);
   const dashboard = (userId: string) => repo.dashboard(userId, todayInLisbon(now()));
 
   const app = new Hono<AppEnv>().basePath('/api');
@@ -226,6 +229,21 @@ export function createApp(deps: AppDeps) {
   });
 
   app.get('/disciplines', (c) => c.json(DISCIPLINES));
+
+  app.get(
+    '/community/leaderboard',
+    zValidator('query', leaderboardQuerySchema, validationHook),
+    async (c) => {
+      const profile = c.get('profile');
+      const query = c.req.valid('query');
+      return c.json(
+        await communityRepo.leaderboard(profile.userId, !profile.showInCommunity, {
+          ...query,
+          date: query.date ?? todayInLisbon(now()),
+        }),
+      );
+    },
+  );
 
   app.get('/dashboard', async (c) => c.json(await dashboard(c.get('user').id)));
 

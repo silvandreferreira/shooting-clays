@@ -65,9 +65,10 @@ Charts:
 | `/history`     | History          | List (newest first) with discipline filter (kept in the URL: `?discipline=`); each item shows date, discipline, score, **Hardest targets: A, C and F** (only when recorded) and notes; edit and delete (with confirmation) |
 | `/history/:id` | Edit session     | Same form as Add, pre-filled; **Save** → back to History with the same filter                                                                                                                                              |
 | `/admin`       | Admin            | Admins only: user list (pending first) with email, sign-up date, sessions, last activity, status; switch to approve/disable (with undo); **Remove** after typing the name. Admin accounts have no controls                 |
-| `/community`   | Community        | Iteration 4 — see `roadmap.md`                                                                                                                                                                                             |
+| `/community`   | Community        | Iteration 4 — leaderboard per discipline for a day, week or month (month by default), podium for the top three, then a list; see `roadmap.md`                                                                              |
+| `/settings`    | Settings         | Iteration 4 — display name and **Show me in the Community** (on by default)                                                                                                                                                |
 
-Every signed-in screen has a header with **"Welcome, <first name>"** and an account button (Google photo, or the name's initial) that opens a menu with the email and **Sign out**. Admins also get an **Admin** tab with a badge counting the accounts waiting for approval.
+Every signed-in screen has a header with **"Welcome, <first name>"** and an account button (Google photo, or the name's initial) that opens a menu with the email, **Settings** (iteration 4) and **Sign out**. Admins also get an **Admin** tab with a badge counting the accounts waiting for approval.
 
 UI requirements: touch targets ≥ 44 px, readable in sunlight (high contrast), one-handed use, dark mode, installable as a PWA.
 

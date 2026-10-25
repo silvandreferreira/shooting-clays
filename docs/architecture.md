@@ -77,18 +77,18 @@ Package manager: **pnpm workspaces**. TypeScript `strict` everywhere.
 
 ### Front end (`apps/web`)
 
-| Area          | Choice                                            | Why                                                   |
-| ------------- | ------------------------------------------------- | ----------------------------------------------------- |
-| Framework     | React + Vite + TypeScript                         | Large ecosystem, fast dev server, static build        |
-| Routing       | React Router                                      | `/`, `/add`, `/history`, `/history/:id`, `/community` |
-| Styling       | Tailwind CSS                                      | Mobile-first utility classes, dark mode               |
-| Charts        | Recharts                                          | Declarative, responsive                               |
-| Forms         | React Hook Form + Zod (shared schemas)            | Same validation as the API                            |
-| Data & cache  | TanStack Query + `persistQueryClient` (IndexedDB) | See "Caching"                                         |
-| PWA           | vite-plugin-pwa                                   | Installable on the phone home screen                  |
-| i18n          | Single strings file (`src/i18n/en.ts`)            | English now, Portuguese possible later                |
-| Error capture | Sentry SDK                                        | See `observability.md`                                |
-| Tests         | Vitest + Testing Library; Playwright              | See `testing.md`                                      |
+| Area          | Choice                                            | Why                                                                          |
+| ------------- | ------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Framework     | React + Vite + TypeScript                         | Large ecosystem, fast dev server, static build                               |
+| Routing       | React Router                                      | `/`, `/add`, `/history`, `/history/:id`, `/community`, `/settings`, `/admin` |
+| Styling       | Tailwind CSS                                      | Mobile-first utility classes, dark mode                                      |
+| Charts        | Recharts                                          | Declarative, responsive                                                      |
+| Forms         | React Hook Form + Zod (shared schemas)            | Same validation as the API                                                   |
+| Data & cache  | TanStack Query + `persistQueryClient` (IndexedDB) | See "Caching"                                                                |
+| PWA           | vite-plugin-pwa                                   | Installable on the phone home screen                                         |
+| i18n          | Single strings file (`src/i18n/en.ts`)            | English now, Portuguese possible later                                       |
+| Error capture | Sentry SDK                                        | See `observability.md`                                                       |
+| Tests         | Vitest + Testing Library; Playwright              | See `testing.md`                                                             |
 
 ### Back end (`apps/api`)
 
@@ -146,13 +146,13 @@ Browser ──/api/* + Bearer JWT──► API ──verify with JWKS──► N
 
 ## Caching
 
-| Query key                                          | Content                           | Freshness                                                                                                                                                                                                                        |
-| -------------------------------------------------- | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `['me']`                                           | Name, avatar, email, role, status | Always revalidated on app open and window focus: an approval or disable applies without signing out. A data request answered `ACCOUNT_PENDING`/`ACCOUNT_DISABLED` re-checks it too. Decides which screens are shown              |
-| `['admin', 'users']`                               | Admin's user list                 | Admins only; revalidated on open and focus; also drives the pending badge                                                                                                                                                        |
-| `['dashboard']`                                    | Statistics + chart series         | Fresh for 30 s (`DASHBOARD_FRESH_MS`): revalidated on app open (the restored cache is older) and always on window focus; data written by a mutation counts as fresh, so returning to the dashboard after saving makes no request |
-| `['sessions', filters]`                            | History list                      | Revalidated when History opens                                                                                                                                                                                                   |
-| `['leaderboard', month, discipline]` (iteration 4) | Ranking                           | Stale after a few minutes                                                                                                                                                                                                        |
+| Query key                                       | Content                           | Freshness                                                                                                                                                                                                                        |
+| ----------------------------------------------- | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `['me']`                                        | Name, avatar, email, role, status | Always revalidated on app open and window focus: an approval or disable applies without signing out. A data request answered `ACCOUNT_PENDING`/`ACCOUNT_DISABLED` re-checks it too. Decides which screens are shown              |
+| `['admin', 'users']`                            | Admin's user list                 | Admins only; revalidated on open and focus; also drives the pending badge                                                                                                                                                        |
+| `['dashboard']`                                 | Statistics + chart series         | Fresh for 30 s (`DASHBOARD_FRESH_MS`): revalidated on app open (the restored cache is older) and always on window focus; data written by a mutation counts as fresh, so returning to the dashboard after saving makes no request |
+| `['sessions', filters]`                         | History list                      | Revalidated when History opens                                                                                                                                                                                                   |
+| `['leaderboard', { discipline, period, date }]` | Community ranking                 | Fresh for 3 minutes (`LEADERBOARD_FRESH_MS`); refetched after a Settings change                                                                                                                                                  |
 
 The persisted cache carries a version (`buster` = `CACHE_BUSTER:userId`); bump `CACHE_BUSTER` whenever the cached data shape changes.
 

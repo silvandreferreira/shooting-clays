@@ -13,6 +13,7 @@ const newSession = { date: '2026-10-23', discipline: 'trap', score: 20 };
 const DATA_ENDPOINTS: [string, string, unknown?][] = [
   ['GET', '/api/dashboard'],
   ['GET', '/api/disciplines'],
+  ['GET', '/api/community/leaderboard?discipline=trap'],
   ['GET', '/api/sessions'],
   ['POST', '/api/sessions', newSession],
   ['PUT', '/api/sessions/00000000-0000-0000-0000-000000000000', newSession],
