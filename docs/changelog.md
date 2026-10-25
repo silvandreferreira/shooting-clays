@@ -16,6 +16,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ### Dashboard charts
 
+- **Added:** the "Scores over time" chart has its own range selector: 3 months (default), 6 months, 1 year, All time; it no longer follows the Dashboard period (iteration 5 done, decision #55). E2E R29.
 - **Added:** the scores chart legend is a row of toggle buttons: tap a discipline to hide or show its line (iteration 5, done early). E2E R24.
 - **Changed:** "Average by discipline" shows on each bar the average plus the lowest and highest score (whisker and "min–max" label), with a note under the chart and a tooltip listing all three. E2E R25.
 

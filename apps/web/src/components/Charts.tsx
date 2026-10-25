@@ -1,4 +1,11 @@
-import type { DisciplineKey, SeriesPoint } from '@shooting-clays/shared';
+import {
+  CHART_RANGES,
+  chartRangeStart,
+  DEFAULT_CHART_RANGE,
+  type ChartRange,
+  type DisciplineKey,
+  type SeriesPoint,
+} from '@shooting-clays/shared';
 import { useState } from 'react';
 import {
   Bar,
@@ -113,14 +120,59 @@ function DisciplineToggles({
   );
 }
 
+/** The chart's own time range (3 months by default), independent of the Dashboard period. */
+function RangeSwitcher({
+  value,
+  onChange,
+}: {
+  value: ChartRange;
+  onChange: (range: ChartRange) => void;
+}) {
+  return (
+    <div
+      role="group"
+      aria-label={t.dashboard.rangeLabel}
+      className="mb-3 grid grid-cols-4 gap-1 rounded-xl border border-line bg-surface p-1"
+    >
+      {CHART_RANGES.map((r) => (
+        <button
+          key={r}
+          type="button"
+          aria-pressed={value === r}
+          onClick={() => onChange(r)}
+          className={`min-h-11 rounded-lg px-1 text-sm font-semibold ${
+            value === r ? 'bg-accent text-accent-ink' : 'text-ink-muted'
+          }`}
+        >
+          {t.dashboard.ranges[r]}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Every score per discipline over the selected range (rolling, counted back from the reference
+ * date). Range and hidden disciplines are per visit.
+ */
 export function ScoresChart({
-  series,
+  series: allSeries,
+  referenceDate,
   sample = false,
 }: {
   series: Partial<Record<DisciplineKey, SeriesPoint[]>>;
+  referenceDate: string;
   sample?: boolean;
 }) {
+  const [range, setRange] = useState<ChartRange>(DEFAULT_CHART_RANGE);
   const [hidden, setHidden] = useState<ReadonlySet<DisciplineKey>>(new Set());
+  const start = chartRangeStart(range, referenceDate);
+  const series = Object.fromEntries(
+    Object.entries(allSeries).map(([k, points]) => [
+      k,
+      start ? points.filter((p) => p.date >= start) : points,
+    ]),
+  ) as Partial<Record<DisciplineKey, SeriesPoint[]>>;
   const disciplines = (Object.keys(series) as DisciplineKey[]).filter((k) => series[k]?.length);
   const visible = disciplines.filter((d) => !hidden.has(d));
   const rows = toScoreRows(series);
@@ -132,6 +184,7 @@ export function ScoresChart({
     });
   return (
     <ChartCard title={t.dashboard.scoresChart} sample={sample}>
+      <RangeSwitcher value={range} onChange={setRange} />
       {rows.length === 0 ? (
         <p className="text-ink-muted">{t.dashboard.noChartData}</p>
       ) : (

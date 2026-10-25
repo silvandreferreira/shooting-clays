@@ -151,8 +151,9 @@ export async function expectCard(page: Page, name: string, values: string) {
 }
 
 export async function selectPeriod(page: Page, period: 'All time' | 'Last month' | 'This month') {
-  await page.getByRole('button', { name: period }).click();
-  await expect(page.getByRole('button', { name: period })).toHaveAttribute('aria-pressed', 'true');
+  const button = page.getByRole('group', { name: 'Period' }).getByRole('button', { name: period });
+  await button.click();
+  await expect(button).toHaveAttribute('aria-pressed', 'true');
 }
 
 export async function seriousA11yViolations(page: Page) {
