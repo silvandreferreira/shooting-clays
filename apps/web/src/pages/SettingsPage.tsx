@@ -1,5 +1,6 @@
 import { MAX_DISPLAY_NAME_LENGTH, type Me } from '@shooting-clays/shared';
 import { useId, useState, type FormEvent } from 'react';
+import { ClearCache } from '../components/ClearCache';
 import { LanguagePicker } from '../components/LanguagePicker';
 import { Switch } from '../components/Switch';
 import { useT } from '../i18n';
@@ -115,6 +116,7 @@ export function SettingsPage({ me }: { me: Me }) {
       <DisplayNameForm me={me} />
       <CommunitySwitch me={me} />
       <LanguageSetting />
+      {me.role === 'admin' && <ClearCache />}
     </div>
   );
 }

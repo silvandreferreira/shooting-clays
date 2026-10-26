@@ -4,6 +4,12 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Dashboard order and Settings
+
+- **Changed:** the Dashboard shows the scores-over-time chart first, then the averages chart, then the discipline cards. E2E R39.
+- **Changed:** **Clear cache and reload** moved from Admin to Settings (admins only). R38.
+- **Removed:** the FAQ link under the Community ranking (the FAQ is in the menu). Decision #61.
+
 ### Week and scores chart
 
 - **Changed:** Community weeks run Sunday to Saturday (was Monday to Sunday). Decision #60. R27.

@@ -194,7 +194,7 @@ Example: A and B both have five 25s; A has two 24s and B has one → A ranks abo
 - A discipline selector and a period switcher (**Day · Week · Month**, Month selected), with previous / next arrows and the period label (e.g. "October 2026", "18–24 Oct 2026", "24 Oct 2026").
 - **Podium**: the first three places as a three-step stair (2nd on the left, 1st in the middle and tallest, 3rd on the right), each with avatar, display name, rank and best score. With fewer than three shooters, the empty steps stay empty.
 - From 4th place down: a plain ranked list.
-- Each entry shows only: rank, avatar, display name and best score (e.g. **25**). The number of series and how many times the best score was reached only break ties; they are not shown (decisions #57, #58). The first three places are gold, silver and bronze (step colour, a ring around the photo and a small medal); shared places share the medal. The tie-break rules are in the FAQ (`/faq#ranking`), linked under the ranking.
+- Each entry shows only: rank, avatar, display name and best score (e.g. **25**). The number of series and how many times the best score was reached only break ties; they are not shown (decisions #57, #58). The first three places are gold, silver and bronze (step colour, a ring around the photo and a small medal); shared places share the medal. The tie-break rules are only in the FAQ (`/faq#ranking`), not on the Community screen.
 - The signed-in user's own entry is highlighted. If they are hidden from the community, a note says so and links to Settings.
 - Empty period: "No results for this period yet."
 

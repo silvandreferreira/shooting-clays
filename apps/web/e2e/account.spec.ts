@@ -169,9 +169,14 @@ test('R37: the admin searches users by name or email and filters All Â· Active Â
   await expect(page.getByText('No users match.')).toBeVisible();
 });
 
-test('R38: the admin clears this device cache and the app reloads', async ({ page }) => {
+test('R38: the admin clears this device cache in Settings and the app reloads', async ({
+  page,
+}) => {
   await page.goto('/admin');
   await expect(page.getByRole('heading', { name: 'Users' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Clear cache and reload' })).toHaveCount(0);
+  await page.goto('/settings');
+  await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
   await page.evaluate(async () => {
     await (await caches.open('e2e-marker')).put('/marker', new Response('x'));
   });
@@ -180,6 +185,6 @@ test('R38: the admin clears this device cache and the app reloads', async ({ pag
 
   await page.getByRole('button', { name: 'Clear cache and reload' }).click();
   await expect.poll(() => reloaded).toBe(true);
-  await expect(page.getByRole('heading', { name: 'Users' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
   expect(await page.evaluate(() => caches.has('e2e-marker'))).toBe(false);
 });

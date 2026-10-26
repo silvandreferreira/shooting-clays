@@ -128,11 +128,6 @@ export const en = {
     filterLabel: 'Show',
     filters: { all: 'All', active: 'Active', pending: 'Pending' },
     noMatches: 'No users match.',
-    deviceTitle: 'This device',
-    clearCache: 'Clear cache and reload',
-    clearingCache: 'Clearing…',
-    clearCacheHelp:
-      'Deletes what the app keeps on this device and loads the latest version. Your account and sessions are not touched; other devices are not affected.',
     signedUp: (date: string) => `Signed up ${date}`,
     sessions: (n: number) => (n === 1 ? '1 session' : `${n} sessions`),
     lastActivity: (date: string) => `Last activity ${date}`,
@@ -170,7 +165,6 @@ export const en = {
     loadError: 'Could not load the ranking.',
     hidden: 'You are hidden from the Community, so you are not in this ranking.',
     hiddenLink: 'Change in Settings',
-    howRanked: 'How is the ranking decided?',
   },
   settings: {
     title: 'Settings',
@@ -184,6 +178,11 @@ export const en = {
     showInCommunityHelp:
       'Your results appear on the Community rankings. Switch off to hide them; your own dashboard does not change.',
     language: 'Language',
+    deviceTitle: 'This device',
+    clearCache: 'Clear cache and reload',
+    clearingCache: 'Clearing…',
+    clearCacheHelp:
+      'Deletes what the app keeps on this device and loads the latest version. Your account and sessions are not touched; other devices are not affected.',
   },
   /** Each language is named in its own language, whatever the active one. */
   faq: {
