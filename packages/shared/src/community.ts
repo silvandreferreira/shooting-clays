@@ -52,13 +52,13 @@ function addDays(iso: string, days: number): string {
 
 /**
  * First and last day of the period containing `date`. Dates are calendar days in Europe/Lisbon
- * already, so this is plain calendar arithmetic. Weeks run Monday to Sunday.
+ * already, so this is plain calendar arithmetic. Weeks run Sunday to Saturday.
  */
 export function periodBounds(period: CommunityPeriod, date: string): { from: string; to: string } {
   if (period === 'day') return { from: date, to: date };
   if (period === 'week') {
-    const mondayOffset = (toDate(date).getUTCDay() + 6) % 7;
-    const from = addDays(date, -mondayOffset);
+    // getUTCDay() is 0 on Sunday, the first day of the week.
+    const from = addDays(date, -toDate(date).getUTCDay());
     return { from, to: addDays(from, 6) };
   }
   const from = `${date.slice(0, 7)}-01`;

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { toScoreRows } from './Charts';
 
 describe('toScoreRows', () => {
-  it('merges disciplines by date and averages same-day scores', () => {
+  it('keeps every series: two on the same day are two points, never an average', () => {
     expect(
       toScoreRows({
         compak: [
@@ -15,8 +15,9 @@ describe('toScoreRows', () => {
         ],
       }),
     ).toEqual([
-      { date: '2026-10-17', trap: 19 },
-      { date: '2026-10-23', compak: 14.5, trap: 18 },
+      { key: '2026-10-17#0', date: '2026-10-17', trap: 19 },
+      { key: '2026-10-23#0', date: '2026-10-23', compak: 13, trap: 18 },
+      { key: '2026-10-23#1', date: '2026-10-23', compak: 16 },
     ]);
   });
 });

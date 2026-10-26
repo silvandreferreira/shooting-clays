@@ -4,6 +4,11 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Week and scores chart
+
+- **Changed:** Community weeks run Sunday to Saturday (was Monday to Sunday). Decision #60. R27.
+- **Fixed:** the scores chart showed the average of same-day series (e.g. 14.5); it now shows one point per series, so only real scores appear. Decision #60.
+
 ### Admin
 
 - **Added:** search by name or email and filters All · Active · Pending (with counts) on the Admin page. E2E R37.
