@@ -85,3 +85,47 @@ test('R25: each bar of "Average by discipline" shows the average and the lowestâ
   await expect(range('compak')).toHaveText('1613â€“18');
   await expect(range('fosso')).toHaveCount(0);
 });
+
+test('R29: the scores chart has its own time range, 3 months by default', async ({ page }) => {
+  await page.goto('/');
+  await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
+  const ranges = page.getByRole('group', { name: 'Time range of the chart' });
+  const dots = page.getByRole('img', { name: 'Scores over time' }).locator('.recharts-line-dot');
+  const dotsFor = async (range: string) => {
+    await ranges.getByRole('button', { name: range }).click();
+    await expect(ranges.getByRole('button', { name: range })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    return dots.count();
+  };
+
+  await expect(ranges.getByRole('button', { name: '3 months' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  const threeMonths = await dots.count();
+  expect(threeMonths).toBeGreaterThan(0);
+  const sixMonths = await dotsFor('6 months');
+  // The first series (2026-04-12) is before 2026-04-23: only from 1 year.
+  const oneYear = await dotsFor('1 year');
+  const allTime = await dotsFor('All time');
+  expect(sixMonths).toBeGreaterThan(threeMonths);
+  expect(oneYear).toBeGreaterThan(sixMonths);
+  expect(allTime).toBe(oneYear);
+
+  // The Dashboard period still drives the cards, not the chart.
+  await selectPeriod(page, 'This month');
+  await expect(ranges.getByRole('button', { name: 'All time' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  expect(await dots.count()).toBe(allTime);
+
+  // Per visit: back to 3 months after a reload.
+  await page.reload();
+  await expect(ranges.getByRole('button', { name: '3 months' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+});

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  chartRangeStart,
   computeDashboard,
   computeStats,
   periodsForDate,
@@ -72,5 +73,28 @@ describe('computeDashboard', () => {
       '2026-10-02',
       '2026-10-20',
     ]);
+  });
+});
+
+describe('chartRangeStart', () => {
+  it('counts whole months back from the reference date, inclusive', () => {
+    expect(chartRangeStart('3m', '2026-10-23')).toBe('2026-07-23');
+    expect(chartRangeStart('6m', '2026-10-23')).toBe('2026-04-23');
+    expect(chartRangeStart('1y', '2026-10-23')).toBe('2025-10-23');
+  });
+
+  it('uses the last day of a shorter month', () => {
+    expect(chartRangeStart('3m', '2026-05-31')).toBe('2026-02-28');
+    expect(chartRangeStart('3m', '2028-05-31')).toBe('2028-02-29');
+    expect(chartRangeStart('6m', '2026-12-31')).toBe('2026-06-30');
+  });
+
+  it('crosses the year boundary', () => {
+    expect(chartRangeStart('3m', '2027-01-15')).toBe('2026-10-15');
+    expect(chartRangeStart('1y', '2027-02-28')).toBe('2026-02-28');
+  });
+
+  it('all time has no start', () => {
+    expect(chartRangeStart('all', '2026-10-23')).toBeNull();
   });
 });

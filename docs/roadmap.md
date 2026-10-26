@@ -1,15 +1,15 @@
 # Roadmap
 
-| Iteration | Name                                 | Status                                           |
-| --------- | ------------------------------------ | ------------------------------------------------ |
-| 1         | Core app                             | Done (2026-10-23)                                |
-| 2         | Authentication (Google sign-in)      | Done (2026-10-23)                                |
-| 3         | Admin (user approval and management) | Done (2026-10-23)                                |
-| 4         | Community (leaderboards)             | **In progress**                                  |
-| 5         | Interactive scores chart             | **In progress** (legend toggles done 2026-10-24) |
-| 6         | Translations (English / Portuguese)  | Planned                                          |
-| 7         | Clubs (proposal)                     | Planned                                          |
-| 8         | Official and unofficial results      | Planned                                          |
+| Iteration | Name                                 | Status            |
+| --------- | ------------------------------------ | ----------------- |
+| 1         | Core app                             | Done (2026-10-23) |
+| 2         | Authentication (Google sign-in)      | Done (2026-10-23) |
+| 3         | Admin (user approval and management) | Done (2026-10-23) |
+| 4         | Community (leaderboards)             | **In progress**   |
+| 5         | Interactive scores chart             | Done (2026-10-25) |
+| 6         | Translations (English / Portuguese)  | Planned           |
+| 7         | Clubs (proposal)                     | Planned           |
+| 8         | Official and unofficial results      | Planned           |
 
 When an iteration starts, mark it "In progress"; when it ships, mark it "Done" with the date and update `changelog.md`.
 
@@ -252,7 +252,7 @@ Goal: make the "Scores over time" chart on the Dashboard easier to read by choos
 
 ### Show/hide disciplines
 
-**Done early (2026-10-24, decision #51)**, as specified below: toggle buttons under the chart, tests R24 (E2E) and `ScoresChart.test.tsx`. The time range above is still to do.
+**Done early (2026-10-24, decision #51)**, as specified below: toggle buttons under the chart, tests R24 (E2E) and `ScoresChart.test.tsx`. The time range above was done on 2026-10-25 (decision #55, tests R29 and `ScoresChart.test.tsx`).
 
 - The chart legend becomes a row of **toggle buttons**, one per discipline in the chart, each with the discipline's colour swatch and name.
 - **All disciplines are shown by default.** Tapping a legend item hides that discipline's line; tapping it again shows it.
