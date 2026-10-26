@@ -14,6 +14,7 @@ export const ptPT = {
     admin: 'Admin',
     pendingBadge: (n: number) => `${n} à espera de aprovação`,
     menu: 'Menu',
+    faq: 'Perguntas frequentes',
     closeMenu: 'Fechar menu',
   },
   disciplines: {
@@ -149,14 +150,13 @@ export const ptPT = {
     ranking: 'Classificação',
     place: (rank: number) => `${rank}.º`,
     bestLabel: (score: number) => `Melhor ${score}`,
-    series: (n: number) => (n === 1 ? '1 série' : `${n} séries`),
     you: 'Você',
     empty: 'Ainda não há resultados neste período.',
     loading: 'A carregar…',
     loadError: 'Não foi possível carregar a classificação.',
     hidden: 'Está escondido da Comunidade, por isso não aparece nesta classificação.',
     hiddenLink: 'Alterar nas Definições',
-    rules: 'Primeiro quem tem mais séries de 25, depois de 24, e assim por diante.',
+    howRanked: 'Como funciona a classificação?',
   },
   settings: {
     title: 'Definições',
@@ -170,6 +170,42 @@ export const ptPT = {
     showInCommunityHelp:
       'Os seus resultados aparecem nas classificações da Comunidade. Desligue para os esconder; o seu painel não muda.',
     language: 'Idioma',
+  },
+  faq: {
+    title: 'Perguntas frequentes',
+    backToSignIn: 'Voltar ao início de sessão',
+    items: {
+      ranking: {
+        question: 'Como é feita a classificação da Comunidade?',
+        answer:
+          'Contam-se as séries de cada atirador na disciplina e no período escolhidos. Fica à frente quem tem mais séries de 25; se houver empate, quem tem mais séries de 24, depois de 23, e assim por diante até 0. Só aparece a melhor pontuação, mas todas as séries contam. Quem tiver exatamente as mesmas séries em todas as pontuações partilha o lugar (por exemplo 1.º, 1.º, 3.º) e aparece primeiro quem chegou mais cedo à sua melhor pontuação. Os três primeiros lugares recebem ouro, prata e bronze; um lugar partilhado partilha a medalha.',
+      },
+      periods: {
+        question: 'O que abrangem o Dia, a Semana e o Mês?',
+        answer:
+          'Dias de calendário em Portugal (hora de Lisboa). A Semana vai de segunda a domingo e o Mês é o mês de calendário. As setas mostram os períodos anteriores.',
+      },
+      community: {
+        question: 'Quem aparece na Comunidade?',
+        answer:
+          'As contas aprovadas com "Mostrar-me na Comunidade" ligado (vem ligado por defeito). Só aparecem o nome, a foto e as pontuações, nunca o email. Para se esconder, desligue a opção nas Definições; o seu painel não muda.',
+      },
+      pending: {
+        question: 'Porque é que a minha conta nova está à espera de aprovação?',
+        answer:
+          'Todas as contas novas são aprovadas pelo administrador antes de poderem registar sessões. Até lá, o painel mostra dados de exemplo.',
+      },
+      targets: {
+        question: 'Onde posso registar os pratos mais difíceis?',
+        answer:
+          'No Compak Sporting e no Percurso de Caça, cujos pratos têm as letras A a F. As outras disciplinas não têm pratos com letra.',
+      },
+      language: {
+        question: 'Como mudo o idioma?',
+        answer:
+          'Nas Definições → Idioma (English ou Português), ou no ecrã de início de sessão. A escolha fica guardada no seu perfil e acompanha-o noutros dispositivos.',
+      },
+    },
   },
   languages: { en: 'English', 'pt-PT': 'Português' },
   apiErrors: {

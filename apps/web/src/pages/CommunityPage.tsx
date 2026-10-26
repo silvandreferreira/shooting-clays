@@ -18,23 +18,44 @@ import { useLeaderboard } from '../lib/queries';
 const isPeriod = (value: string | null): value is CommunityPeriod =>
   COMMUNITY_PERIODS.includes(value as CommunityPeriod);
 
+/** Olympic colours for the first three places; ties share the medal (two golds, then bronze). */
+const MEDAL: Record<number, { fill: string; ring: string }> = {
+  1: { fill: 'bg-gold', ring: 'ring-gold' },
+  2: { fill: 'bg-silver', ring: 'ring-silver' },
+  3: { fill: 'bg-bronze', ring: 'ring-bronze' },
+};
+
 function AvatarCircle({ entry, size }: { entry: LeaderboardEntry; size: string }) {
+  const medal = MEDAL[entry.rank];
   return (
-    <span
-      className={`${size} flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-accent text-lg font-bold text-accent-ink`}
-    >
-      <Avatar name={entry.displayName} image={entry.avatarUrl} />
+    <span className={`relative shrink-0 ${size}`}>
+      <span
+        className={`flex size-full items-center justify-center overflow-hidden rounded-full bg-accent text-lg font-bold text-accent-ink ${
+          medal ? `ring-4 ${medal.ring}` : ''
+        }`}
+      >
+        <Avatar name={entry.displayName} image={entry.avatarUrl} />
+      </span>
+      {medal && (
+        <span
+          aria-hidden
+          data-testid="medal"
+          className={`absolute -right-1.5 -bottom-1.5 flex size-6 items-center justify-center rounded-full border-2 border-card text-xs font-bold text-medal-ink ${medal.fill}`}
+        >
+          {entry.rank}
+        </span>
+      )}
     </span>
   );
 }
 
-function Best({ entry }: { entry: LeaderboardEntry }) {
+function Score({ entry }: { entry: LeaderboardEntry }) {
   const t = useT();
   return (
-    <>
+    <span className="text-lg font-bold tabular-nums">
       <span aria-hidden>{entry.bestScore}</span>
       <span className="sr-only">{t.community.bestLabel(entry.bestScore)}</span>
-    </>
+    </span>
   );
 }
 
@@ -55,19 +76,17 @@ function Podium({ entries }: { entries: LeaderboardEntry[] }) {
             data-testid={`podium-${i === 1 ? 1 : i === 0 ? 2 : 3}`}
             className="flex min-w-0 flex-col items-center gap-1 text-center"
           >
-            <AvatarCircle entry={entry} size={i === 1 ? 'size-14' : 'size-11'} />
+            <AvatarCircle entry={entry} size={i === 1 ? 'size-16' : 'size-12'} />
             <span
-              className={`w-full truncate text-sm font-semibold ${entry.isMe ? 'text-accent' : ''}`}
+              className={`mt-1 w-full truncate text-sm font-semibold ${entry.isMe ? 'text-accent' : ''}`}
             >
               {entry.displayName}
             </span>
-            <span className="text-lg font-bold tabular-nums">
-              <Best entry={entry} />
-            </span>
+            <Score entry={entry} />
             <span
-              className={`flex w-full items-start justify-center rounded-t-xl border-2 pt-1 text-xl font-bold ${
+              className={`flex w-full items-start justify-center rounded-t-xl border border-black/10 pt-1 text-xl font-bold text-medal-ink ${
                 STEP_HEIGHT[entry.rank] ?? 'h-11'
-              } ${i === 1 ? 'border-accent bg-accent text-accent-ink' : 'border-line bg-card'}`}
+              } ${MEDAL[entry.rank]?.fill ?? 'bg-card'}`}
             >
               {t.community.place(entry.rank)}
             </span>
@@ -97,16 +116,11 @@ function Row({ entry }: { entry: LeaderboardEntry }) {
     >
       <span className="w-8 shrink-0 text-center text-lg font-bold tabular-nums">{entry.rank}</span>
       <AvatarCircle entry={entry} size="size-11" />
-      <span className="min-w-0 flex-1">
-        <span className="block truncate font-semibold">
-          {entry.displayName}
-          {entry.isMe && <span className="ml-2 text-sm text-accent">{t.community.you}</span>}
-        </span>
-        <span className="block text-sm text-ink-muted">{t.community.series(entry.series)}</span>
+      <span className="min-w-0 flex-1 truncate font-semibold">
+        {entry.displayName}
+        {entry.isMe && <span className="ml-2 text-sm text-accent">{t.community.you}</span>}
       </span>
-      <span className="text-lg font-bold tabular-nums">
-        <Best entry={entry} />
-      </span>
+      <Score entry={entry} />
     </li>
   );
 }
@@ -224,7 +238,11 @@ export function CommunityPage() {
               ))}
             </ol>
           )}
-          <p className="text-center text-sm text-ink-muted">{t.community.rules}</p>
+          <p className="text-center text-sm">
+            <Link to="/faq#ranking" className="font-semibold text-ink-muted underline">
+              {t.community.howRanked}
+            </Link>
+          </p>
         </>
       )}
     </div>
