@@ -4,6 +4,11 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Iteration 6 — Translations
+
+- **Added:** the app in European Portuguese: language picker (English · Português) in Settings and on the sign-in screen; switches at once; first visit follows the browser; the choice is kept on the device and in the profile. Dates, lists, form and API errors follow the language. Migration 0004 (`profiles.locale`). Decision #56. E2E R30–R33; R9 and R10 also in pt-PT.
+- **Changed:** score validation message is now "Score must be a whole number from 0 to 25." (R6).
+
 ### Iteration 4 — Community
 
 - **Added:** Community tab (`/community`): ranking per discipline for a day, week or month (month by default), stepping back to earlier periods; podium for the top three, then a list with your own row highlighted. API `GET /api/community/leaderboard`. Tests R26–R28.

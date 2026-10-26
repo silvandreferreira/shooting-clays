@@ -1,4 +1,4 @@
-import { ACCOUNT_STATUSES, ROLES } from '@shooting-clays/shared';
+import { ACCOUNT_STATUSES, LOCALES, ROLES } from '@shooting-clays/shared';
 import { sql } from 'drizzle-orm';
 import {
   boolean,
@@ -24,6 +24,8 @@ export const profiles = pgTable(
     statusChangedAt: timestamp('status_changed_at', { withTimezone: true }),
     /** Listed on the Community leaderboards; opt-out (decision #53). */
     showInCommunity: boolean('show_in_community').notNull().default(true),
+    /** UI language; null = follow the browser (iteration 6). */
+    locale: text('locale', { enum: LOCALES }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true })
       .notNull()
@@ -33,6 +35,7 @@ export const profiles = pgTable(
   (t) => [
     check('profiles_role_values', sql`${t.role} in ('user', 'admin')`),
     check('profiles_status_values', sql`${t.status} in ('pending', 'active', 'disabled')`),
+    check('profiles_locale_values', sql`${t.locale} in ('en', 'pt-PT')`),
   ],
 );
 

@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 import { Layout } from './components/Layout';
-import { t } from './i18n/en';
+import { useLocale, useT } from './i18n';
 import { queryKeys, useMe } from './lib/queries';
 import type { CurrentUser } from './lib/session';
 import { useSignOut } from './lib/sign-out';
@@ -16,10 +16,20 @@ import { InactivePage } from './pages/InactivePage';
 import { SettingsPage } from './pages/SettingsPage';
 
 export function App({ user }: { user: CurrentUser }) {
+  const t = useT();
   const { data: me, isError, refetch } = useMe();
   const queryClient = useQueryClient();
   const signOut = useSignOut();
   const status = me?.status;
+  const { locale, setLocale } = useLocale();
+  const savedLocale = me?.locale;
+
+  useEffect(() => {
+    // The language saved in the profile wins over this device's (docs/roadmap.md → Iteration 6).
+    if (savedLocale && savedLocale !== locale) setLocale(savedLocale);
+    // Only when the saved value changes: a local switch must not be undone before it is saved.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [savedLocale]);
 
   useEffect(() => {
     // A disabled account keeps nothing personal on the device: drop every cached query but the

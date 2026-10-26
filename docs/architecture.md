@@ -42,7 +42,7 @@ shooting-clays/
 ├─ apps/
 │  ├─ web/                 # React + Vite front end
 │  │  ├─ src/
-│  │  │  ├─ i18n/en.ts     # all UI strings
+│  │  │  ├─ i18n/          # en.ts, pt-PT.ts (UI strings), index.tsx (useT, language)
 │  │  │  ├─ lib/           # API client, queries, persisted query client, colours
 │  │  │  ├─ components/    # Layout, cards, charts, session form
 │  │  │  └─ pages/         # Dashboard (real and sample), Add, Edit, History, Admin, Inactive
@@ -77,18 +77,18 @@ Package manager: **pnpm workspaces**. TypeScript `strict` everywhere.
 
 ### Front end (`apps/web`)
 
-| Area          | Choice                                            | Why                                                                          |
-| ------------- | ------------------------------------------------- | ---------------------------------------------------------------------------- |
-| Framework     | React + Vite + TypeScript                         | Large ecosystem, fast dev server, static build                               |
-| Routing       | React Router                                      | `/`, `/add`, `/history`, `/history/:id`, `/community`, `/settings`, `/admin` |
-| Styling       | Tailwind CSS                                      | Mobile-first utility classes, dark mode                                      |
-| Charts        | Recharts                                          | Declarative, responsive                                                      |
-| Forms         | React Hook Form + Zod (shared schemas)            | Same validation as the API                                                   |
-| Data & cache  | TanStack Query + `persistQueryClient` (IndexedDB) | See "Caching"                                                                |
-| PWA           | vite-plugin-pwa                                   | Installable on the phone home screen                                         |
-| i18n          | Single strings file (`src/i18n/en.ts`)            | English now, Portuguese possible later                                       |
-| Error capture | Sentry SDK                                        | See `observability.md`                                                       |
-| Tests         | Vitest + Testing Library; Playwright              | See `testing.md`                                                             |
+| Area          | Choice                                            | Why                                                                                                          |
+| ------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Framework     | React + Vite + TypeScript                         | Large ecosystem, fast dev server, static build                                                               |
+| Routing       | React Router                                      | `/`, `/add`, `/history`, `/history/:id`, `/community`, `/settings`, `/admin`                                 |
+| Styling       | Tailwind CSS                                      | Mobile-first utility classes, dark mode                                                                      |
+| Charts        | Recharts                                          | Declarative, responsive                                                                                      |
+| Forms         | React Hook Form + Zod (shared schemas)            | Same validation as the API                                                                                   |
+| Data & cache  | TanStack Query + `persistQueryClient` (IndexedDB) | See "Caching"                                                                                                |
+| PWA           | vite-plugin-pwa                                   | Installable on the phone home screen                                                                         |
+| i18n          | `src/i18n/en.ts` + `pt-PT.ts`, `useT()` hook      | Language switch without reload; `<html lang>`, `Intl` per language; choice in `localStorage` and the profile |
+| Error capture | Sentry SDK                                        | See `observability.md`                                                                                       |
+| Tests         | Vitest + Testing Library; Playwright              | See `testing.md`                                                                                             |
 
 ### Back end (`apps/api`)
 

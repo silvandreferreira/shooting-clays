@@ -157,6 +157,11 @@ describe('profileUpdateSchema', () => {
     });
   });
 
+  it('accepts a supported locale only', () => {
+    expect(profileUpdateSchema.parse({ locale: 'pt-PT' })).toEqual({ locale: 'pt-PT' });
+    expect(profileUpdateSchema.safeParse({ locale: 'pt-BR' }).success).toBe(false);
+  });
+
   it('rejects an empty update', () => {
     expect(profileUpdateSchema.safeParse({}).success).toBe(false);
   });

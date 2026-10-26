@@ -20,7 +20,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { t } from '../i18n/en';
+import { useT, type Strings } from '../i18n';
 import { disciplineColor } from '../lib/colors';
 import { formatShortDate } from '../lib/format';
 import { SampleBadge } from './SampleBadge';
@@ -90,6 +90,7 @@ function DisciplineToggles({
   hidden: ReadonlySet<DisciplineKey>;
   onToggle: (d: DisciplineKey) => void;
 }) {
+  const t = useT();
   return (
     <div role="group" aria-label={t.dashboard.legendLabel} className="mt-2 flex flex-wrap gap-1">
       {disciplines.map((d) => {
@@ -128,6 +129,7 @@ function RangeSwitcher({
   value: ChartRange;
   onChange: (range: ChartRange) => void;
 }) {
+  const t = useT();
   return (
     <div
       role="group"
@@ -164,6 +166,7 @@ export function ScoresChart({
   referenceDate: string;
   sample?: boolean;
 }) {
+  const t = useT();
   const [range, setRange] = useState<ChartRange>(DEFAULT_CHART_RANGE);
   const [hidden, setHidden] = useState<ReadonlySet<DisciplineKey>>(new Set());
   const start = chartRangeStart(range, referenceDate);
@@ -268,7 +271,7 @@ interface BarLabelProps {
  * "min–max" underneath. Bar height is the average, so the whisker ends are placed with the same
  * scale (pixels per point = bar height / average).
  */
-function rangeLabel(rows: AverageBar[]) {
+function rangeLabel(rows: AverageBar[], t: Strings) {
   function RangeLabel(props: BarLabelProps) {
     const row = rows[props.index ?? -1];
     if (!row) return null;
@@ -319,6 +322,7 @@ function AverageTooltip({
   active?: boolean;
   payload?: readonly { payload?: AverageBar & { name: string } }[];
 }) {
+  const t = useT();
   const row = payload?.[0]?.payload;
   if (!active || !row) return null;
   return (
@@ -341,6 +345,7 @@ export function AveragesChart({
   averages: AverageBar[];
   sample?: boolean;
 }) {
+  const t = useT();
   const rows = averages.map((a) => ({ ...a, name: t.disciplines[a.discipline] }));
   return (
     <ChartCard title={t.dashboard.averagesChart} sample={sample}>
@@ -369,7 +374,7 @@ export function AveragesChart({
                   {rows.map((r) => (
                     <Cell key={r.discipline} fill={disciplineColor(r.discipline)} />
                   ))}
-                  <LabelList dataKey="avg" content={rangeLabel(rows)} />
+                  <LabelList dataKey="avg" content={rangeLabel(rows, t)} />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>

@@ -4,7 +4,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import { App } from './App';
-import { t } from './i18n/en';
+import { I18nProvider, strings, useT } from './i18n';
 import { completeSignInRedirect } from './lib/auth';
 import { createQueryClient, persistOptionsFor } from './lib/query-client';
 import { useAuthState } from './lib/session';
@@ -18,6 +18,7 @@ if (import.meta.env.VITE_SENTRY_DSN) {
 const queryClient = createQueryClient();
 
 function Root() {
+  const t = useT();
   const auth = useAuthState();
   if (auth.status === 'loading') {
     return <p className="py-16 text-center text-ink-muted">{t.auth.loading}</p>;
@@ -39,10 +40,12 @@ await completeSignInRedirect();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Sentry.ErrorBoundary fallback={<p className="p-8 text-center">{t.errorBoundary}</p>}>
-      <BrowserRouter>
-        <Root />
-      </BrowserRouter>
+    <Sentry.ErrorBoundary fallback={<p className="p-8 text-center">{strings().errorBoundary}</p>}>
+      <I18nProvider>
+        <BrowserRouter>
+          <Root />
+        </BrowserRouter>
+      </I18nProvider>
     </Sentry.ErrorBoundary>
   </StrictMode>,
 );

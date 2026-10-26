@@ -10,11 +10,12 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { AveragesChart, ScoresChart } from '../components/Charts';
 import { DisciplineCard } from '../components/DisciplineCard';
-import { t } from '../i18n/en';
+import { useT } from '../i18n';
 import { useDashboard } from '../lib/queries';
 import { sampleDashboard } from '../lib/sample-dashboard';
 
 function PeriodSwitcher({ value, onChange }: { value: Period; onChange: (p: Period) => void }) {
+  const t = useT();
   return (
     <div
       role="group"
@@ -39,6 +40,7 @@ function PeriodSwitcher({ value, onChange }: { value: Period; onChange: (p: Peri
 }
 
 export function DashboardPage() {
+  const t = useT();
   const { data, isPending, isError, refetch } = useDashboard();
 
   if (isPending) return <p className="py-8 text-center text-ink-muted">{t.dashboard.loading}</p>;
@@ -67,6 +69,7 @@ export function SampleDashboardPage() {
 }
 
 function DashboardView({ data, sample = false }: { data: Dashboard; sample?: boolean }) {
+  const t = useT();
   const [period, setPeriod] = useState<Period>('allTime');
 
   // Cards for every discipline that has ever been shot; periods without data show "—".

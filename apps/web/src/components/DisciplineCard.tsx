@@ -1,6 +1,6 @@
 import type { DisciplineKey, PeriodStats, SeriesPoint } from '@shooting-clays/shared';
 import { Line, LineChart, ResponsiveContainer, YAxis } from 'recharts';
-import { t } from '../i18n/en';
+import { useT } from '../i18n';
 import { disciplineColor } from '../lib/colors';
 import { formatStat } from '../lib/format';
 import { SampleBadge } from './SampleBadge';
@@ -14,6 +14,7 @@ interface Props {
 }
 
 export function DisciplineCard({ discipline, stats, points, sample = false }: Props) {
+  const t = useT();
   const name = t.disciplines[discipline];
   return (
     <article

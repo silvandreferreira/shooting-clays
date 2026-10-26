@@ -5,9 +5,9 @@
 | 1         | Core app                             | Done (2026-10-23) |
 | 2         | Authentication (Google sign-in)      | Done (2026-10-23) |
 | 3         | Admin (user approval and management) | Done (2026-10-23) |
-| 4         | Community (leaderboards)             | **In progress**   |
+| 4         | Community (leaderboards)             | Done (2026-10-25) |
 | 5         | Interactive scores chart             | Done (2026-10-25) |
-| 6         | Translations (English / Portuguese)  | Planned           |
+| 6         | Translations (English / Portuguese)  | **In progress**   |
 | 7         | Clubs (proposal)                     | Planned           |
 | 8         | Official and unofficial results      | Planned           |
 
@@ -292,8 +292,8 @@ Goal: each user chooses whether the app is shown in **English** or **European Po
 
 ### Language selector
 
-- In the **account menu** (header, next to "Sign out"): "Language" with two options, **English** and **Português**, each written in its own language.
-- Also on the **sign-in screen** (small switch below the button), so the choice is possible before signing in.
+- In **Settings** (`/settings`, iteration 4): "Language" with two options, **English** and **Português**, each written in its own language. (Planned for the account menu; moved to Settings, which did not exist when this was written — decision #56.)
+- Also on the **sign-in screen** (small switch below the button), so the choice is possible before signing in. Pending users (no Settings) choose there.
 - Switching applies **immediately**, without reloading; the current screen and any form keep their state.
 - `<html lang>` is updated to the active language (screen readers and hyphenation).
 
@@ -319,7 +319,11 @@ Not translated: the user's own content (notes, display name), the imported histo
 ### API and data
 
 - Migration: `profiles.locale text null` with `check (locale in ('en','pt-PT'))`; `null` = not chosen yet (follow the browser).
-- `GET /api/me/profile` returns `locale`; `PUT /api/me/profile` accepts `{ "locale": "en" | "pt-PT" }` (alone or with `displayName`).
+- `GET /api/me` returns `locale`; `PUT /api/me/profile` accepts `{ "locale": "en" | "pt-PT" }` (alone or with the other fields).
+
+### Status (2026-10-26)
+
+Built on `feat/translations-pt-pt`: migration 0004 (`profiles.locale`), `pt-PT.ts`, `useT()` / `I18nProvider`, language picker in Settings and on the sign-in screen, dates and lists per language, form and API errors translated, tests R30–R33 (R9 and R10 also in pt-PT). Decision #56.
 
 ### Tests
 

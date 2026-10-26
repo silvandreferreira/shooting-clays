@@ -25,3 +25,25 @@ for (const colorScheme of ['light', 'dark'] as const) {
     expect(await seriousA11yViolations(page)).toEqual([]);
   });
 }
+
+test.describe('in Portuguese', () => {
+  test.use({ locale: 'pt-PT' });
+
+  test('R10: no serious accessibility violations (pt-PT)', async ({ page }) => {
+    await page.goto('/');
+    await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'pt-PT');
+    expect(await seriousA11yViolations(page)).toEqual([]);
+
+    for (const [path, heading] of [
+      ['/add', 'Adicionar sessão'],
+      ['/history', 'Histórico'],
+      ['/community', 'Comunidade'],
+      ['/settings', 'Definições'],
+    ] as const) {
+      await page.goto(path);
+      await expect(page.getByRole('heading', { name: heading })).toBeVisible();
+      expect(await seriousA11yViolations(page)).toEqual([]);
+    }
+  });
+});

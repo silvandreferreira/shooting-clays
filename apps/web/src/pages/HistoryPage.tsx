@@ -1,11 +1,12 @@
 import { DISCIPLINE_KEYS, type Session } from '@shooting-clays/shared';
 import { Link, useLocation, useSearchParams } from 'react-router';
-import { t } from '../i18n/en';
+import { useT } from '../i18n';
 import { disciplineColor } from '../lib/colors';
 import { formatDate, formatList } from '../lib/format';
 import { useDeleteSession, useSessions } from '../lib/queries';
 
 function SessionItem({ session }: { session: Session }) {
+  const t = useT();
   const location = useLocation();
   const deleteSession = useDeleteSession();
   const onDelete = () => {
@@ -68,6 +69,7 @@ function SessionItem({ session }: { session: Session }) {
 }
 
 export function HistoryPage() {
+  const t = useT();
   // The filter lives in the URL so it survives editing a session and coming back.
   const [searchParams, setSearchParams] = useSearchParams();
   const param = searchParams.get('discipline');

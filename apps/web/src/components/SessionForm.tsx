@@ -10,7 +10,8 @@ import {
 } from '@shooting-clays/shared';
 import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
-import { t } from '../i18n/en';
+import { apiErrorMessage, useT } from '../i18n';
+import { ApiError } from '../lib/api';
 
 interface Props {
   title: string;
@@ -23,7 +24,9 @@ const fieldLabel = 'mb-2 block text-sm font-semibold';
 const errorText = 'mt-1 text-sm font-medium text-danger';
 
 export function SessionForm({ title, defaultValues, onSubmit, onCancel }: Props) {
-  const [saveError, setSaveError] = useState<string | null>(null);
+  const t = useT();
+  // The failure, not its text: the message follows the active language.
+  const [saveError, setSaveError] = useState<{ code?: string } | null>(null);
   const {
     register,
     handleSubmit,
@@ -54,9 +57,7 @@ export function SessionForm({ title, defaultValues, onSubmit, onCancel }: Props)
     try {
       await onSubmit(data);
     } catch (error) {
-      setSaveError(
-        error instanceof Error ? `${t.form.saveError} (${error.message})` : t.form.saveError,
-      );
+      setSaveError({ code: error instanceof ApiError ? error.code : undefined });
     }
   });
 
@@ -75,7 +76,7 @@ export function SessionForm({ title, defaultValues, onSubmit, onCancel }: Props)
           aria-invalid={Boolean(errors.date)}
           className="min-h-12 w-full rounded-xl border border-line bg-card px-3 text-lg"
         />
-        {errors.date && <p className={errorText}>{errors.date.message}</p>}
+        {errors.date && <p className={errorText}>{t.form.errors.date}</p>}
       </div>
 
       <fieldset>
@@ -127,7 +128,7 @@ export function SessionForm({ title, defaultValues, onSubmit, onCancel }: Props)
         </div>
         {errors.score && (
           <p role="alert" className={errorText}>
-            {errors.score.message}
+            {t.form.errors.score}
           </p>
         )}
       </div>
@@ -166,12 +167,13 @@ export function SessionForm({ title, defaultValues, onSubmit, onCancel }: Props)
           aria-invalid={Boolean(errors.notes)}
           className="w-full rounded-xl border border-line bg-card p-3 text-base"
         />
-        {errors.notes && <p className={errorText}>{errors.notes.message}</p>}
+        {errors.notes && <p className={errorText}>{t.form.errors.notes}</p>}
       </div>
 
       {saveError && (
         <p role="alert" className="rounded-xl border border-danger p-3 font-medium text-danger">
-          {saveError}
+          {t.form.saveError}
+          {saveError.code && ` (${apiErrorMessage(t, saveError.code)})`}
         </p>
       )}
 

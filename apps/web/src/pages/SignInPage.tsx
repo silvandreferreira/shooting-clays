@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { t } from '../i18n/en';
+import { useT } from '../i18n';
+import { LanguagePicker } from '../components/LanguagePicker';
 import { signInWithGoogle } from '../lib/auth';
 
 function GoogleIcon() {
@@ -23,6 +24,7 @@ function GoogleIcon() {
 }
 
 export function SignInPage() {
+  const t = useT();
   const [state, setState] = useState<'idle' | 'redirecting' | 'error'>('idle');
   const onSignIn = async () => {
     setState('redirecting');
@@ -50,6 +52,9 @@ export function SignInPage() {
           {t.auth.signInError}
         </p>
       )}
+      <div className="mx-auto w-full max-w-60">
+        <LanguagePicker />
+      </div>
     </main>
   );
 }
