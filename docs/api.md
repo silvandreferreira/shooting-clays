@@ -139,7 +139,7 @@ When a discipline has no sessions in a period, `avg`, `min` and `max` are `null`
 }
 ```
 
-`displayName` and `avatarUrl` come from Google on the first sign-in; afterwards the user's own changes are kept. `email` comes from the token and is only ever returned to its owner. Types: `Me`, `AdminUser` in `packages/shared/src/schemas.ts`.
+`displayName` and `avatarUrl` come from Google on the first sign-in; afterwards the user's own changes are kept. In the Community leaderboard and the Admin list, `avatarUrl` is the current Google photo from Neon Auth (`neon_auth."user".image`), or the stored one when Neon Auth has none. `email` comes from the token and is only ever returned to its owner. Types: `Me`, `AdminUser` in `packages/shared/src/schemas.ts`.
 
 ### `AdminUser` shape
 

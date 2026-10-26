@@ -1,4 +1,4 @@
-import { expect, expectCard, OTHER, OWNER, test } from './fixtures';
+import { accountItem, expect, expectCard, openAccountMenu, OTHER, OWNER, test } from './fixtures';
 
 const CACHE_KEY = 'shooting-clays-cache';
 
@@ -48,9 +48,9 @@ test('R15: the header greets the user by first name and signing out clears the c
   await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
   await expect.poll(() => hasPersistedCache(page)).toBe(true);
 
-  await page.getByRole('button', { name: 'Account' }).click();
-  await expect(page.getByRole('menu')).toContainText(OWNER.email);
-  await page.getByRole('menuitem', { name: 'Sign out' }).click();
+  await openAccountMenu(page);
+  await expect(page.getByText(OWNER.email)).toBeVisible();
+  await accountItem(page, 'Sign out').click();
 
   await expect(page.getByRole('button', { name: 'Sign in with Google' })).toBeVisible();
   await expect.poll(() => hasPersistedCache(page)).toBe(false);

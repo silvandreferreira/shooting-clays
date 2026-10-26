@@ -1,9 +1,9 @@
-import { card, expect, expectCard, selectPeriod, test } from './fixtures';
+import { card, expect, expectCard, goTo, selectPeriod, test } from './fixtures';
 
 test('R4: adding a session updates the dashboard without a reload', async ({ page }) => {
   await page.goto('/');
   await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
-  await page.getByRole('link', { name: 'Add' }).click();
+  await goTo(page, 'Add');
 
   await expect(page.getByLabel('Date')).toHaveValue('2026-10-23');
   await page.getByText('Compak Sporting', { exact: true }).click();

@@ -7,7 +7,7 @@ import {
   type Leaderboard,
   type RankableShooter,
 } from '@shooting-clays/shared';
-import { and, asc, eq, gte, lte } from 'drizzle-orm';
+import { and, asc, eq, gte, lte, sql } from 'drizzle-orm';
 import type { Db } from './db/client';
 import { profiles, sessions } from './db/schema';
 
@@ -27,7 +27,10 @@ export function createCommunityRepo(db: Db) {
         .select({
           userId: sessions.userId,
           displayName: profiles.displayName,
-          avatarUrl: profiles.avatarUrl,
+          // The current Google photo lives in Neon Auth; the profile keeps the one from sign-up.
+          avatarUrl: sql<string | null>`coalesce(
+            (select u.image from neon_auth."user" u where u.id::text = ${profiles.userId}),
+            ${profiles.avatarUrl})`,
           score: sessions.score,
           date: sessions.date,
           createdAt: sessions.createdAt,

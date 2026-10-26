@@ -19,6 +19,8 @@ export const en = {
     community: 'Community',
     admin: 'Admin',
     pendingBadge: (n: number) => `${n} waiting for approval`,
+    menu: 'Menu',
+    closeMenu: 'Close menu',
   },
   disciplines: {
     compak: 'Compak Sporting',
@@ -152,9 +154,7 @@ export const en = {
     ranking: 'Ranking',
     place: (rank: number) =>
       `${rank}${rank === 1 ? 'st' : rank === 2 ? 'nd' : rank === 3 ? 'rd' : 'th'}`,
-    best: (score: number, times: number) => (times > 1 ? `${score} ×${times}` : String(score)),
-    bestLabel: (score: number, times: number) =>
-      times === 1 ? `Best ${score}, once` : `Best ${score}, ${times} times`,
+    bestLabel: (score: number) => `Best ${score}`,
     series: (n: number) => (n === 1 ? '1 series' : `${n} series`),
     you: 'You',
     empty: 'No results for this period yet.',

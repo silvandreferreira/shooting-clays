@@ -68,7 +68,12 @@ Charts:
 | `/community`   | Community        | Iteration 4 — leaderboard per discipline for a day, week or month (month by default), podium for the top three, then a list; see `roadmap.md`                                                                              |
 | `/settings`    | Settings         | Display name, **Show me in the Community** (on by default) and **Language** (English · Português)                                                                                                                          |
 
-Every signed-in screen has a header with **"Welcome, <first name>"** and an account button (Google photo, or the name's initial) that opens a menu with the email, **Settings** (iteration 4) and **Sign out**. Admins also get an **Admin** tab with a badge counting the accounts waiting for approval.
+Every signed-in screen has a header with **"Welcome, <first name>"**. Navigation depends on the screen width (decision #57):
+
+- **Desktop (1024 px and wider):** a bottom bar with the pages (Dashboard, Add, History, Community, Admin) and, in the header, an account button (Google photo, or the name's initial) that opens a menu with the email, **Settings** and **Sign out**.
+- **Phones and tablets (narrower than 1024 px):** no bottom bar and no account button; a **Menu** button in the header opens a panel with the photo, name and email, every page, then **Settings** and **Sign out**. It closes when a page is chosen, on a tap outside it or with Esc.
+
+Admins also get **Admin** with a badge counting the accounts waiting for approval (on phones and tablets the badge is also on the Menu button). Everywhere a person is shown (header, menu, Community, Admin) the circle has their Google photo, read from Neon Auth, and only shows the name's initial when there is no photo.
 
 UI requirements: touch targets ≥ 44 px, readable in sunlight (high contrast), one-handed use, dark mode, installable as a PWA.
 

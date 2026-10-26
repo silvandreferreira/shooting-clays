@@ -24,14 +24,14 @@ export function createAdminRepo(db: Db) {
      */
     async listUsers(): Promise<AdminUser[]> {
       const result = await db.execute(sql`
-        select p.user_id, p.display_name, p.avatar_url, p.role, p.status, u.email,
+        select p.user_id, p.display_name, coalesce(u.image, p.avatar_url) as avatar_url, p.role, p.status, u.email,
           coalesce(u."createdAt", p.created_at) as signed_up_at,
           count(s.id) as session_count,
           max(s.updated_at) as last_activity_at
         from profiles p
         left join neon_auth."user" u on u.id::text = p.user_id
         left join sessions s on s.user_id = p.user_id
-        group by p.user_id, u.email, u."createdAt"
+        group by p.user_id, u.email, u.image, u."createdAt"
         order by (p.status = 'pending') desc, signed_up_at desc, p.user_id`);
       return rowsOf<AdminUserRow>(result).map((r) => ({
         userId: r.user_id,

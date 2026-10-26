@@ -31,10 +31,12 @@ export async function createMemoryDb(): Promise<Db> {
 /** Tests and E2E only: what Neon Auth stores when someone signs in with Google. */
 export async function upsertAuthUser(
   db: Db,
-  user: { id: string; email: string; name: string; createdAt?: Date },
+  user: { id: string; email: string; name: string; image?: string | null; createdAt?: Date },
 ) {
   await db.execute(sql`
-    insert into neon_auth."user" (id, name, email, "createdAt")
-    values (${user.id}, ${user.name}, ${user.email}, ${(user.createdAt ?? new Date()).toISOString()})
-    on conflict (id) do update set name = excluded.name, email = excluded.email`);
+    insert into neon_auth."user" (id, name, email, image, "createdAt")
+    values (${user.id}, ${user.name}, ${user.email}, ${user.image ?? null},
+      ${(user.createdAt ?? new Date()).toISOString()})
+    on conflict (id) do update set name = excluded.name, email = excluded.email,
+      image = excluded.image`);
 }

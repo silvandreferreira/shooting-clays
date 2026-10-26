@@ -163,6 +163,33 @@ export async function selectPeriod(page: Page, period: 'All time' | 'Last month'
   await expect(button).toHaveAttribute('aria-pressed', 'true');
 }
 
+/** Phones and tablets (narrower than Tailwind's `lg`) reach every page through the header menu. */
+export const usesMenu = (page: Page) => (page.viewportSize()?.width ?? 1024) < 1024;
+
+/** The main navigation: the bottom bar on desktop; on phones and tablets, opens the menu first. */
+export async function mainNav(page: Page) {
+  if (usesMenu(page)) await page.getByRole('button', { name: /^Menu/ }).click();
+  return page.getByRole('navigation', { name: 'Main' });
+}
+
+export async function goTo(page: Page, name: string | RegExp) {
+  await (await mainNav(page)).getByRole('link', { name }).click();
+}
+
+/** Opens what holds Settings and Sign out: the account menu on desktop, the menu elsewhere. */
+export async function openAccountMenu(page: Page, accountLabel = 'Account') {
+  const name = usesMenu(page) ? /^Menu/ : accountLabel;
+  await page.getByRole('button', { name }).click();
+}
+
+/** Settings or Sign out once `openAccountMenu` has run. */
+export function accountItem(page: Page, name: string) {
+  if (!usesMenu(page)) return page.getByRole('menuitem', { name });
+  return page
+    .getByRole('link', { name, exact: true })
+    .or(page.getByRole('button', { name, exact: true }));
+}
+
 export async function seriousA11yViolations(page: Page) {
   const results = await new AxeBuilder({ page }).analyze();
   return results.violations
