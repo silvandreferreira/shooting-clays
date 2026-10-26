@@ -11,7 +11,7 @@ export function Avatar({ name, image }: { name: string; image: string | null }) 
         // Google photo URLs can refuse requests that carry a referrer.
         referrerPolicy="no-referrer"
         onError={() => setFailed(true)}
-        className="size-11 rounded-full object-cover"
+        className="size-full rounded-full object-cover"
       />
     );
   }

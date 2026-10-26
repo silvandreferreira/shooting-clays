@@ -194,7 +194,7 @@ Example: A and B both have five 25s; A has two 24s and B has one → A ranks abo
 - A discipline selector and a period switcher (**Day · Week · Month**, Month selected), with previous / next arrows and the period label (e.g. "October 2026", "20–26 Oct 2026", "24 Oct 2026").
 - **Podium**: the first three places as a three-step stair (2nd on the left, 1st in the middle and tallest, 3rd on the right), each with avatar, display name, rank and best score. With fewer than three shooters, the empty steps stay empty.
 - From 4th place down: a plain ranked list.
-- Each entry shows: rank, avatar, display name, best score with how many times it was reached (e.g. **25 ×5**) and the number of series in the period.
+- Each entry shows: rank, avatar, display name, best score (e.g. **25**) and the number of series in the period. How many times the best score was reached only breaks ties; it is not shown (decision #57).
 - The signed-in user's own entry is highlighted. If they are hidden from the community, a note says so and links to Settings.
 - Empty period: "No results for this period yet."
 

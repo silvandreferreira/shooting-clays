@@ -1,4 +1,14 @@
-import { expect, OTHER, OWNER, seedSessions, test, type E2EUser } from './fixtures';
+import {
+  accountItem,
+  expect,
+  goTo,
+  openAccountMenu,
+  OTHER,
+  OWNER,
+  seedSessions,
+  test,
+  type E2EUser,
+} from './fixtures';
 
 const ANA: E2EUser = { id: 'e2e-ana', email: 'ana@example.test', name: 'Ana Costa' };
 const BRUNO: E2EUser = { id: 'e2e-bruno', email: 'bruno@example.test', name: 'Bruno Dias' };
@@ -22,10 +32,7 @@ test.beforeEach(async ({ request }) => {
 
 async function openFosso(page: import('@playwright/test').Page) {
   await page.goto('/');
-  await page
-    .getByRole('navigation', { name: 'Main' })
-    .getByRole('link', { name: 'Community' })
-    .click();
+  await goTo(page, 'Community');
   await page.getByRole('combobox', { name: 'Discipline' }).selectOption({ label: 'Fosso' });
 }
 
@@ -38,7 +45,9 @@ test('R27: monthly ranking by default: podium for the top three, then the list w
   await expect(page.getByRole('button', { name: 'Next period' })).toBeDisabled();
 
   await expect(page.getByTestId('podium-1')).toContainText('Other Shooter');
-  await expect(page.getByTestId('podium-1')).toContainText('25 ×2');
+  // Only the best score shows; how many times it was reached only breaks ties.
+  await expect(page.getByTestId('podium-1')).toContainText('25');
+  await expect(page.getByTestId('podium-1')).not.toContainText('×');
   await expect(page.getByTestId('podium-2')).toContainText('Ana Costa');
   await expect(page.getByTestId('podium-3')).toContainText('Bruno Dias');
 
@@ -80,8 +89,8 @@ test('R28: "Show me in the Community" off hides me from the ranking; the display
   page,
 }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Account' }).click();
-  await page.getByRole('menuitem', { name: 'Settings' }).click();
+  await openAccountMenu(page);
+  await accountItem(page, 'Settings').click();
   await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
 
   const name = page.getByLabel('Display name');
@@ -95,10 +104,7 @@ test('R28: "Show me in the Community" off hides me from the ranking; the display
   await toggle.click();
   await expect(toggle).toHaveAttribute('aria-checked', 'false');
 
-  await page
-    .getByRole('navigation', { name: 'Main' })
-    .getByRole('link', { name: 'Community' })
-    .click();
+  await goTo(page, 'Community');
   await page.getByRole('combobox', { name: 'Discipline' }).selectOption({ label: 'Fosso' });
   await expect(page.getByTestId('podium-1')).toContainText('Other Shooter');
   await expect(page.getByText('Ace Owner')).toHaveCount(0);
@@ -107,10 +113,7 @@ test('R28: "Show me in the Community" off hides me from the ranking; the display
 
   await page.getByRole('link', { name: 'Change in Settings' }).click();
   await page.getByRole('switch', { name: 'Show me in the Community' }).click();
-  await page
-    .getByRole('navigation', { name: 'Main' })
-    .getByRole('link', { name: 'Community' })
-    .click();
+  await goTo(page, 'Community');
   await page.getByRole('combobox', { name: 'Discipline' }).selectOption({ label: 'Fosso' });
   await expect(page.getByTestId('ranking-row').first()).toContainText('Ace Owner');
 });

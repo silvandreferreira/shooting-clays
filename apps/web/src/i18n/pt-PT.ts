@@ -13,6 +13,8 @@ export const ptPT = {
     community: 'Comunidade',
     admin: 'Admin',
     pendingBadge: (n: number) => `${n} à espera de aprovação`,
+    menu: 'Menu',
+    closeMenu: 'Fechar menu',
   },
   disciplines: {
     compak: 'Compak Sporting',
@@ -146,9 +148,7 @@ export const ptPT = {
     podium: 'Pódio',
     ranking: 'Classificação',
     place: (rank: number) => `${rank}.º`,
-    best: (score: number, times: number) => (times > 1 ? `${score} ×${times}` : String(score)),
-    bestLabel: (score: number, times: number) =>
-      times === 1 ? `Melhor ${score}, uma vez` : `Melhor ${score}, ${times} vezes`,
+    bestLabel: (score: number) => `Melhor ${score}`,
     series: (n: number) => (n === 1 ? '1 série' : `${n} séries`),
     you: 'Você',
     empty: 'Ainda não há resultados neste período.',

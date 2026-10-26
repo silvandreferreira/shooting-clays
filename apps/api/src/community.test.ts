@@ -1,5 +1,6 @@
 import type { Leaderboard, Me } from '@shooting-clays/shared';
 import { describe, expect, it } from 'vitest';
+import { upsertAuthUser } from './db/memory';
 import { profiles, sessions } from './db/schema';
 import { createTestApp, OTHER } from './test-utils';
 
@@ -142,5 +143,20 @@ describe('community leaderboard', () => {
       await json('GET', '/api/community/leaderboard?discipline=trap', undefined, OTHER)
     ).json()) as Leaderboard;
     expect(board.entries[0]?.displayName).toBe('Ace');
+  });
+
+  it('shows the Google photo from Neon Auth even when the profile has none', async () => {
+    const { db, json } = await createTestApp({ empty: true });
+    await addShooter(db, 'photo');
+    await addShooter(db, 'letter');
+    const image = 'https://lh3.googleusercontent.com/a/photo';
+    await upsertAuthUser(db, { id: 'photo', email: 'photo@example.test', name: 'P', image });
+    await addSeries(db, 'photo', [25]);
+    await addSeries(db, 'letter', [24]);
+
+    const board = (await (
+      await json('GET', '/api/community/leaderboard?discipline=trap', undefined, OTHER)
+    ).json()) as Leaderboard;
+    expect(board.entries.map((e) => e.avatarUrl)).toEqual([image, null]);
   });
 });

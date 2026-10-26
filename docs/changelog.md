@@ -4,6 +4,12 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Navigation and Community
+
+- **Changed:** on phones and tablets (narrower than 1024 px) the bottom bar and the account menu become one header **Menu** with every page, Settings and Sign out; desktop stays as it was. Decision #57. E2E R34, R35.
+- **Changed:** Community shows only the best score; how many times it was reached still breaks ties but is not shown (R27).
+- **Fixed:** Community and Admin showed the initial instead of the Google photo when the profile had no stored photo; the API now reads the photo from Neon Auth (R26). The photo also fills the larger circle of the 1st place.
+
 ### Docs
 
 - **Changed:** roadmap marks iteration 6 as done; changelog sections for iterations 4–6 are dated.

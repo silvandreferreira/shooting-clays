@@ -1,4 +1,4 @@
-import { card, expect, expectCard, test } from './fixtures';
+import { card, expect, expectCard, goTo, test } from './fixtures';
 
 test('R8: editing and deleting in History updates the dashboard', async ({ page }) => {
   await page.goto('/history');
@@ -15,16 +15,16 @@ test('R8: editing and deleting in History updates the dashboard', async ({ page 
   await expect(items).toHaveCount(1);
   await expect(items).toContainText('10/25');
 
-  await page.getByRole('link', { name: 'Dashboard' }).click();
+  await goTo(page, 'Dashboard');
   await expectCard(page, 'Helice', '10 / 10 / 10');
 
-  await page.getByRole('link', { name: 'History' }).click();
+  await goTo(page, 'History');
   await page.getByRole('combobox', { name: 'Discipline' }).selectOption({ label: 'Helice' });
   page.once('dialog', (d) => void d.accept());
   await items.getByRole('button', { name: 'Delete' }).click();
   await expect(page.getByText('No sessions found.')).toBeVisible();
 
-  await page.getByRole('link', { name: 'Dashboard' }).click();
+  await goTo(page, 'Dashboard');
   await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
   await expect(card(page, 'Helice')).toHaveCount(0);
 });
@@ -37,7 +37,7 @@ test('R12: History shows hardest targets as "A, C and F", only when recorded', a
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page).toHaveURL('/');
 
-  await page.getByRole('link', { name: 'History' }).click();
+  await goTo(page, 'History');
   const newest = page.getByTestId('session-item').first();
   await expect(newest.getByTestId('hardest-targets')).toHaveText('Hardest targets: A, C and F');
 

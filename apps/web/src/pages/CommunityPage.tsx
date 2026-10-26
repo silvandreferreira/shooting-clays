@@ -32,10 +32,8 @@ function Best({ entry }: { entry: LeaderboardEntry }) {
   const t = useT();
   return (
     <>
-      <span aria-hidden>{t.community.best(entry.bestScore, entry.bestScoreCount)}</span>
-      <span className="sr-only">
-        {t.community.bestLabel(entry.bestScore, entry.bestScoreCount)}
-      </span>
+      <span aria-hidden>{entry.bestScore}</span>
+      <span className="sr-only">{t.community.bestLabel(entry.bestScore)}</span>
     </>
   );
 }

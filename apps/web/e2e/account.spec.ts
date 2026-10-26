@@ -1,6 +1,7 @@
 import {
   DISABLED,
   expect,
+  mainNav,
   OTHER,
   PENDING,
   registerUser,
@@ -32,7 +33,7 @@ test.describe('pending account', () => {
     );
     expect(dataRequests).toEqual([]);
 
-    const nav = page.getByRole('navigation', { name: 'Main' });
+    const nav = await mainNav(page);
     await expect(nav.getByRole('link', { name: 'History' })).toHaveCount(0);
     await expect(nav.getByRole('link', { name: 'Community' })).toHaveCount(0);
     await expect(nav.getByRole('link', { name: 'Admin' })).toHaveCount(0);
@@ -70,7 +71,7 @@ test('R22: the admin approves a pending user, who then sees their real (empty) d
 }) => {
   await registerUser(request, PENDING);
   await page.goto('/');
-  const adminTab = page.getByRole('link', { name: /Admin/ });
+  const adminTab = (await mainNav(page)).getByRole('link', { name: /Admin/ });
   await expect(adminTab).toContainText('1 waiting for approval');
   await adminTab.click();
 
@@ -91,14 +92,16 @@ test('R22: the admin approves a pending user, who then sees their real (empty) d
   await expect(row.getByTestId('status')).toHaveText('Pending');
   await row.getByRole('switch').click();
   await expect(row.getByTestId('status')).toHaveText('Active');
-  await expect(adminTab).not.toContainText('waiting for approval');
+  await expect((await mainNav(page)).getByRole('link', { name: /Admin/ })).not.toContainText(
+    'waiting for approval',
+  );
 
   auth.user = PENDING;
   await page.goto('/');
   await expect(page.getByTestId('welcome')).toHaveText('Welcome, Pat');
   await expect(page.getByTestId('pending-banner')).toHaveCount(0);
   await expect(page.getByText('No sessions yet.', { exact: false })).toBeVisible();
-  await expect(page.getByRole('link', { name: 'History' })).toBeVisible();
+  await expect((await mainNav(page)).getByRole('link', { name: 'History' })).toBeVisible();
 });
 
 test('R23: the admin removes a user after typing their name; signing in again starts over', async ({

@@ -1,7 +1,13 @@
-import { expect, expectCard, OWNER, test } from './fixtures';
-
-const nav = (page: import('@playwright/test').Page) =>
-  page.getByRole('navigation', { name: 'Main' });
+import {
+  accountItem,
+  expect,
+  expectCard,
+  goTo,
+  mainNav,
+  openAccountMenu,
+  OWNER,
+  test,
+} from './fixtures';
 
 test('R30: switching to Português in Settings translates the app at once, without a reload', async ({
   page,
@@ -11,8 +17,8 @@ test('R30: switching to Português in Settings translates the app at once, witho
   let reloaded = false;
   page.on('load', () => (reloaded = true));
 
-  await page.getByRole('button', { name: 'Account' }).click();
-  await page.getByRole('menuitem', { name: 'Settings' }).click();
+  await openAccountMenu(page);
+  await accountItem(page, 'Settings').click();
   const languages = page.getByRole('group', { name: 'Language' });
   await expect(languages.getByRole('button', { name: 'English' })).toHaveAttribute(
     'aria-pressed',
@@ -25,16 +31,16 @@ test('R30: switching to Português in Settings translates the app at once, witho
   await expect(page.getByTestId('welcome')).toHaveText('Olá, Test');
   expect(reloaded).toBe(false);
 
-  await nav(page).getByRole('link', { name: 'Painel' }).click();
+  await goTo(page, 'Painel');
   await expect(page.getByRole('heading', { name: 'Painel' })).toBeVisible();
   await expect(page.getByRole('group', { name: 'Período' })).toContainText('Desde sempre');
   await expect(page.getByRole('heading', { name: /Resultados ao longo do tempo/ })).toBeVisible();
 
-  await nav(page).getByRole('link', { name: 'Adicionar' }).click();
+  await goTo(page, 'Adicionar');
   await expect(page.getByRole('heading', { name: 'Adicionar sessão' })).toBeVisible();
   await expect(page.getByRole('radio', { name: 'Hélice' })).toBeVisible();
 
-  await nav(page).getByRole('link', { name: 'Histórico' }).click();
+  await goTo(page, 'Histórico');
   await expect(page.getByRole('heading', { name: 'Histórico' })).toBeVisible();
   // Dates and lists follow the language; the imported notes stay as they are.
   await expect(page.getByTestId('session-item').first()).toContainText('out. 2026');
@@ -55,8 +61,8 @@ test('R31: the language is kept after a reload, before sign-in and on a new devi
   await expect(page.getByRole('heading', { name: 'Definições' })).toBeVisible();
 
   // Signed out: this device remembers the choice.
-  await page.getByRole('button', { name: 'Conta' }).click();
-  await page.getByRole('menuitem', { name: 'Terminar sessão' }).click();
+  await openAccountMenu(page, 'Conta');
+  await accountItem(page, 'Terminar sessão').click();
   await expect(page.getByRole('button', { name: 'Entrar com Google' })).toBeVisible();
 
   // A new device (nothing stored) in English: the profile brings Portuguese back after sign-in.
@@ -66,7 +72,7 @@ test('R31: the language is kept after a reload, before sign-in and on a new devi
   auth.user = OWNER;
   await page.reload();
   await expect(page.getByTestId('welcome')).toHaveText('Olá, Test');
-  await expect(nav(page).getByRole('link', { name: 'Painel' })).toBeVisible();
+  await expect((await mainNav(page)).getByRole('link', { name: 'Painel' })).toBeVisible();
 });
 
 test.describe('browser in Portuguese', () => {
