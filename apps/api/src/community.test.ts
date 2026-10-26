@@ -82,8 +82,8 @@ describe('community leaderboard', () => {
   it('counts only the discipline and the period asked for', async () => {
     const { db, json } = await createTestApp({ empty: true });
     await addShooter(db, 'a');
-    await addSeries(db, 'a', [25], '2026-10-19'); // Monday of the week of 2026-10-23
-    await addSeries(db, 'a', [25], '2026-10-18'); // Sunday of the week before
+    await addSeries(db, 'a', [25], '2026-10-18'); // Sunday, first day of the week of 2026-10-23
+    await addSeries(db, 'a', [25], '2026-10-17'); // Saturday of the week before
     await addSeries(db, 'a', [25], '2026-10-23', 'fosso');
     await addSeries(db, 'a', [10, 11], '2026-10-23');
 
@@ -94,7 +94,7 @@ describe('community leaderboard', () => {
 
     expect((await get('period=day')).entries[0]).toMatchObject({ bestScore: 11, series: 2 });
     const week = await get('period=week');
-    expect(week).toMatchObject({ from: '2026-10-19', to: '2026-10-25' });
+    expect(week).toMatchObject({ from: '2026-10-18', to: '2026-10-24' });
     expect(week.entries[0]).toMatchObject({ bestScore: 25, bestScoreCount: 1, series: 3 });
     expect((await get('period=month')).entries[0]).toMatchObject({ series: 4 });
     expect((await get('period=month&date=2026-09-15')).entries).toEqual([]);

@@ -101,17 +101,17 @@ describe('periodBounds', () => {
     expect(periodBounds('day', '2026-10-24')).toEqual({ from: '2026-10-24', to: '2026-10-24' });
   });
 
-  it('week runs Monday to Sunday', () => {
+  it('week runs Sunday to Saturday', () => {
     // 2026-10-24 is a Saturday; 2026-10-26 a Monday; 2026-11-01 a Sunday.
-    expect(periodBounds('week', '2026-10-24')).toEqual({ from: '2026-10-19', to: '2026-10-25' });
-    expect(periodBounds('week', '2026-10-26')).toEqual({ from: '2026-10-26', to: '2026-11-01' });
-    expect(periodBounds('week', '2026-11-01')).toEqual({ from: '2026-10-26', to: '2026-11-01' });
+    expect(periodBounds('week', '2026-10-24')).toEqual({ from: '2026-10-18', to: '2026-10-24' });
+    expect(periodBounds('week', '2026-10-26')).toEqual({ from: '2026-10-25', to: '2026-10-31' });
+    expect(periodBounds('week', '2026-11-01')).toEqual({ from: '2026-11-01', to: '2026-11-07' });
   });
 
   it('week across the end of the year and the daylight-saving change', () => {
-    expect(periodBounds('week', '2027-01-01')).toEqual({ from: '2026-12-28', to: '2027-01-03' });
+    expect(periodBounds('week', '2027-01-01')).toEqual({ from: '2026-12-27', to: '2027-01-02' });
     // Clocks go back in Lisbon on 2026-10-25: calendar days are unaffected.
-    expect(periodBounds('week', '2026-10-25')).toEqual({ from: '2026-10-19', to: '2026-10-25' });
+    expect(periodBounds('week', '2026-10-25')).toEqual({ from: '2026-10-25', to: '2026-10-31' });
   });
 
   it('month is the calendar month, including February in a leap year', () => {
@@ -124,8 +124,8 @@ describe('periodBounds', () => {
 describe('shiftPeriod', () => {
   it('steps to the previous and next period', () => {
     expect(shiftPeriod('day', '2026-10-01', -1)).toBe('2026-09-30');
-    expect(shiftPeriod('week', '2026-10-24', -1)).toBe('2026-10-18');
-    expect(shiftPeriod('week', '2026-10-24', 1)).toBe('2026-10-26');
+    expect(shiftPeriod('week', '2026-10-24', -1)).toBe('2026-10-17');
+    expect(shiftPeriod('week', '2026-10-24', 1)).toBe('2026-10-25');
     expect(shiftPeriod('month', '2026-01-15', -1)).toBe('2025-12-31');
     expect(shiftPeriod('month', '2026-12-15', 1)).toBe('2027-01-01');
   });

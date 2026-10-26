@@ -170,7 +170,7 @@ Goal: a new **Community** tab that compares results across all users, per discip
 
 ### Periods
 
-- Three periods, all in Europe/Lisbon: **Day** (one calendar day), **Week** (Monday to Sunday) and **Month** (one calendar month).
+- Three periods, all in Europe/Lisbon: **Day** (one calendar day), **Week** (Sunday to Saturday, decision #60) and **Month** (one calendar month).
 - Default: **the current month**. The user can switch to Day or Week, and step back to previous days, weeks or months (never into the future).
 - Only sessions inside the selected period and discipline count.
 
@@ -191,7 +191,7 @@ Example: A and B both have five 25s; A has two 24s and B has one → A ranks abo
 
 ### Screen (`/community`)
 
-- A discipline selector and a period switcher (**Day · Week · Month**, Month selected), with previous / next arrows and the period label (e.g. "October 2026", "20–26 Oct 2026", "24 Oct 2026").
+- A discipline selector and a period switcher (**Day · Week · Month**, Month selected), with previous / next arrows and the period label (e.g. "October 2026", "18–24 Oct 2026", "24 Oct 2026").
 - **Podium**: the first three places as a three-step stair (2nd on the left, 1st in the middle and tallest, 3rd on the right), each with avatar, display name, rank and best score. With fewer than three shooters, the empty steps stay empty.
 - From 4th place down: a plain ranked list.
 - Each entry shows only: rank, avatar, display name and best score (e.g. **25**). The number of series and how many times the best score was reached only break ties; they are not shown (decisions #57, #58). The first three places are gold, silver and bronze (step colour, a ring around the photo and a small medal); shared places share the medal. The tie-break rules are in the FAQ (`/faq#ranking`), linked under the ranking.
@@ -220,7 +220,7 @@ Example: A and B both have five 25s; A has two 24s and B has one → A ranks abo
 
 ### Tests
 
-- Unit: ranking (best score first, count at the same score, next score down, the A/B example, exact ties share a rank and are ordered by who got there first); period bounds for day, week (Monday start) and month in Europe/Lisbon, including a daylight-saving change.
+- Unit: ranking (best score first, count at the same score, next score down, the A/B example, exact ties share a rank and are ordered by who got there first); period bounds for day, week (Sunday start) and month in Europe/Lisbon, including a daylight-saving change.
 - Integration: hidden users excluded; `pending` and `disabled` users excluded; one entry per user; no ids or emails in the response; only sessions in the period and discipline count.
 - E2E: seeded multi-user data; podium and list order; switching period and stepping back; own entry highlighted; switching "Show me in the Community" off removes the user from the leaderboard.
 

@@ -20,7 +20,7 @@ const fosso = (date: string, ...scores: number[]) =>
 /**
  * Fosso in October 2026 (the owner's history has none): Other and Ana both have two 25s, Other
  * has a 24 and Ana a 23, so Other wins. The reference date (Friday 2026-10-23) is in the week of
- * 19–25 October.
+ * 18–24 October (Sunday to Saturday).
  */
 test.beforeEach(async ({ request }) => {
   await seedSessions(request, OTHER, fosso('2026-10-21', 25, 25, 24));
@@ -80,7 +80,7 @@ test('R27: switching to week and day, and stepping back to earlier periods', asy
   await openFosso(page);
 
   await page.getByRole('button', { name: 'Week' }).click();
-  await expect(page.getByTestId('period-label')).toHaveText('19–25 Oct 2026');
+  await expect(page.getByTestId('period-label')).toHaveText('18–24 Oct 2026');
   // Ana's two 25s were on 5 October: this week she only has a 23.
   await expect(page.getByTestId('podium-1')).toContainText('Other Shooter');
   await expect(page.getByTestId('podium-2')).toContainText('Bruno Dias');

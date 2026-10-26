@@ -198,7 +198,7 @@ export const en = {
       periods: {
         question: 'What do Day, Week and Month cover?',
         answer:
-          'Calendar days in Portugal (Lisbon time). Week runs from Monday to Sunday and Month is the calendar month. The arrows go back to earlier periods.',
+          'Calendar days in Portugal (Lisbon time). Week runs from Sunday to Saturday and Month is the calendar month. The arrows go back to earlier periods.',
       },
       community: {
         question: 'Who appears in the Community?',

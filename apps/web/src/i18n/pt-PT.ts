@@ -191,7 +191,7 @@ export const ptPT = {
       periods: {
         question: 'O que abrangem o Dia, a Semana e o Mês?',
         answer:
-          'Dias de calendário em Portugal (hora de Lisboa). A Semana vai de segunda a domingo e o Mês é o mês de calendário. As setas mostram os períodos anteriores.',
+          'Dias de calendário em Portugal (hora de Lisboa). A Semana vai de domingo a sábado e o Mês é o mês de calendário. As setas mostram os períodos anteriores.',
       },
       community: {
         question: 'Quem aparece na Comunidade?',

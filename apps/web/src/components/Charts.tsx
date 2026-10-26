@@ -53,7 +53,11 @@ function ChartCard({
   );
 }
 
-/** One row per date with the day's average score per discipline (lines skip missing days). */
+/**
+ * One row per series, never an average (scores are whole numbers): a day with two series of a
+ * discipline gives two rows, so two points on that date. Disciplines shot the same day share
+ * rows; `key` (date#n) keeps the rows apart on the X axis. Lines skip missing days.
+ */
 export function toScoreRows(series: Partial<Record<DisciplineKey, SeriesPoint[]>>) {
   const byDate = new Map<string, Partial<Record<DisciplineKey, number[]>>>();
   for (const [discipline, points] of Object.entries(series) as [DisciplineKey, SeriesPoint[]][]) {
@@ -65,16 +69,21 @@ export function toScoreRows(series: Partial<Record<DisciplineKey, SeriesPoint[]>
   }
   return [...byDate.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, row]) => ({
-      date,
-      ...Object.fromEntries(
-        Object.entries(row).map(([k, scores]) => [
-          k,
-          Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) / 10,
-        ]),
-      ),
-    }));
+    .flatMap(([date, row]) => {
+      const rows = Math.max(...Object.values(row).map((scores) => scores.length));
+      return Array.from({ length: rows }, (_, i) => ({
+        key: `${date}#${i}`,
+        date,
+        ...Object.fromEntries(
+          Object.entries(row)
+            .filter(([, scores]) => i < scores.length)
+            .map(([k, scores]) => [k, scores[i]]),
+        ),
+      }));
+    });
 }
+
+const dateOfKey = (key: string) => formatShortDate(key.slice(0, 10));
 
 /**
  * One toggle button per discipline: all shown by default; a tap hides or shows that line. A hidden
@@ -202,8 +211,8 @@ export function ScoresChart({
                 <LineChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: -20 }}>
                   <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
                   <XAxis
-                    dataKey="date"
-                    tickFormatter={formatShortDate}
+                    dataKey="key"
+                    tickFormatter={dateOfKey}
                     tick={axisTick}
                     stroke="var(--color-line)"
                     minTickGap={24}
@@ -216,7 +225,7 @@ export function ScoresChart({
                   />
                   <Tooltip
                     contentStyle={tooltipStyle}
-                    labelFormatter={(d) => formatShortDate(String(d))}
+                    labelFormatter={(key) => dateOfKey(String(key))}
                     formatter={(value, name) => [value, t.disciplines[name as DisciplineKey]]}
                   />
                   {/* Hidden lines are left out; colours follow the discipline, the Y axis stays 0–25. */}
