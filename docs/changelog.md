@@ -4,6 +4,12 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Community medals and FAQ
+
+- **Changed:** Community entries show only the name and the best score (no number of series); the rules sentence under the ranking is gone. Decision #58. R27.
+- **Added:** gold, silver and bronze on the podium (step, ring around the photo and a small medal); shared places share the medal. R27.
+- **Added:** FAQ page (`/faq`) with the ranking and tie-break rules and other common questions, in both languages; linked from the menus, under the Community ranking and on the sign-in screen (public). E2E R36.
+
 ### Navigation and Community
 
 - **Changed:** on phones and tablets (narrower than 1024 px) the bottom bar and the account menu become one header **Menu** with every page, Settings and Sign out; desktop stays as it was. Decision #57. E2E R34, R35.

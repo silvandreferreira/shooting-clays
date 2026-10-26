@@ -11,6 +11,7 @@ import { AdminPage } from './pages/AdminPage';
 import { CommunityPage } from './pages/CommunityPage';
 import { DashboardPage, SampleDashboardPage } from './pages/DashboardPage';
 import { EditSessionPage } from './pages/EditSessionPage';
+import { FaqPage } from './pages/FaqPage';
 import { HistoryPage } from './pages/HistoryPage';
 import { InactivePage } from './pages/InactivePage';
 import { SettingsPage } from './pages/SettingsPage';
@@ -65,6 +66,7 @@ export function App({ user }: { user: CurrentUser }) {
         {me.status === 'pending' ? (
           <>
             <Route index element={<SampleDashboardPage />} />
+            <Route path="faq" element={<FaqPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </>
         ) : (
@@ -75,6 +77,7 @@ export function App({ user }: { user: CurrentUser }) {
             <Route path="history/:id" element={<EditSessionPage />} />
             <Route path="community" element={<CommunityPage />} />
             <Route path="settings" element={<SettingsPage me={me} />} />
+            <Route path="faq" element={<FaqPage />} />
             {me.role === 'admin' && <Route path="admin" element={<AdminPage />} />}
             <Route path="*" element={<p className="py-8 text-center">{t.notFound}</p>} />
           </>

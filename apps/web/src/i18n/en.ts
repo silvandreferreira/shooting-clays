@@ -20,6 +20,7 @@ export const en = {
     admin: 'Admin',
     pendingBadge: (n: number) => `${n} waiting for approval`,
     menu: 'Menu',
+    faq: 'FAQ',
     closeMenu: 'Close menu',
   },
   disciplines: {
@@ -155,14 +156,13 @@ export const en = {
     place: (rank: number) =>
       `${rank}${rank === 1 ? 'st' : rank === 2 ? 'nd' : rank === 3 ? 'rd' : 'th'}`,
     bestLabel: (score: number) => `Best ${score}`,
-    series: (n: number) => (n === 1 ? '1 series' : `${n} series`),
     you: 'You',
     empty: 'No results for this period yet.',
     loading: 'Loading…',
     loadError: 'Could not load the ranking.',
     hidden: 'You are hidden from the Community, so you are not in this ranking.',
     hiddenLink: 'Change in Settings',
-    rules: 'Most series at 25 first, then at 24, and so on.',
+    howRanked: 'How is the ranking decided?',
   },
   settings: {
     title: 'Settings',
@@ -178,6 +178,42 @@ export const en = {
     language: 'Language',
   },
   /** Each language is named in its own language, whatever the active one. */
+  faq: {
+    title: 'Frequently asked questions',
+    backToSignIn: 'Back to sign in',
+    items: {
+      ranking: {
+        question: 'How is the Community ranking decided?',
+        answer:
+          "Each shooter's series in the chosen discipline and period are counted by score. Whoever has more series at 25 comes first; if that is equal, more series at 24, then at 23, and so on down to 0. Only the best score is shown, but every series counts. Shooters with exactly the same series at every score share the place (for example 1st, 1st, 3rd), and the one who reached their best score first is listed first. The first three places get gold, silver and bronze; a shared place shares the medal.",
+      },
+      periods: {
+        question: 'What do Day, Week and Month cover?',
+        answer:
+          'Calendar days in Portugal (Lisbon time). Week runs from Monday to Sunday and Month is the calendar month. The arrows go back to earlier periods.',
+      },
+      community: {
+        question: 'Who appears in the Community?',
+        answer:
+          'Approved accounts with "Show me in the Community" on (it is on by default). Only the display name, photo and scores are shown, never the email. To hide, switch it off in Settings; your own Dashboard does not change.',
+      },
+      pending: {
+        question: 'Why is my new account waiting for approval?',
+        answer:
+          'Every new account is approved by the administrator before it can record sessions. Until then the Dashboard shows sample data.',
+      },
+      targets: {
+        question: 'Where can I record the hardest targets?',
+        answer:
+          'In Compak Sporting and Sporting, whose targets are labelled A to F. The other disciplines do not have target letters.',
+      },
+      language: {
+        question: 'How do I change the language?',
+        answer:
+          'In Settings → Language (English or Português), or on the sign-in screen. The choice is saved in your profile and follows you to other devices.',
+      },
+    },
+  },
   languages: { en: 'English', 'pt-PT': 'Português' } satisfies Record<Locale, string>,
   /** Messages for API error codes shown to the user (the API itself answers in English). */
   apiErrors: {

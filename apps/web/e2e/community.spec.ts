@@ -57,8 +57,23 @@ test('R27: monthly ranking by default: podium for the top three, then the list w
   await expect(rows.first()).toContainText('Test Owner');
   await expect(rows.first()).toContainText('You');
   await expect(rows.first()).toHaveAttribute('aria-current', 'true');
+  // Only the name and the best score: no number of series.
+  await expect(rows.first()).not.toContainText('series');
   // Carla shot on 30 September: not in October.
   await expect(page.getByText('Carla Reis')).toHaveCount(0);
+
+  // Gold, silver and bronze for the first three; none in the list.
+  for (const place of ['1', '2', '3']) {
+    await expect(page.getByTestId(`podium-${place}`).getByTestId('medal')).toHaveText(place);
+  }
+  await expect(rows.getByTestId('medal')).toHaveCount(0);
+
+  // The tie-break rules live in the FAQ.
+  await expect(page.getByText('Most series at 25')).toHaveCount(0);
+  await page.getByRole('link', { name: 'How is the ranking decided?' }).click();
+  await expect(page).toHaveURL('/faq#ranking');
+  await expect(page.locator('#ranking')).toHaveAttribute('open', '');
+  await expect(page.locator('#ranking')).toContainText('more series at 24');
 });
 
 test('R27: switching to week and day, and stepping back to earlier periods', async ({ page }) => {

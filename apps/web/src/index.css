@@ -11,6 +11,11 @@
   --color-accent: #c2410c;
   --color-accent-ink: #ffffff;
   --color-danger: #b91c1c;
+  /* Podium medals (the same in light and dark mode); medal-ink on each is at least 6.5:1. */
+  --color-gold: #e0b02a;
+  --color-silver: #b8c0c8;
+  --color-bronze: #cd8a4f;
+  --color-medal-ink: #1a1000;
 }
 
 @layer base {
