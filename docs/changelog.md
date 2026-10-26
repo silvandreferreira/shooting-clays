@@ -4,6 +4,12 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Admin
+
+- **Added:** search by name or email and filters All · Active · Pending (with counts) on the Admin page. E2E R37.
+- **Added:** **Clear cache and reload** on the Admin page: clears this device's cached data, app files and service worker, then reloads. E2E R38.
+- **Changed:** no status text under the last activity; the switch shows it. Decision #59.
+
 ### Community medals and FAQ
 
 - **Changed:** Community entries show only the name and the best score (no number of series); the rules sentence under the ranking is gone. Decision #58. R27.

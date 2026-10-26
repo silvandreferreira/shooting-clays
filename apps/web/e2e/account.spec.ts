@@ -78,7 +78,7 @@ test('R22: the admin approves a pending user, who then sees their real (empty) d
   await expect(page.getByRole('heading', { name: 'Users' })).toBeVisible();
   const row = page.getByRole('listitem', { name: PENDING.name });
   await expect(row).toContainText(PENDING.email);
-  await expect(row.getByTestId('status')).toHaveText('Pending');
+  await expect(row.getByRole('switch')).not.toBeChecked();
   // The admin's own row has no controls.
   await expect(page.getByRole('listitem', { name: 'Test Owner' }).getByRole('switch')).toHaveCount(
     0,
@@ -87,11 +87,11 @@ test('R22: the admin approves a pending user, who then sees their real (empty) d
 
   // Approve, undo, approve again.
   await row.getByRole('switch', { name: `Allow ${PENDING.name} to use the app` }).click();
-  await expect(row.getByTestId('status')).toHaveText('Active');
+  await expect(row.getByRole('switch')).toBeChecked();
   await page.getByRole('button', { name: 'Undo' }).click();
-  await expect(row.getByTestId('status')).toHaveText('Pending');
+  await expect(row.getByRole('switch')).not.toBeChecked();
   await row.getByRole('switch').click();
-  await expect(row.getByTestId('status')).toHaveText('Active');
+  await expect(row.getByRole('switch')).toBeChecked();
   await expect((await mainNav(page)).getByRole('link', { name: /Admin/ })).not.toContainText(
     'waiting for approval',
   );
@@ -131,4 +131,55 @@ test('R23: the admin removes a user after typing their name; signing in again st
   auth.user = { ...OTHER, status: undefined };
   await page.goto('/');
   await expect(page.getByTestId('pending-banner')).toBeVisible();
+});
+
+test('R37: the admin searches users by name or email and filters All · Active · Pending', async ({
+  page,
+  request,
+}) => {
+  for (const user of [PENDING, OTHER, DISABLED]) await registerUser(request, user);
+  await page.goto('/admin');
+  const rows = page.getByRole('listitem');
+  const filters = page.getByRole('group', { name: 'Show' });
+  // Owner, other, pending and disabled.
+  await expect(filters.getByRole('button', { name: 'All (4)' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expect(rows).toHaveCount(4);
+  // The switch says it all: no status text under the last activity.
+  await expect(page.getByRole('listitem', { name: PENDING.name })).not.toContainText('Pending');
+
+  await filters.getByRole('button', { name: 'Pending (1)' }).click();
+  await expect(page).toHaveURL(/status=pending/);
+  await expect(rows).toHaveCount(1);
+  await expect(rows.first()).toHaveAccessibleName(PENDING.name);
+
+  // Disabled accounts only show under All.
+  await filters.getByRole('button', { name: 'Active (2)' }).click();
+  await expect(rows).toHaveCount(2);
+  await expect(page.getByRole('listitem', { name: DISABLED.name })).toHaveCount(0);
+
+  await filters.getByRole('button', { name: /^All/ }).click();
+  const search = page.getByRole('searchbox', { name: 'Search by name or email' });
+  await search.fill('OTHER@EXAMPLE');
+  await expect(rows).toHaveCount(1);
+  await expect(rows.first()).toHaveAccessibleName(OTHER.name);
+  await search.fill('nobody');
+  await expect(page.getByText('No users match.')).toBeVisible();
+});
+
+test('R38: the admin clears this device cache and the app reloads', async ({ page }) => {
+  await page.goto('/admin');
+  await expect(page.getByRole('heading', { name: 'Users' })).toBeVisible();
+  await page.evaluate(async () => {
+    await (await caches.open('e2e-marker')).put('/marker', new Response('x'));
+  });
+  let reloaded = false;
+  page.on('load', () => (reloaded = true));
+
+  await page.getByRole('button', { name: 'Clear cache and reload' }).click();
+  await expect.poll(() => reloaded).toBe(true);
+  await expect(page.getByRole('heading', { name: 'Users' })).toBeVisible();
+  expect(await page.evaluate(() => caches.has('e2e-marker'))).toBe(false);
 });

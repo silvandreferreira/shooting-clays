@@ -1,12 +1,31 @@
 import type { AccountStatus, AdminUser } from '@shooting-clays/shared';
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useId, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { Avatar } from '../components/Avatar';
 import { Switch } from '../components/Switch';
 import { useT } from '../i18n';
 import { formatDay } from '../lib/format';
+import { clearDeviceCache } from '../lib/query-client';
 import { useAdminUsers, useRemoveUser, useSetUserStatus } from '../lib/queries';
 
 const TOAST_MS = 6000;
+
+const FILTERS = ['all', 'active', 'pending'] as const;
+type Filter = (typeof FILTERS)[number];
+const isFilter = (value: string | null): value is Filter => FILTERS.includes(value as Filter);
+
+/** Disabled accounts only show under "All". */
+const inFilter = (user: AdminUser, filter: Filter) => filter === 'all' || user.status === filter;
+
+const matches = (user: AdminUser, query: string) => {
+  const q = query.trim().toLocaleLowerCase();
+  return (
+    !q ||
+    user.displayName.toLocaleLowerCase().includes(q) ||
+    (user.email?.toLocaleLowerCase().includes(q) ?? false)
+  );
+};
 
 interface Toast {
   message: string;
@@ -139,9 +158,6 @@ function UserRow({
             ? t.admin.lastActivity(formatDay(user.lastActivityAt))
             : t.admin.noActivity}
         </p>
-        <p className="mt-1 text-sm font-semibold" data-testid="status">
-          {t.admin.status[user.status]}
-        </p>
       </div>
       {/* Admin accounts (the signed-in admin's included) are managed through ADMIN_EMAILS. */}
       {!isAdmin && (
@@ -160,9 +176,46 @@ function UserRow({
   );
 }
 
+function ClearCache() {
+  const t = useT();
+  const queryClient = useQueryClient();
+  const [clearing, setClearing] = useState(false);
+  return (
+    <section className="space-y-2 rounded-2xl border border-line bg-card p-4">
+      <h2 className="font-semibold">{t.admin.deviceTitle}</h2>
+      <p className="text-sm text-ink-muted">{t.admin.clearCacheHelp}</p>
+      <button
+        type="button"
+        disabled={clearing}
+        onClick={() => {
+          setClearing(true);
+          void clearDeviceCache(queryClient);
+        }}
+        className="min-h-11 rounded-lg border-2 border-line px-4 font-semibold disabled:opacity-60"
+      >
+        {clearing ? t.admin.clearingCache : t.admin.clearCache}
+      </button>
+    </section>
+  );
+}
+
 export function AdminPage() {
   const t = useT();
   const { data: users, isPending, isError } = useAdminUsers(true);
+  const [params, setParams] = useSearchParams();
+  const filter: Filter = isFilter(params.get('status')) ? (params.get('status') as Filter) : 'all';
+  const query = params.get('q') ?? '';
+  const update = (key: string, value: string) =>
+    setParams(
+      (p) => {
+        const next = new URLSearchParams(p);
+        if (value && value !== 'all') next.set(key, value);
+        else next.delete(key);
+        return next;
+      },
+      { replace: true },
+    );
+  const shown = users?.filter((u) => inFilter(u, filter) && matches(u, query)) ?? [];
   const setStatus = useSetUserStatus();
   const [removing, setRemoving] = useState<AdminUser | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
@@ -199,6 +252,33 @@ export function AdminPage() {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold">{t.admin.title}</h1>
+      <input
+        type="search"
+        aria-label={t.admin.search}
+        placeholder={t.admin.search}
+        value={query}
+        onChange={(e) => update('q', e.target.value)}
+        className="min-h-11 w-full rounded-lg border-2 border-line bg-card px-3"
+      />
+      <div
+        role="group"
+        aria-label={t.admin.filterLabel}
+        className="grid grid-cols-3 gap-1 rounded-xl border border-line bg-card p-1"
+      >
+        {FILTERS.map((f) => (
+          <button
+            key={f}
+            type="button"
+            aria-pressed={filter === f}
+            onClick={() => update('status', f)}
+            className={`min-h-11 rounded-lg px-2 text-sm font-semibold ${
+              filter === f ? 'bg-accent text-accent-ink' : 'text-ink-muted'
+            }`}
+          >
+            {t.admin.filters[f]} ({users?.filter((u) => inFilter(u, f)).length ?? 0})
+          </button>
+        ))}
+      </div>
       {isPending ? (
         <p className="py-8 text-center text-ink-muted">{t.admin.loading}</p>
       ) : isError && !users ? (
@@ -207,9 +287,11 @@ export function AdminPage() {
         </p>
       ) : users.length === 0 ? (
         <p className="py-8 text-center text-ink-muted">{t.admin.empty}</p>
+      ) : shown.length === 0 ? (
+        <p className="py-8 text-center text-ink-muted">{t.admin.noMatches}</p>
       ) : (
         <ul className="space-y-3">
-          {users.map((user) => (
+          {shown.map((user) => (
             <UserRow
               key={user.userId}
               user={user}
@@ -219,12 +301,13 @@ export function AdminPage() {
           ))}
         </ul>
       )}
+      <ClearCache />
       <div
         role="status"
         aria-live="polite"
         className={
           toast
-            ? 'fixed inset-x-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] mx-auto flex max-w-md items-center gap-3 rounded-xl bg-ink p-3 text-sm font-medium text-surface shadow-lg'
+            ? 'fixed inset-x-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] mx-auto flex lg:bottom-[calc(5rem+env(safe-area-inset-bottom))] max-w-md items-center gap-3 rounded-xl bg-ink p-3 text-sm font-medium text-surface shadow-lg'
             : 'sr-only'
         }
       >
