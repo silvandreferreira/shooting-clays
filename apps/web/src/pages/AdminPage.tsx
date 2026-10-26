@@ -2,7 +2,7 @@ import type { AccountStatus, AdminUser } from '@shooting-clays/shared';
 import { useEffect, useId, useState } from 'react';
 import { Avatar } from '../components/Avatar';
 import { Switch } from '../components/Switch';
-import { t } from '../i18n/en';
+import { useT } from '../i18n';
 import { formatDay } from '../lib/format';
 import { useAdminUsers, useRemoveUser, useSetUserStatus } from '../lib/queries';
 
@@ -18,6 +18,7 @@ const nextStatus = (status: AccountStatus): AccountStatus =>
   status === 'active' ? 'disabled' : 'active';
 
 function StatusSwitch({ user, onToggle }: { user: AdminUser; onToggle: () => void }) {
+  const t = useT();
   return (
     <Switch
       checked={user.status === 'active'}
@@ -36,6 +37,7 @@ function RemoveDialog({
   onClose: () => void;
   onRemoved: () => void;
 }) {
+  const t = useT();
   const [typed, setTyped] = useState('');
   const removeUser = useRemoveUser();
   const titleId = useId();
@@ -109,6 +111,7 @@ function UserRow({
   onToggle: () => void;
   onRemove: () => void;
 }) {
+  const t = useT();
   const isAdmin = user.role === 'admin';
   return (
     <li
@@ -158,6 +161,7 @@ function UserRow({
 }
 
 export function AdminPage() {
+  const t = useT();
   const { data: users, isPending, isError } = useAdminUsers(true);
   const setStatus = useSetUserStatus();
   const [removing, setRemoving] = useState<AdminUser | null>(null);

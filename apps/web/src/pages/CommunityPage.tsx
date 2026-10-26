@@ -11,7 +11,7 @@ import {
 } from '@shooting-clays/shared';
 import { Link, useSearchParams } from 'react-router';
 import { Avatar } from '../components/Avatar';
-import { t } from '../i18n/en';
+import { useT } from '../i18n';
 import { formatPeriod } from '../lib/format';
 import { useLeaderboard } from '../lib/queries';
 
@@ -29,6 +29,7 @@ function AvatarCircle({ entry, size }: { entry: LeaderboardEntry; size: string }
 }
 
 function Best({ entry }: { entry: LeaderboardEntry }) {
+  const t = useT();
   return (
     <>
       <span aria-hidden>{t.community.best(entry.bestScore, entry.bestScoreCount)}</span>
@@ -43,6 +44,7 @@ const STEP_HEIGHT: Record<number, string> = { 1: 'h-24', 2: 'h-16', 3: 'h-11' };
 
 /** The first three places as a stair: 2nd, 1st (tallest), 3rd. Empty steps stay empty. */
 function Podium({ entries }: { entries: LeaderboardEntry[] }) {
+  const t = useT();
   const slots = [entries[1], entries[0], entries[2]];
   return (
     <ol aria-label={t.community.podium} className="grid grid-cols-3 items-end gap-2 pt-2">
@@ -85,6 +87,7 @@ function Podium({ entries }: { entries: LeaderboardEntry[] }) {
 }
 
 function Row({ entry }: { entry: LeaderboardEntry }) {
+  const t = useT();
   return (
     <li
       aria-label={entry.displayName}
@@ -111,6 +114,7 @@ function Row({ entry }: { entry: LeaderboardEntry }) {
 }
 
 export function CommunityPage() {
+  const t = useT();
   const [params, setParams] = useSearchParams();
   const today = todayInLisbon(new Date());
   const discipline =

@@ -1,8 +1,9 @@
-import { t } from '../i18n/en';
+import { useT } from '../i18n';
 import { useSignOut } from '../lib/sign-out';
 
 /** Disabled account: no personal data is loaded or shown, only this notice and Sign out. */
 export function InactivePage({ email }: { email: string }) {
+  const t = useT();
   const signOut = useSignOut();
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-6 px-6 text-center">

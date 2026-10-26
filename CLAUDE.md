@@ -13,7 +13,7 @@ A mobile-first web app (PWA) to log clay shooting results (date, discipline, sco
 | Conversation with the owner (chat in Orca)                                                                                                                                             | **European Portuguese (pt-PT)** |
 | Everything in the repository: code, identifiers, comments, commit messages, branch names, PR titles and descriptions, documentation, test names, UI text, log messages, error messages | **English**                     |
 
-UI strings live in one place (`apps/web/src/i18n/en.ts`) so a Portuguese translation can be added later without touching components. From iteration 6 the user can switch the UI to European Portuguese: `apps/web/src/i18n/pt-PT.ts` is the **only** file in the repository written in Portuguese (see `docs/roadmap.md` → Iteration 6).
+UI strings live in `apps/web/src/i18n/en.ts` (English, the source) and `apps/web/src/i18n/pt-PT.ts` (European Portuguese, same keys, checked by the type checker); components read them with `useT()`, never hard-coded. `pt-PT.ts` is the **only** file in the repository written in Portuguese. Every new UI string goes into **both** files (see `docs/roadmap.md` → Iteration 6).
 
 ## 3. Context: what to read before each task
 

@@ -1,9 +1,10 @@
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { SessionForm } from '../components/SessionForm';
-import { t } from '../i18n/en';
+import { useT } from '../i18n';
 import { useSessions, useUpdateSession } from '../lib/queries';
 
 export function EditSessionPage() {
+  const t = useT();
   const { id = '' } = useParams();
   const navigate = useNavigate();
   const back = (useLocation().state as { back?: string } | null)?.back ?? '/history';

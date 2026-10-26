@@ -29,3 +29,14 @@ test('R9: add screen looks the same', async ({ page }, testInfo) => {
   await expect(page.getByRole('heading', { name: 'Add session' })).toBeVisible();
   await expect(page).toHaveScreenshot('add.png', { fullPage: true });
 });
+
+test.describe('in Portuguese', () => {
+  test.use({ locale: 'pt-PT' });
+
+  test('R9: dashboard in pt-PT looks the same', async ({ page }, testInfo) => {
+    skipWithoutBaseline(testInfo, 'dashboard-pt-PT.png');
+    await page.goto('/');
+    await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
+    await expect(page).toHaveScreenshot('dashboard-pt-PT.png', { fullPage: true });
+  });
+});

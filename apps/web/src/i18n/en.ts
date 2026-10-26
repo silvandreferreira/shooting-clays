@@ -1,6 +1,15 @@
-import type { ChartRange, CommunityPeriod, DisciplineKey, Period } from '@shooting-clays/shared';
+import type {
+  ChartRange,
+  CommunityPeriod,
+  DisciplineKey,
+  Locale,
+  Period,
+} from '@shooting-clays/shared';
 
-/** All UI strings. A Portuguese translation can be added later as a sibling file. */
+/**
+ * All UI strings, in English (the source). `pt-PT.ts` holds the same keys in European Portuguese;
+ * components read the active language with `useT()` (see `./index.tsx`).
+ */
 export const en = {
   appName: 'Shooting Clays',
   nav: {
@@ -65,6 +74,12 @@ export const en = {
     saving: 'Saving…',
     cancel: 'Cancel',
     saveError: 'Could not save. Your data is still here: check your connection and try again.',
+    errors: {
+      date: 'Enter a valid date.',
+      score: 'Score must be a whole number from 0 to 25.',
+      notes: 'Notes can have at most 1000 characters.',
+      hardestTargets: 'Hardest targets are only for disciplines with lettered targets.',
+    },
   },
   history: {
     title: 'History',
@@ -160,11 +175,23 @@ export const en = {
     showInCommunity: 'Show me in the Community',
     showInCommunityHelp:
       'Your results appear on the Community rankings. Switch off to hide them; your own dashboard does not change.',
+    language: 'Language',
   },
+  /** Each language is named in its own language, whatever the active one. */
+  languages: { en: 'English', 'pt-PT': 'Português' } satisfies Record<Locale, string>,
+  /** Messages for API error codes shown to the user (the API itself answers in English). */
+  apiErrors: {
+    VALIDATION_ERROR: 'Some of the data is not valid.',
+    UNAUTHENTICATED: 'Your session has ended. Sign in again.',
+    ACCOUNT_PENDING: 'Your account is waiting for approval.',
+    ACCOUNT_DISABLED: 'Your account is inactive.',
+    FORBIDDEN: 'You are not allowed to do this.',
+    NOT_FOUND: 'Not found. It may have been deleted.',
+    INTERNAL_ERROR: 'Something went wrong on the server.',
+    UNAVAILABLE: 'The service is unavailable right now.',
+  } satisfies Record<string, string>,
   notFound: 'Page not found.',
   errorBoundary: 'Something went wrong. Reload the app to continue.',
 };
 
 export type Strings = typeof en;
-
-export const t = en;

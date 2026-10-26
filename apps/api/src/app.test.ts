@@ -92,7 +92,20 @@ describe('profile', () => {
       role: 'user',
       status: 'pending',
       showInCommunity: true,
+      locale: null,
     });
+  });
+
+  it('stores the chosen language and rejects unsupported ones', async () => {
+    const { json } = await createTestApp();
+    const res = await json('PUT', '/api/me/profile', { locale: 'pt-PT' });
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as Me).locale).toBe('pt-PT');
+    expect(((await (await json('GET', '/api/me')).json()) as Me).locale).toBe('pt-PT');
+
+    const bad = await json('PUT', '/api/me/profile', { locale: 'pt-BR' });
+    expect(bad.status).toBe(400);
+    expect(((await bad.json()) as { error: { code: string } }).error.code).toBe('VALIDATION_ERROR');
   });
 
   it('can be renamed, and the new name is kept on later sign-ins', async () => {

@@ -1,10 +1,11 @@
 import { todayInLisbon } from '@shooting-clays/shared';
 import { useNavigate } from 'react-router';
 import { SessionForm } from '../components/SessionForm';
-import { t } from '../i18n/en';
+import { useT } from '../i18n';
 import { useCreateSession } from '../lib/queries';
 
 export function AddSessionPage() {
+  const t = useT();
   const navigate = useNavigate();
   const createSession = useCreateSession();
   return (

@@ -1,7 +1,7 @@
 import type { Me } from '@shooting-clays/shared';
 import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet } from 'react-router';
-import { t } from '../i18n/en';
+import { useT } from '../i18n';
 import { useAdminUsers } from '../lib/queries';
 import { Avatar } from './Avatar';
 import { firstName, type CurrentUser } from '../lib/session';
@@ -31,6 +31,7 @@ function Icon({ path }: { path: string }) {
 }
 
 function AccountMenu({ user, showSettings }: { user: CurrentUser; showSettings: boolean }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const signOut = useSignOut();
   return (
@@ -76,6 +77,7 @@ function AccountMenu({ user, showSettings }: { user: CurrentUser; showSettings: 
 }
 
 function PendingBadge({ count }: { count: number }) {
+  const t = useT();
   if (count === 0) return null;
   return (
     <span className="absolute top-1 right-[calc(50%-1.75rem)] min-w-5 rounded-full bg-accent px-1.5 text-xs leading-5 font-bold text-accent-ink">
@@ -88,6 +90,7 @@ function PendingBadge({ count }: { count: number }) {
 const NOTICE_MS = 4000;
 
 export function Layout({ user, me }: { user: CurrentUser; me: Me }) {
+  const t = useT();
   const pending = me.status === 'pending';
   const isAdmin = me.role === 'admin';
   const { data: users } = useAdminUsers(isAdmin);

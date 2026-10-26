@@ -62,12 +62,12 @@ test('R6: a score outside 0–25 is rejected', async ({ page }) => {
 
   await score.fill('26');
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByRole('alert')).toHaveText('score must be between 0 and 25');
+  await expect(page.getByRole('alert')).toHaveText('Score must be a whole number from 0 to 25.');
   await expect(page).toHaveURL('/add');
 
   await score.fill('-1');
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByRole('alert')).toHaveText('score must be between 0 and 25');
+  await expect(page.getByRole('alert')).toHaveText('Score must be a whole number from 0 to 25.');
 
   // The stepper never leaves the range.
   await score.fill('25');

@@ -58,6 +58,10 @@ export interface Session extends SessionData {
 
 export const MAX_DISPLAY_NAME_LENGTH = 50;
 
+/** UI languages (BCP 47). See docs/roadmap.md → Iteration 6. */
+export const LOCALES = ['en', 'pt-PT'] as const;
+export type Locale = (typeof LOCALES)[number];
+
 export const profileUpdateSchema = z
   .object({
     displayName: z
@@ -69,8 +73,9 @@ export const profileUpdateSchema = z
       })
       .optional(),
     showInCommunity: z.boolean({ error: 'showInCommunity must be true or false' }).optional(),
+    locale: z.enum(LOCALES, { error: 'locale must be en or pt-PT' }).optional(),
   })
-  .refine((p) => p.displayName !== undefined || p.showInCommunity !== undefined, {
+  .refine((p) => Object.values(p).some((value) => value !== undefined), {
     error: 'Nothing to update',
   });
 
@@ -92,6 +97,8 @@ export interface Me {
   status: AccountStatus;
   /** Listed on the Community leaderboards (opt-out, on by default). */
   showInCommunity: boolean;
+  /** Chosen UI language; null = not chosen yet (follow the browser). */
+  locale: Locale | null;
 }
 
 /** A row of the admin's user list (`GET /api/admin/users`). */

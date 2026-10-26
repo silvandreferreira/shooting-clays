@@ -1,6 +1,6 @@
 # Product specification
 
-> Status: **iterations 1–3 — implemented and in production**; iteration 5 (scores chart range and legend toggles). Keep this document in sync with the implementation.
+> Status: **iterations 1–6 implemented** (1–5 in production; 6 in review). Keep this document in sync with the implementation.
 
 ## Goal
 
@@ -66,7 +66,7 @@ Charts:
 | `/history/:id` | Edit session     | Same form as Add, pre-filled; **Save** → back to History with the same filter                                                                                                                                              |
 | `/admin`       | Admin            | Admins only: user list (pending first) with email, sign-up date, sessions, last activity, status; switch to approve/disable (with undo); **Remove** after typing the name. Admin accounts have no controls                 |
 | `/community`   | Community        | Iteration 4 — leaderboard per discipline for a day, week or month (month by default), podium for the top three, then a list; see `roadmap.md`                                                                              |
-| `/settings`    | Settings         | Iteration 4 — display name and **Show me in the Community** (on by default)                                                                                                                                                |
+| `/settings`    | Settings         | Display name, **Show me in the Community** (on by default) and **Language** (English · Português)                                                                                                                          |
 
 Every signed-in screen has a header with **"Welcome, <first name>"** and an account button (Google photo, or the name's initial) that opens a menu with the email, **Settings** (iteration 4) and **Sign out**. Admins also get an **Admin** tab with a badge counting the accounts waiting for approval.
 
@@ -83,7 +83,7 @@ Implementation details: `architecture.md`.
 
 ## Language (iteration 6)
 
-The user can switch the interface between English and European Portuguese (account menu and sign-in screen). The choice is saved in the profile and applies immediately. Full rules: `roadmap.md` → Iteration 6.
+The user can switch the interface between English and European Portuguese (**Settings** and the sign-in screen). The first visit follows the browser; the choice applies immediately and is saved on the device and in the profile. Full rules: `roadmap.md` → Iteration 6.
 
 ## Account states (iteration 3)
 

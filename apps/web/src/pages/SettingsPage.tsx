@@ -1,10 +1,12 @@
 import { MAX_DISPLAY_NAME_LENGTH, type Me } from '@shooting-clays/shared';
 import { useId, useState, type FormEvent } from 'react';
+import { LanguagePicker } from '../components/LanguagePicker';
 import { Switch } from '../components/Switch';
-import { t } from '../i18n/en';
+import { useT } from '../i18n';
 import { useUpdateProfile } from '../lib/queries';
 
 function DisplayNameForm({ me }: { me: Me }) {
+  const t = useT();
   const [name, setName] = useState(me.displayName);
   const update = useUpdateProfile();
   const inputId = useId();
@@ -58,6 +60,7 @@ function DisplayNameForm({ me }: { me: Me }) {
 }
 
 function CommunitySwitch({ me }: { me: Me }) {
+  const t = useT();
   const update = useUpdateProfile();
   const helpId = useId();
   return (
@@ -85,12 +88,33 @@ function CommunitySwitch({ me }: { me: Me }) {
   );
 }
 
+/** Saved in the profile too, so the choice follows the user to other devices. */
+function LanguageSetting() {
+  const t = useT();
+  const update = useUpdateProfile();
+  return (
+    <div className="space-y-2 rounded-2xl border border-line bg-card p-4">
+      <p className="font-semibold" aria-hidden>
+        {t.settings.language}
+      </p>
+      <LanguagePicker onChange={(locale) => update.mutate({ locale })} />
+      {update.isError && (
+        <p role="alert" className="font-medium text-danger">
+          {t.settings.saveError}
+        </p>
+      )}
+    </div>
+  );
+}
+
 export function SettingsPage({ me }: { me: Me }) {
+  const t = useT();
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold">{t.settings.title}</h1>
       <DisplayNameForm me={me} />
       <CommunitySwitch me={me} />
+      <LanguageSetting />
     </div>
   );
 }
