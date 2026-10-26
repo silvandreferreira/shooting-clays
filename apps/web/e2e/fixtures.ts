@@ -95,8 +95,15 @@ async function routeFakeNeonAuth(page: Page, auth: FakeNeonAuth, nextSignIn: () 
     }
     if (pathname.endsWith('/token')) {
       if (!user) return route.fulfill({ status: 401, json: { message: 'Unauthorized' } });
-      const res = await page.request.post(`${API_URL}/api/__test__/token`, { data: user });
-      return route.fulfill({ json: await res.json() });
+      try {
+        const res = await page.request.post(`${API_URL}/api/__test__/token`, { data: user });
+        return await route.fulfill({ json: await res.json() });
+      } catch (error) {
+        // A test may end (closing the page) while the app is still fetching a token in the
+        // background; that request no longer matters.
+        if (page.isClosed() || /disposed|closed|Test ended/i.test(String(error))) return;
+        throw error;
+      }
     }
     if (pathname.endsWith('/sign-out')) {
       auth.user = null;

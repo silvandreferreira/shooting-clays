@@ -122,11 +122,8 @@ test('R29: the scores chart has its own time range, 3 months by default', async 
   );
   expect(await dots.count()).toBe(allTime);
 
-  // Per visit: back to 3 months after a reload (waiting for the background refresh to finish, so
-  // the test does not end while the fake sign-in is still answering).
-  const refreshed = page.waitForResponse('**/api/dashboard');
+  // Per visit: back to 3 months after a reload.
   await page.reload();
-  await refreshed;
   await expect(ranges.getByRole('button', { name: '3 months' })).toHaveAttribute(
     'aria-pressed',
     'true',
