@@ -62,3 +62,18 @@ export async function clearCache(queryClient: QueryClient) {
   queryClient.clear();
   await persister.removeClient();
 }
+
+/**
+ * Admin "Clear cache": forgets the cached data (memory and IndexedDB), the app files kept by the
+ * service worker and the worker itself, then reloads so the latest version is fetched. Only this
+ * device; the sign-in and the chosen language are kept.
+ */
+export async function clearDeviceCache(queryClient: QueryClient) {
+  await clearCache(queryClient);
+  if ('caches' in window) {
+    for (const key of await caches.keys()) await caches.delete(key);
+  }
+  const registrations = (await navigator.serviceWorker?.getRegistrations()) ?? [];
+  await Promise.all(registrations.map((r) => r.unregister()));
+  window.location.reload();
+}
