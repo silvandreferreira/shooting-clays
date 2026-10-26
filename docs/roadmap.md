@@ -7,7 +7,7 @@
 | 3         | Admin (user approval and management) | Done (2026-10-23) |
 | 4         | Community (leaderboards)             | Done (2026-10-25) |
 | 5         | Interactive scores chart             | Done (2026-10-25) |
-| 6         | Translations (English / Portuguese)  | **In progress**   |
+| 6         | Translations (English / Portuguese)  | Done (2026-10-26) |
 | 7         | Clubs (proposal)                     | Planned           |
 | 8         | Official and unofficial results      | Planned           |
 
@@ -323,7 +323,7 @@ Not translated: the user's own content (notes, display name), the imported histo
 
 ### Status (2026-10-26)
 
-Built on `feat/translations-pt-pt`: migration 0004 (`profiles.locale`), `pt-PT.ts`, `useT()` / `I18nProvider`, language picker in Settings and on the sign-in screen, dates and lists per language, form and API errors translated, tests R30–R33 (R9 and R10 also in pt-PT). Decision #56.
+Done and in production (PR #13): migration 0004 (`profiles.locale`), `pt-PT.ts`, `useT()` / `I18nProvider`, language picker in Settings and on the sign-in screen, dates and lists per language, form and API errors translated, tests R30–R33 (R9 and R10 also in pt-PT). Decision #56.
 
 ### Tests
 
