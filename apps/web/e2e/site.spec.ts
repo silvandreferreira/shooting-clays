@@ -80,3 +80,13 @@ for (const colorScheme of ['light', 'dark'] as const) {
     }
   });
 }
+
+test('R43: builds outside Vercel load no analytics or Speed Insights scripts', async ({ page }) => {
+  const requests: string[] = [];
+  page.on('request', (r) => requests.push(r.url()));
+  await page.goto('/');
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  await page.goto('/app');
+  await expect(page.getByRole('button', { name: /Google/ })).toBeVisible();
+  expect(requests.filter((url) => /\/_vercel\/|vercel-scripts\.com/.test(url))).toEqual([]);
+});

@@ -19,6 +19,8 @@
 | Slowness                     | Better Stack log alert                                    | `durationMs` p95                             | > 3 s for 15 min (allowing for Neon cold starts) |
 | Front-end and API exceptions | Sentry SDK → Better Stack error tracking (or Sentry free) | Unhandled exceptions                         | New error                                        |
 | Production after deploy      | GitHub Actions smoke tests + Better Stack heartbeat       | Runs after every deploy                      | Smoke tests fail / heartbeat missed              |
+| Visits and page views        | Vercel Web Analytics (`@vercel/analytics`)                | Enable in Vercel → project → Analytics       | — (dashboard only)                               |
+| Real-user performance        | Vercel Speed Insights (`@vercel/speed-insights`)          | Enable in Vercel → project → Speed Insights  | — (dashboard only)                               |
 | Neon usage                   | Neon console                                              | Monitoring and Usage pages                   | Close to compute/storage limits                  |
 | Vercel usage                 | Vercel dashboard                                          | Usage page                                   | Close to Hobby limits                            |
 
@@ -59,6 +61,11 @@ One JSON line per request:
 6. **Uptime → Heartbeats**: create a heartbeat `smoke-prod`; store its URL as the GitHub secret `SMOKE_HEARTBEAT_URL`. The smoke workflow pings it when it passes; a missed ping raises an alert.
 7. **Telemetry → Alerts**: create the 5xx and latency alerts.
 8. Optional: a status page.
+9. **Vercel → project → Analytics** and **Speed Insights**: keep both enabled. The scripts are only included in builds on Vercel (`VERCEL=1`) and only collect while these are on.
+
+### Web Analytics and Speed Insights
+
+`src/components/VercelMetrics.tsx` adds `<Analytics />` and `<SpeedInsights />` (the `/react` entry points, not `/next`) to the public site and to the app. Both are cookieless and store no personal data, so no consent banner is needed. Before sending, `beforeSend` drops the query string and the hash, so admin searches and filters never reach Vercel. Builds outside Vercel (local, tests, `vite preview`) render nothing (decision #63, R42, R43). The scripts are served by Vercel from `/_vercel/insights/` and `/_vercel/speed-insights/` on our own origin.
 
 ## Runbook — when an alert fires
 

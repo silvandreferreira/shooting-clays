@@ -92,6 +92,7 @@ Package manager: **pnpm workspaces**. TypeScript `strict` everywhere.
 | PWA           | vite-plugin-pwa                                   | Installable on the phone home screen                                                                                |
 | i18n          | `src/i18n/en.ts` + `pt-PT.ts`, `useT()` hook      | Language switch without reload; `<html lang>`, `Intl` per language; choice in `localStorage` and the profile        |
 | Error capture | Sentry SDK                                        | See `observability.md`                                                                                              |
+| Metrics       | Vercel Web Analytics + Speed Insights (`/react`)  | Visits and Web Vitals on the site and the app, only in builds on Vercel; see `observability.md`                     |
 | Tests         | Vitest + Testing Library; Playwright              | See `testing.md`                                                                                                    |
 
 ### Back end (`apps/api`)

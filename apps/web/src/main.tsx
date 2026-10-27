@@ -4,6 +4,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import { App } from './App';
+import { VercelMetrics } from './components/VercelMetrics';
 import { I18nProvider, strings, useT } from './i18n';
 import { completeSignInRedirect } from './lib/auth';
 import { createQueryClient, persistOptionsFor } from './lib/query-client';
@@ -54,6 +55,7 @@ createRoot(document.getElementById('root')!).render(
         <BrowserRouter basename={APP_PATH}>
           <Root />
         </BrowserRouter>
+        <VercelMetrics />
       </I18nProvider>
     </Sentry.ErrorBoundary>
   </StrictMode>,
