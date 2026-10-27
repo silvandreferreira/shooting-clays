@@ -23,23 +23,40 @@ Indexes: `(user_id, date)` and `(discipline, date)` (migration 0003, for the Com
 
 ## Table `profiles` (iteration 2+)
 
-| Column                      | Type          | Rules                                                                                           |
-| --------------------------- | ------------- | ----------------------------------------------------------------------------------------------- |
-| `user_id`                   | `text`        | PK; Neon Auth user id                                                                           |
-| `display_name`              | `text`        | `not null`; shown in the community (iteration 4)                                                |
-| `avatar_url`                | `text`        | nullable; from Google                                                                           |
-| `show_in_community`         | `boolean`     | `not null default true` (iteration 4, opt-out in Settings; decision #53)                        |
-| `role`                      | `text`        | `not null default 'user'`, `check (role in ('user','admin'))` (iteration 3)                     |
-| `status`                    | `text`        | `not null default 'pending'`, `check (status in ('pending','active','disabled'))` (iteration 3) |
-| `status_changed_at`         | `timestamptz` | nullable; set whenever the admin changes the status (iteration 3)                               |
-| `locale`                    | `text`        | nullable, `check (locale in ('en','pt-PT'))`; `null` = follow the browser (iteration 6)         |
-| `created_at` / `updated_at` | `timestamptz` |                                                                                                 |
+| Column                      | Type          | Rules                                                                                                                               |
+| --------------------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `user_id`                   | `text`        | PK; Neon Auth user id                                                                                                               |
+| `display_name`              | `text`        | `not null`; shown in the community (iteration 4)                                                                                    |
+| `avatar_url`                | `text`        | nullable; from Google                                                                                                               |
+| `show_in_community`         | `boolean`     | `not null default true` (iteration 4, opt-out in Settings; decision #53)                                                            |
+| `role`                      | `text`        | `not null default 'user'`, `check (role in ('user','admin'))` (iteration 3)                                                         |
+| `status`                    | `text`        | `not null default 'pending'`, `check (status in ('pending','active','disabled','revoked'))` (iteration 3; `revoked` migration 0005) |
+| `status_changed_at`         | `timestamptz` | nullable; set whenever the admin changes the status (iteration 3)                                                                   |
+| `locale`                    | `text`        | nullable, `check (locale in ('en','pt-PT'))`; `null` = follow the browser (iteration 6)                                             |
+| `created_at` / `updated_at` | `timestamptz` |                                                                                                                                     |
 
 The email address is not stored here. It is read from Neon Auth's user data and exposed **only** to admins (`/api/admin/users`), never to other users.
 
 Implemented so far: `user_id`, `display_name`, `avatar_url`, `show_in_community` (migration 0003), `locale` (migration 0004), `role`, `status`, `status_changed_at`, `created_at`, `updated_at`; the other columns arrive with their iterations. A profile is created on the user's first authenticated API request (name and photo from Google, `pending`); later changes by the user are never overwritten. Verified emails in `ADMIN_EMAILS` are set to `admin` / `active` on every request.
 
 `sessions.user_id` references `profiles.user_id` with `on delete cascade`, so removing a profile removes all of its sessions.
+
+## Table `notifications` (decision #65)
+
+| Column       | Type          | Rules                                                                                                                               |
+| ------------ | ------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `id`         | `uuid`        | PK, `gen_random_uuid()`                                                                                                             |
+| `user_id`    | `text`        | `not null`, FK → `profiles.user_id` `on delete cascade` (the recipient)                                                             |
+| `kind`       | `text`        | `not null`, `check (kind in ('registered','approved','revoked','signup','contact'))`                                                |
+| `params`     | `jsonb`       | `not null default '{}'`: what the text needs (`revoked`: `message`; `signup`: `displayName`; `contact`: `name`, `email`, `message`) |
+| `created_at` | `timestamptz` | `not null default now()`                                                                                                            |
+| `read_at`    | `timestamptz` | nullable; set by **Read**                                                                                                           |
+
+Index `(user_id, created_at)`. One row per recipient: a sign-up or a contact message creates one for every admin. The app writes the text in the reader's language from `kind` and `params`. `contact` rows hold the sender's name, email and message (personal data, only admins see them); they go when the admin's profile does.
+
+### Revoking a user (decision #65)
+
+One SQL statement in `apps/api/src/admin-repo.ts` (`revokeUser`): set the status to `revoked`, delete the user's sessions and notifications, and add the `revoked` notification with the admin's message. When the user reads it (`POST /api/notifications/:id/read`), the account is removed as below; an admin can also remove it before that.
 
 ### Removing a user (iteration 3)
 
@@ -75,3 +92,6 @@ Generate with `pnpm db:generate` (Drizzle Kit; add `--name <description>` for a 
 | 0000 | 2026-10-23 | `0000_create_sessions.sql`: table `sessions`, index `(user_id, date)`, score check                                                                                                                                                 |
 | 0001 | 2026-10-23 | `0001_create_profiles.sql`: table `profiles`; placeholder profile for `'local'` sessions; FK `sessions.user_id → profiles.user_id` (cascade)                                                                                       |
 | 0002 | 2026-10-23 | `0002_account_states.sql`: `profiles.role` (default `user`), `status` (default `pending`), `status_changed_at`, with checks. Existing profiles become `pending` until their next request (admins are promoted from `ADMIN_EMAILS`) |
+| 0003 | 2026-10-23 | `0003_community.sql`: `profiles.show_in_community` (default `true`, decision #53); index `sessions (discipline, date)` for the leaderboards                                                                                        |
+| 0004 | 2026-10-26 | `0004_locale.sql`: `profiles.locale` (nullable, `en` or `pt-PT`)                                                                                                                                                                   |
+| 0005 | 2026-10-27 | `0005_notifications.sql`: table `notifications` (FK to `profiles`, cascade; index `(user_id, created_at)`; kind check); `profiles.status` check also allows `revoked`. Additive only                                               |

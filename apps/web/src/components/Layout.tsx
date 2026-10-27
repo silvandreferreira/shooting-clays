@@ -2,7 +2,7 @@ import type { Me } from '@shooting-clays/shared';
 import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet } from 'react-router';
 import { useT } from '../i18n';
-import { useAdminUsers } from '../lib/queries';
+import { useAdminUsers, useNotifications } from '../lib/queries';
 import { Avatar } from './Avatar';
 import { firstName, type CurrentUser } from '../lib/session';
 import { useSignOut } from '../lib/sign-out';
@@ -25,6 +25,7 @@ const ICONS = {
     'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z',
   faq: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01',
   signOut: 'M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9',
+  bell: 'M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0',
 };
 
 function Icon({ path }: { path: string }) {
@@ -250,6 +251,37 @@ function PendingBadge({ count }: { count: number }) {
   );
 }
 
+/** The bell: opens the notifications; the badge counts the unread ones. */
+function NotificationsBell() {
+  const t = useT();
+  const { data } = useNotifications();
+  const unread = data?.unread ?? 0;
+  return (
+    <NavLink
+      to="/notifications"
+      aria-label={
+        unread > 0 ? `${t.nav.notifications}, ${t.nav.unreadBadge(unread)}` : t.nav.notifications
+      }
+      className={({ isActive }) =>
+        `relative flex size-11 shrink-0 items-center justify-center rounded-lg border-2 bg-card ${
+          isActive ? 'border-accent text-accent' : 'border-line'
+        }`
+      }
+    >
+      <Icon path={ICONS.bell} />
+      {unread > 0 && (
+        <span
+          aria-hidden
+          data-testid="unread-badge"
+          className="absolute -top-1.5 -right-1.5 min-w-5 rounded-full bg-accent px-1.5 text-center text-xs leading-5 font-bold text-accent-ink"
+        >
+          {unread}
+        </span>
+      )}
+    </NavLink>
+  );
+}
+
 const NOTICE_MS = 4000;
 
 export function Layout({ user, me }: { user: CurrentUser; me: Me }) {
@@ -272,13 +304,16 @@ export function Layout({ user, me }: { user: CurrentUser; me: Me }) {
         <p className="truncate text-lg font-semibold" data-testid="welcome">
           {t.auth.welcome(firstName(me.displayName || user.name))}
         </p>
-        <AccountMenu user={user} showSettings={!pending} />
-        <MobileMenu
-          user={user}
-          me={me}
-          pendingCount={pendingCount}
-          onAddDisabled={() => setNotice(t.account.addDisabled)}
-        />
+        <div className="ml-auto flex items-center gap-3">
+          <NotificationsBell />
+          <AccountMenu user={user} showSettings={!pending} />
+          <MobileMenu
+            user={user}
+            me={me}
+            pendingCount={pendingCount}
+            onAddDisabled={() => setNotice(t.account.addDisabled)}
+          />
+        </div>
       </header>
       {pending && (
         <p

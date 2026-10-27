@@ -16,6 +16,8 @@ export const ptPT = {
     menu: 'Menu',
     faq: 'Perguntas frequentes',
     closeMenu: 'Fechar menu',
+    notifications: 'Notificações',
+    unreadBadge: (n: number) => `${n} por ler`,
   },
   disciplines: {
     compak: 'Compak Sporting',
@@ -141,6 +143,49 @@ export const ptPT = {
     removing: 'A remover…',
     removeError: 'Não foi possível remover a conta. Tente novamente.',
     removed: (name: string) => `${name} foi removido.`,
+    revokeTitle: (name: string) => `Revogar o acesso de ${name}?`,
+    revokeWarning:
+      'As sessões são apagadas de imediato. A pessoa vê a sua mensagem da próxima vez que abrir a app e, quando a der como lida, a conta é apagada. Se voltar a entrar, recomeça como um utilizador novo à espera de aprovação.',
+    revokeMessageLabel: 'Mensagem para o utilizador',
+    revokeDefaultMessage:
+      'Obrigado pelo interesse no Shooting Clays. De momento não podemos manter a sua conta, por isso o acesso foi revogado e os seus dados foram apagados.',
+    revokeConfirm: 'Revogar acesso',
+    revoking: 'A revogar…',
+    revokeError: 'Não foi possível revogar o acesso. Tente novamente.',
+    revokedToast: (name: string) => `O acesso de ${name} foi revogado.`,
+    revokedStatus: 'Revogada: a aguardar leitura',
+    removeNow: 'Apagar já',
+  },
+  notifications: {
+    title: 'Notificações',
+    loading: 'A carregar…',
+    loadError: 'Não foi possível carregar as notificações.',
+    empty: 'Ainda não tem notificações.',
+    markRead: 'Li',
+    unread: 'Por ler',
+    readError: 'Não foi possível dar como lida. Tente novamente.',
+    registered: {
+      title: 'Registo recebido',
+      text: 'A sua conta aguarda aprovação. Receberá aqui uma notificação quando estiver ativa.',
+    },
+    approved: {
+      title: 'A sua conta está ativa',
+      text: 'Já pode registar as suas séries e aparecer na Comunidade.',
+    },
+    revoked: { title: 'O seu acesso foi revogado' },
+    signup: {
+      title: (name: string) => `${name} registou-se`,
+      text: 'A conta aguarda a sua aprovação.',
+      link: 'Ver pendentes',
+    },
+    contact: {
+      title: (name: string) => `Mensagem de ${name}`,
+      reply: 'Responder por email',
+    },
+  },
+  revoked: {
+    note: 'Ao carregar em "Li", a sua conta é apagada e a sessão termina.',
+    removing: 'A apagar a sua conta…',
   },
   community: {
     title: 'Comunidade',
@@ -421,6 +466,8 @@ export const ptPT = {
     UNAUTHENTICATED: 'A sua sessão terminou. Entre novamente.',
     ACCOUNT_PENDING: 'A sua conta está à espera de aprovação.',
     ACCOUNT_DISABLED: 'A sua conta está inativa.',
+    ACCOUNT_REVOKED: 'O seu acesso foi revogado.',
+    RATE_LIMITED: 'Demasiados pedidos. Tente novamente mais tarde.',
     FORBIDDEN: 'Não tem permissão para fazer isto.',
     NOT_FOUND: 'Não encontrado. Pode ter sido apagado.',
     INTERNAL_ERROR: 'Ocorreu um erro no servidor.',

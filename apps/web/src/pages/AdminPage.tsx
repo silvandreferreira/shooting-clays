@@ -1,11 +1,15 @@
-import type { AccountStatus, AdminUser } from '@shooting-clays/shared';
+import {
+  MAX_REVOKE_MESSAGE_LENGTH,
+  type AccountStatus,
+  type AdminUser,
+} from '@shooting-clays/shared';
 import { useEffect, useId, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { Avatar } from '../components/Avatar';
 import { Switch } from '../components/Switch';
 import { useT } from '../i18n';
 import { formatDay } from '../lib/format';
-import { useAdminUsers, useRemoveUser, useSetUserStatus } from '../lib/queries';
+import { useAdminUsers, useRemoveUser, useRevokeUser, useSetUserStatus } from '../lib/queries';
 
 const TOAST_MS = 6000;
 
@@ -45,6 +49,10 @@ function StatusSwitch({ user, onToggle }: { user: AdminUser; onToggle: () => voi
   );
 }
 
+/**
+ * "Remove" revokes the access with a message the user reads before the account goes (decision
+ * #65); "Delete now", on a revoked account, deletes it at once. Both need the name typed.
+ */
 function RemoveDialog({
   user,
   onClose,
@@ -55,11 +63,20 @@ function RemoveDialog({
   onRemoved: () => void;
 }) {
   const t = useT();
+  const revoke = user.status !== 'revoked';
   const [typed, setTyped] = useState('');
+  const [message, setMessage] = useState(t.admin.revokeDefaultMessage);
   const removeUser = useRemoveUser();
+  const revokeUser = useRevokeUser();
+  const mutation = revoke ? revokeUser : removeUser;
   const titleId = useId();
   const inputId = useId();
-  const confirmed = typed.trim() === user.displayName.trim();
+  const messageId = useId();
+  const confirmed = typed.trim() === user.displayName.trim() && (!revoke || message.trim() !== '');
+  const submit = () =>
+    revoke
+      ? revokeUser.mutate({ userId: user.userId, message }, { onSuccess: onRemoved })
+      : removeUser.mutate(user.userId, { onSuccess: onRemoved });
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
@@ -76,9 +93,24 @@ function RemoveDialog({
         className="w-full max-w-md space-y-4 rounded-2xl bg-card p-5 shadow-xl"
       >
         <h2 id={titleId} className="text-xl font-bold">
-          {t.admin.removeTitle(user.displayName)}
+          {revoke ? t.admin.revokeTitle(user.displayName) : t.admin.removeTitle(user.displayName)}
         </h2>
-        <p className="text-ink-muted">{t.admin.removeWarning}</p>
+        <p className="text-ink-muted">{revoke ? t.admin.revokeWarning : t.admin.removeWarning}</p>
+        {revoke && (
+          <div className="space-y-1">
+            <label htmlFor={messageId} className="block font-semibold">
+              {t.admin.revokeMessageLabel}
+            </label>
+            <textarea
+              id={messageId}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              rows={4}
+              maxLength={MAX_REVOKE_MESSAGE_LENGTH}
+              className="w-full rounded-lg border-2 border-line bg-surface p-3"
+            />
+          </div>
+        )}
         <div className="space-y-1">
           <label htmlFor={inputId} className="block font-semibold">
             {t.admin.removeConfirmLabel(user.displayName)}
@@ -88,13 +120,13 @@ function RemoveDialog({
             value={typed}
             onChange={(e) => setTyped(e.target.value)}
             autoComplete="off"
-            autoFocus
+            autoFocus={!revoke}
             className="min-h-11 w-full rounded-lg border-2 border-line bg-surface px-3"
           />
         </div>
-        {removeUser.isError && (
+        {mutation.isError && (
           <p role="alert" className="font-medium text-danger">
-            {t.admin.removeError}
+            {revoke ? t.admin.revokeError : t.admin.removeError}
           </p>
         )}
         <div className="flex gap-3">
@@ -107,11 +139,17 @@ function RemoveDialog({
           </button>
           <button
             type="button"
-            disabled={!confirmed || removeUser.isPending}
-            onClick={() => removeUser.mutate(user.userId, { onSuccess: onRemoved })}
+            disabled={!confirmed || mutation.isPending}
+            onClick={submit}
             className="min-h-12 flex-1 rounded-xl bg-danger font-semibold text-surface disabled:opacity-50"
           >
-            {removeUser.isPending ? t.admin.removing : t.admin.removeConfirm}
+            {revoke
+              ? revokeUser.isPending
+                ? t.admin.revoking
+                : t.admin.revokeConfirm
+              : removeUser.isPending
+                ? t.admin.removing
+                : t.admin.removeConfirm}
           </button>
         </div>
       </div>
@@ -160,13 +198,19 @@ function UserRow({
       {/* Admin accounts (the signed-in admin's included) are managed through ADMIN_EMAILS. */}
       {!isAdmin && (
         <div className="flex flex-col items-end gap-1">
-          <StatusSwitch user={user} onToggle={onToggle} />
+          {user.status === 'revoked' ? (
+            <p className="max-w-32 text-right text-sm font-semibold text-ink-muted">
+              {t.admin.revokedStatus}
+            </p>
+          ) : (
+            <StatusSwitch user={user} onToggle={onToggle} />
+          )}
           <button
             type="button"
             onClick={onRemove}
             className="min-h-11 rounded-lg px-3 font-semibold text-danger"
           >
-            {t.admin.remove}
+            {user.status === 'revoked' ? t.admin.removeNow : t.admin.remove}
           </button>
         </div>
       )}
@@ -301,7 +345,12 @@ export function AdminPage() {
           user={removing}
           onClose={() => setRemoving(null)}
           onRemoved={() => {
-            setToast({ message: t.admin.removed(removing.displayName) });
+            setToast({
+              message:
+                removing.status === 'revoked'
+                  ? t.admin.removed(removing.displayName)
+                  : t.admin.revokedToast(removing.displayName),
+            });
             setRemoving(null);
           }}
         />

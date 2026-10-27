@@ -81,19 +81,19 @@ Package manager: **pnpm workspaces**. TypeScript `strict` everywhere.
 
 ### Front end (`apps/web`)
 
-| Area          | Choice                                            | Why                                                                                                                 |
-| ------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Framework     | React + Vite + TypeScript                         | Large ecosystem, fast dev server, static build                                                                      |
-| Routing       | React Router (basename `/app`)                    | `/app`, `/app/add`, `/app/history`, `/app/history/:id`, `/app/community`, `/app/settings`, `/app/faq`, `/app/admin` |
-| Styling       | Tailwind CSS                                      | Mobile-first utility classes, dark mode                                                                             |
-| Charts        | Recharts                                          | Declarative, responsive                                                                                             |
-| Forms         | React Hook Form + Zod (shared schemas)            | Same validation as the API                                                                                          |
-| Data & cache  | TanStack Query + `persistQueryClient` (IndexedDB) | See "Caching"                                                                                                       |
-| PWA           | vite-plugin-pwa                                   | Installable on the phone home screen                                                                                |
-| i18n          | `src/i18n/en.ts` + `pt-PT.ts`, `useT()` hook      | Language switch without reload; `<html lang>`, `Intl` per language; choice in `localStorage` and the profile        |
-| Error capture | Sentry SDK                                        | See `observability.md`                                                                                              |
-| Metrics       | Vercel Web Analytics + Speed Insights (`/react`)  | Visits and Web Vitals on the site and the app, only in builds on Vercel; see `observability.md`                     |
-| Tests         | Vitest + Testing Library; Playwright              | See `testing.md`                                                                                                    |
+| Area          | Choice                                            | Why                                                                                                                                       |
+| ------------- | ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework     | React + Vite + TypeScript                         | Large ecosystem, fast dev server, static build                                                                                            |
+| Routing       | React Router (basename `/app`)                    | `/app`, `/app/add`, `/app/history`, `/app/history/:id`, `/app/community`, `/app/settings`, `/app/notifications`, `/app/faq`, `/app/admin` |
+| Styling       | Tailwind CSS                                      | Mobile-first utility classes, dark mode                                                                                                   |
+| Charts        | Recharts                                          | Declarative, responsive                                                                                                                   |
+| Forms         | React Hook Form + Zod (shared schemas)            | Same validation as the API                                                                                                                |
+| Data & cache  | TanStack Query + `persistQueryClient` (IndexedDB) | See "Caching"                                                                                                                             |
+| PWA           | vite-plugin-pwa                                   | Installable on the phone home screen                                                                                                      |
+| i18n          | `src/i18n/en.ts` + `pt-PT.ts`, `useT()` hook      | Language switch without reload; `<html lang>`, `Intl` per language; choice in `localStorage` and the profile                              |
+| Error capture | Sentry SDK                                        | See `observability.md`                                                                                                                    |
+| Metrics       | Vercel Web Analytics + Speed Insights (`/react`)  | Visits and Web Vitals on the site and the app, only in builds on Vercel; see `observability.md`                                           |
+| Tests         | Vitest + Testing Library; Playwright              | See `testing.md`                                                                                                                          |
 
 ### Back end (`apps/api`)
 
@@ -148,7 +148,7 @@ The pages for visitors who are not signed in (decision #62) live outside the app
 - **Head tags** (`src/site/head.ts`): title, description, canonical URL, `hreflang` for both languages (`x-default` = Portuguese), Open Graph and structured data (`WebApplication` on the home page, `FAQPage` on the FAQ). The canonical address comes from `SITE_URL` at build time (default `https://shooting-clays.vercel.app`).
 - **Google Search Console** owns the property `https://shooting-clays.vercel.app/` (URL prefix; a domain property needs DNS, which `vercel.app` does not allow), verified by the `google-site-verification` tag in `index.html`. Keep the tag: removing it unverifies the property.
 - **Small.** The site loads React, the strings and its own components (about 80 kB gzipped), never the charts, the auth client or Zod: it imports `@shooting-clays/shared/disciplines` and `/locales`, not the package root.
-- **Contact form** (`src/site/ContactPage.tsx`): posts to `POST /api/contact`, which emails the owner through Gmail SMTP (`apps/api/src/contact.ts`, `nodemailer`; decision #64). It checks the fields itself (same rules as the API's schema, limits from `@shooting-clays/shared/contact`) so the site still never loads Zod. The button stays disabled until the page is hydrated.
+- **Contact form** (`src/site/ContactPage.tsx`): posts to `POST /api/contact`, which adds it to the admins' notifications (decision #65) and emails the owner through Gmail SMTP (`apps/api/src/contact.ts`, `nodemailer`; decision #64). It checks the fields itself (same rules as the API's schema, limits from `@shooting-clays/shared/contact`) so the site still never loads Zod. The button stays disabled until the page is hydrated.
 - **The app** stays a single-page app under `/app` (`app/index.html`, `noindex`). "Sign in" on the site goes to `/app`, which shows the sign-in screen; Google returns to `/app`. Old app paths (`/add`, `/history`, `/community`, `/settings`, `/admin`) redirect there with 308.
 - **PWA.** `start_url` is `/app`; only the app registers the service worker, whose offline fallback covers `/app` only (public pages always come from the network). Phones that installed the app when it lived at `/` still open `/`: a small script on the home page sends an installed app (`display-mode: standalone`) to `/app`.
 

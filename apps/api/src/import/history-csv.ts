@@ -3,7 +3,7 @@ import { parse } from 'csv-parse/sync';
 import { createHash } from 'node:crypto';
 import { sql } from 'drizzle-orm';
 import type { Db } from '../db/client';
-import { profiles, sessions } from '../db/schema';
+import { notifications, profiles, sessions } from '../db/schema';
 
 /** The owner's history before the app existed (see docs/data-model.md → Import). */
 export const HISTORY_CSV_PATH = new URL('../../../../data/clays-results.csv', import.meta.url);
@@ -93,7 +93,7 @@ export async function importHistory(db: Db, rows: HistoryRow[], userId: string) 
 }
 
 /**
- * Tests and E2E only: empties both tables and imports the history for the given owner, an active
+ * Tests and E2E only: empties the tables and imports the history for the given owner, an active
  * admin.
  */
 export async function resetToHistory(
@@ -101,7 +101,7 @@ export async function resetToHistory(
   rows: HistoryRow[],
   owner: { id: string; displayName: string },
 ) {
-  await db.execute(sql`truncate table ${sessions}, ${profiles}`);
+  await db.execute(sql`truncate table ${notifications}, ${sessions}, ${profiles}`);
   await db
     .insert(profiles)
     .values({ userId: owner.id, displayName: owner.displayName, role: 'admin', status: 'active' });

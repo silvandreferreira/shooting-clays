@@ -83,8 +83,15 @@ export const ROLES = ['user', 'admin'] as const;
 export type Role = (typeof ROLES)[number];
 
 /** pending: waiting for approval; active: can use the app; disabled: blocked by an admin. */
-export const ACCOUNT_STATUSES = ['pending', 'active', 'disabled'] as const;
+/**
+ * `revoked`: an admin revoked the access and the user's data is gone; the account only remains
+ * until the user reads the message (decision #65).
+ */
+export const ACCOUNT_STATUSES = ['pending', 'active', 'disabled', 'revoked'] as const;
 export type AccountStatus = (typeof ACCOUNT_STATUSES)[number];
+
+/** What an admin sets with the switch (and undo); `revoked` has its own endpoint. */
+export const ADMIN_SETTABLE_STATUSES = ['pending', 'active', 'disabled'] as const;
 
 /** The signed-in user (`GET /api/me`). `email` is only ever returned to its owner. */
 export interface Me {
@@ -113,7 +120,9 @@ export interface AdminUser {
 }
 
 export const adminUserUpdateSchema = z.object({
-  status: z.enum(ACCOUNT_STATUSES, { error: 'status must be pending, active or disabled' }),
+  status: z.enum(ADMIN_SETTABLE_STATUSES, {
+    error: 'status must be pending, active or disabled',
+  }),
 });
 
 export type AdminUserUpdate = z.infer<typeof adminUserUpdateSchema>;
@@ -144,3 +153,53 @@ export const contactInputSchema = z.object({
   website: z.string().max(200).optional(),
 });
 export type ContactInput = z.infer<typeof contactInputSchema>;
+
+/**
+ * In-app notifications (`GET /api/notifications`). Users get `registered`, `approved` and
+ * `revoked`; admins get `signup` (a new account waiting for approval) and `contact` (a message
+ * from the contact form).
+ */
+export const NOTIFICATION_KINDS = [
+  'registered',
+  'approved',
+  'revoked',
+  'signup',
+  'contact',
+] as const;
+export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
+
+export interface NotificationParams {
+  registered: Record<string, never>;
+  approved: Record<string, never>;
+  revoked: { message: string };
+  signup: { displayName: string };
+  contact: { name: string; email: string; message: string };
+}
+
+export type AppNotification = {
+  [K in NotificationKind]: {
+    id: string;
+    kind: K;
+    params: NotificationParams[K];
+    createdAt: string;
+    readAt: string | null;
+  };
+}[NotificationKind];
+
+export interface NotificationList {
+  items: AppNotification[];
+  unread: number;
+}
+
+export const MAX_REVOKE_MESSAGE_LENGTH = 1000;
+
+export const revokeInputSchema = z.object({
+  message: z
+    .string()
+    .trim()
+    .min(1, { error: 'message is required' })
+    .max(MAX_REVOKE_MESSAGE_LENGTH, {
+      error: `message must be at most ${MAX_REVOKE_MESSAGE_LENGTH} characters`,
+    }),
+});
+export type RevokeInput = z.infer<typeof revokeInputSchema>;

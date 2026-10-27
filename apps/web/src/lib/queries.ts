@@ -4,6 +4,7 @@ import type {
   Dashboard,
   LeaderboardQuery,
   Me,
+  NotificationList,
   ProfileUpdate,
   SessionInput,
   SessionsQuery,
@@ -17,6 +18,7 @@ export const queryKeys = {
   dashboard: ['dashboard'] as const,
   sessions: (filters: SessionsQuery = {}) => ['sessions', filters] as const,
   leaderboard: (query: LeaderboardQuery) => ['leaderboard', query] as const,
+  notifications: ['notifications'] as const,
 };
 
 /**
@@ -147,6 +149,48 @@ export function useRemoveUser() {
     onSuccess: (_result, userId) => {
       queryClient.setQueryData<AdminUser[]>(queryKeys.adminUsers, (users) =>
         users?.filter((u) => u.userId !== userId),
+      );
+      void queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers });
+    },
+  });
+}
+
+export const NOTIFICATIONS_POLL_MS = 60_000;
+
+/** The bell's count and the Notifications page: checked when the app opens, regains focus and every minute. */
+export function useNotifications(enabled = true) {
+  return useQuery({
+    queryKey: queryKeys.notifications,
+    queryFn: api.notifications,
+    enabled,
+    staleTime: 0,
+    refetchOnWindowFocus: 'always',
+    refetchInterval: NOTIFICATIONS_POLL_MS,
+  });
+}
+
+/** "Read": the answer is the updated list, or that the (revoked) account is gone. */
+export function useReadNotification() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.readNotification(id),
+    onSuccess: (result) => {
+      if ('items' in result) {
+        queryClient.setQueryData<NotificationList>(queryKeys.notifications, result);
+      }
+    },
+  });
+}
+
+/** Revokes a user's access with the admin's message; the list shows them as revoked. */
+export function useRevokeUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, message }: { userId: string; message: string }) =>
+      api.revokeUser(userId, message),
+    onSuccess: (_result, { userId }) => {
+      queryClient.setQueryData<AdminUser[]>(queryKeys.adminUsers, (users) =>
+        users?.map((u) => (u.userId === userId ? { ...u, status: 'revoked', sessionCount: 0 } : u)),
       );
       void queryClient.invalidateQueries({ queryKey: queryKeys.adminUsers });
     },

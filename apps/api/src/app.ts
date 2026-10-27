@@ -5,6 +5,7 @@ import {
   DISCIPLINES,
   leaderboardQuerySchema,
   profileUpdateSchema,
+  revokeInputSchema,
   sessionInputSchema,
   sessionsQuerySchema,
   todayInLisbon,
@@ -20,6 +21,7 @@ import { createContactLimiter, type RateLimiter, type SendContact } from './cont
 import type { AuthUser, VerifyToken } from './auth';
 import type { Db } from './db/client';
 import { silentLogger, type Logger } from './logger';
+import { createNotificationsRepo } from './notifications-repo';
 import { createProfilesRepo, toMe, type Profile } from './profiles-repo';
 import { createSessionsRepo } from './sessions-repo';
 
@@ -46,6 +48,7 @@ type ErrorCode =
   | 'UNAUTHENTICATED'
   | 'ACCOUNT_PENDING'
   | 'ACCOUNT_DISABLED'
+  | 'ACCOUNT_REVOKED'
   | 'FORBIDDEN'
   | 'NOT_FOUND'
   | 'RATE_LIMITED'
@@ -92,6 +95,7 @@ export function createApp(deps: AppDeps) {
   const profilesRepo = createProfilesRepo(db);
   const adminRepo = createAdminRepo(db);
   const communityRepo = createCommunityRepo(db);
+  const notificationsRepo = createNotificationsRepo(db);
   const dashboard = (userId: string) => repo.dashboard(userId, todayInLisbon(now()));
 
   const app = new Hono<AppEnv>().basePath('/api');
@@ -147,13 +151,24 @@ export function createApp(deps: AppDeps) {
     const { website, ...message } = c.req.valid('json');
     // Honeypot filled in: a bot. It gets the same answer as a person, and nothing is sent.
     if (website) return c.json({ ok: true });
-    if (!sendContact) return errorResponse(c, 503, 'UNAVAILABLE', 'Contact form not configured');
-    try {
-      await sendContact(message);
-    } catch (error) {
-      // SMTP errors can quote the addresses: log only the error code.
-      const code = (error as { code?: unknown }).code;
-      logger.log('error', { message: 'Contact email failed', code: String(code ?? 'unknown') });
+    // The admins see it in their notifications, and the owner also gets it by email.
+    const notified = await notificationsRepo.notifyAdmins('contact', {
+      name: message.name,
+      email: message.email,
+      message: message.message,
+    });
+    let emailed = false;
+    if (sendContact) {
+      try {
+        await sendContact(message);
+        emailed = true;
+      } catch (error) {
+        // SMTP errors can quote the addresses: log only the error code.
+        const code = (error as { code?: unknown }).code;
+        logger.log('error', { message: 'Contact email failed', code: String(code ?? 'unknown') });
+      }
+    }
+    if (!notified && !emailed) {
       return errorResponse(c, 503, 'UNAVAILABLE', 'Could not send the message, try again later');
     }
     return c.json({ ok: true });
@@ -173,14 +188,20 @@ export function createApp(deps: AppDeps) {
     }
     // Read on every request, so an admin's change applies at once.
     let profile = await profilesRepo.get(user.id);
+    let isNewProfile = false;
     if (!profile) {
       if (!(await profilesRepo.authUserExists(user.id))) {
         return errorResponse(c, 401, 'UNAUTHENTICATED', 'Account not found');
       }
       profile = await profilesRepo.create(user);
+      isNewProfile = true;
     }
     // Only a verified address counts: an unverified sign-up must not pass as an admin's email.
     const isAdminEmail = user.emailVerified && adminEmails.includes(user.email.toLowerCase());
+    if (isNewProfile && !isAdminEmail) {
+      await notificationsRepo.notify(user.id, 'registered', {});
+      await notificationsRepo.notifyAdmins('signup', { displayName: profile.displayName });
+    }
     if (isAdminEmail && (profile.role !== 'admin' || profile.status !== 'active')) {
       profile = await profilesRepo.promoteToAdmin(user.id);
     }
@@ -193,12 +214,40 @@ export function createApp(deps: AppDeps) {
   app.get('/me', (c) => c.json(toMe(c.get('profile'), c.get('user').email)));
 
   app.use(async (c, next) => {
+    if (c.get('profile').status === 'disabled') {
+      return errorResponse(c, 403, 'ACCOUNT_DISABLED', 'Account disabled');
+    }
+    await next();
+  });
+
+  // Notifications: also for pending users (their sign-up was received) and revoked ones (the
+  // admin's message is all that is left of the account).
+  app.get('/notifications', async (c) => c.json(await notificationsRepo.list(c.get('user').id)));
+
+  app.post('/notifications/:id/read', zValidator('param', idParamSchema), async (c) => {
+    const { userId, status } = c.get('profile');
+    const { id } = c.req.valid('param');
+    const notification = z.uuid().safeParse(id).success
+      ? await notificationsRepo.get(userId, id)
+      : undefined;
+    if (!notification) return errorResponse(c, 404, 'NOT_FOUND', 'Notification not found');
+    // Reading the revocation message ends the account: everything about the user is deleted.
+    if (notification.kind === 'revoked' && status === 'revoked') {
+      await adminRepo.removeUser(userId);
+      logger.log('info', { action: 'revoked_user_removed', at: now().toISOString() });
+      return c.json({ accountRemoved: true });
+    }
+    await notificationsRepo.markRead(userId, id, now());
+    return c.json(await notificationsRepo.list(userId));
+  });
+
+  app.use(async (c, next) => {
     const { status } = c.get('profile');
     if (status === 'pending') {
       return errorResponse(c, 403, 'ACCOUNT_PENDING', 'Account waiting for approval');
     }
-    if (status === 'disabled') {
-      return errorResponse(c, 403, 'ACCOUNT_DISABLED', 'Account disabled');
+    if (status === 'revoked') {
+      return errorResponse(c, 403, 'ACCOUNT_REVOKED', 'Access revoked');
     }
     await next();
   });
@@ -237,11 +286,36 @@ export function createApp(deps: AppDeps) {
       const { userId } = c.req.valid('param');
       const error = await targetError(c, userId);
       if (error) return error;
+      const before = await profilesRepo.get(userId);
+      if (before?.status === 'revoked') {
+        return errorResponse(c, 403, 'FORBIDDEN', 'A revoked account can only be removed');
+      }
       const { status } = c.req.valid('json');
       const profile = await profilesRepo.setStatus(userId, status);
       if (!profile) return errorResponse(c, 404, 'NOT_FOUND', 'User not found');
+      if (status === 'active' && before?.status !== 'active') {
+        await notificationsRepo.notify(userId, 'approved', {});
+      }
       logger.log('info', { action: 'user_status_changed', adminId, status });
       return c.json({ userId, status: profile.status });
+    },
+  );
+
+  app.post(
+    '/admin/users/:userId/revoke',
+    zValidator('param', userIdParamSchema),
+    zValidator('json', revokeInputSchema, validationHook),
+    async (c) => {
+      const adminId = c.get('user').id;
+      const { userId } = c.req.valid('param');
+      const error = await targetError(c, userId);
+      if (error) return error;
+      if (!(await adminRepo.revokeUser(userId, c.req.valid('json').message))) {
+        return errorResponse(c, 404, 'NOT_FOUND', 'User not found');
+      }
+      // Neither the message nor the user's name in the log.
+      logger.log('info', { action: 'user_revoked', adminId, at: now().toISOString() });
+      return c.json({ userId, status: 'revoked' });
     },
   );
 
