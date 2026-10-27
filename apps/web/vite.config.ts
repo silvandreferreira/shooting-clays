@@ -40,6 +40,11 @@ const routePages: Plugin = {
 
 export default defineConfig({
   envDir: '../..',
+  // Vercel sets VERCEL=1 in its builds; only those load Web Analytics and Speed Insights
+  // (src/components/VercelMetrics.tsx).
+  define: {
+    'import.meta.env.VITE_VERCEL_METRICS': JSON.stringify(process.env.VERCEL === '1'),
+  },
   build: {
     rollupOptions: {
       input: {

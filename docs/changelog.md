@@ -4,6 +4,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Metrics
+
+- **Added:** Vercel Web Analytics and Speed Insights on the public site and the app (only in builds on Vercel; no query strings sent). Decision #63. R42, R43.
+
 ### Public site
 
 - **Added:** public pages for visitors, prerendered for search engines: home (`/`), disciplines (`/modalidades`) and FAQ (`/faq`) in European Portuguese, and the same in English under `/en`; `sitemap.xml`, `robots.txt`, a 404 page. Decision #62. E2E R40, R41.

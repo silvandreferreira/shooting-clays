@@ -1,5 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot, hydrateRoot } from 'react-dom/client';
+import { VercelMetrics } from '../components/VercelMetrics';
 import { I18nProvider } from '../i18n';
 import { findSiteRoute } from './routes';
 import { Site } from './Site';
@@ -12,6 +13,7 @@ const site = (
     <I18nProvider locale={route?.locale ?? 'pt-PT'}>
       <Site route={route} />
     </I18nProvider>
+    <VercelMetrics />
   </StrictMode>
 );
 
