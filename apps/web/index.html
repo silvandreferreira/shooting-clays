@@ -1,19 +1,25 @@
 <!doctype html>
-<html lang="en">
+<html lang="<!--site-lang-->">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0f172a" />
-    <meta
-      name="description"
-      content="Log clay shooting results and track progress per discipline."
-    />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <title>Shooting Clays</title>
+    <!--site-head-->
+    <script>
+      // The installed app (PWA) opens the app, not the public home page, even when it was installed
+      // before the app moved to /app.
+      if (
+        location.pathname === '/' &&
+        (matchMedia('(display-mode: standalone)').matches || navigator.standalone)
+      ) {
+        location.replace('/app');
+      }
+    </script>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <div id="root"><!--site-html--></div>
+    <script type="module" src="/src/site/entry-client.tsx"></script>
   </body>
 </html>

@@ -187,7 +187,6 @@ export const en = {
   /** Each language is named in its own language, whatever the active one. */
   faq: {
     title: 'Frequently asked questions',
-    backToSignIn: 'Back to sign in',
     items: {
       ranking: {
         question: 'How is the Community ranking decided?',
@@ -214,11 +213,184 @@ export const en = {
         answer:
           'In Compak Sporting and Sporting, whose targets are labelled A to F. The other disciplines do not have target letters.',
       },
+      install: {
+        question: 'How do I put the app on my phone?',
+        answer:
+          'Shooting Clays is a web app (PWA): there is nothing to download from an app store. On iPhone, open the site in Safari, tap Share and then "Add to Home Screen". On Android, open it in Chrome, tap the menu (⋮) and then "Install app" or "Add to Home screen". It then opens full screen from its own icon, like any other app.',
+      },
+      updates: {
+        question: 'Do I need to update the app?',
+        answer:
+          'No. You install it once and it updates itself: when there is a new version, the app downloads it in the background the next time you open it with a connection. If a change does not show yet, close the app and open it again.',
+      },
       language: {
         question: 'How do I change the language?',
         answer:
           'In Settings → Language (English or Português), or on the sign-in screen. The choice is saved in your profile and follows you to other devices.',
       },
+    },
+  },
+  /** The public site (src/site): home, disciplines and FAQ pages, prerendered for search engines. */
+  site: {
+    siteNav: 'Site',
+    skipToContent: 'Skip to content',
+    nav: {
+      home: 'Home',
+      disciplines: 'Disciplines',
+      faq: 'FAQ',
+      signIn: 'Sign in',
+      openMenu: 'Open menu',
+    },
+    languageLabel: 'Language',
+    meta: {
+      home: {
+        title: 'Shooting Clays — your clay shooting scores, with a friendly challenge',
+        description:
+          'Log every clay shooting series in seconds, follow your progress per discipline and see how other shooters are doing. Free, on your phone.',
+      },
+      disciplines: {
+        title:
+          'Clay shooting disciplines: Compak, Sporting, Fosso, Trap and Helice | Shooting Clays',
+        description:
+          'How Compak Sporting, Sporting, Fosso, Trap and Helice work: stations, machines, shots per target and targets per series, with tips for training.',
+      },
+      faq: {
+        title: 'Frequently asked questions | Shooting Clays',
+        description:
+          'How to put the app on your phone, how the Community ranking works, what Day, Week and Month cover and who appears in the Community.',
+      },
+      notFound: {
+        title: 'Page not found | Shooting Clays',
+        description: 'This page does not exist.',
+      },
+    },
+    home: {
+      eyebrow: 'Clay shooting, logged',
+      title: 'Log your clay shooting series and beat your own best',
+      lead: 'Shooting Clays keeps every series you shoot — date, discipline, score out of 25 and the targets that got away — and shows how you are progressing. And when you see that someone shot 18, you know what to aim for next time: 19.',
+      cta: 'Start for free',
+      ctaNote: 'Sign in with your Google account. Free, no app store needed.',
+      screenshotAlt:
+        'The Shooting Clays dashboard on a phone: a chart of scores over time and the average per discipline.',
+      how: {
+        title: 'How it works',
+        steps: [
+          {
+            title: 'Log the series',
+            text: 'After each series, pick the discipline and the score out of 25. In Compak Sporting and Sporting you can also mark the hardest targets (A to F).',
+          },
+          {
+            title: 'See your progress',
+            text: 'The dashboard shows your average, best and worst score per discipline, for all time, last month and this month, with a chart of every series.',
+          },
+          {
+            title: 'Compare with the Community',
+            text: 'See who shot best today, this week and this month in each discipline — and set yourself the next target.',
+          },
+        ],
+      },
+      spirit: {
+        title: 'Competitive, but friendly',
+        paragraphs: [
+          'Training on your own is more fun when you know how the others are doing. Shooting Clays turns every series into a small personal challenge: beat your average, your best score, or the shooter just above you this week.',
+          'It is not an official competition. Nobody is judged and each shooter decides whether to appear: the Community only shows the display name, the photo and the best score — never an email or anything else.',
+        ],
+        points: [
+          'Day, week and month rankings per discipline',
+          'Gold, silver and bronze for the top three',
+          'Switch off "Show me in the Community" at any time',
+        ],
+      },
+      disciplines: {
+        title: 'Five disciplines',
+        text: 'Each discipline has its own statistics and its own ranking.',
+        more: 'How each discipline works',
+      },
+      faq: {
+        title: 'Questions',
+        more: 'All questions',
+      },
+    },
+    disciplines: {
+      title: 'Clay shooting disciplines',
+      intro:
+        'Shooting Clays records series of 25 targets in five disciplines. This is how each one works and what to look out for when you train. Rules vary between clubs and federations; for competitions, follow the official rules.',
+      facts: {
+        stations: 'Stations',
+        machines: 'Machines',
+        shots: 'Shots per target',
+        targets: 'Targets per series',
+      },
+      tip: 'Tip',
+      compareTitle: 'At a glance',
+      discipline: 'Discipline',
+      cta: 'Log your first series',
+      items: {
+        compak: {
+          summary: 'Hunting-style targets from several machines, shot from five stations in a row.',
+          paragraphs: [
+            'Five stations stand side by side in a compact area, facing a set of machines labelled with letters (usually A to F). Each machine throws a different trajectory: crossing, incoming, going away, rabbits rolling along the ground.',
+            'At each station the shooter gets a menu of singles and doubles, five targets per station, and moves on to the next one. Each target can be shot only once.',
+          ],
+          facts: { stations: '5, in a row', machines: '6 (A–F)', shots: '1', targets: '25' },
+          tip: 'Note which letters you miss most: in Shooting Clays you can mark the hardest targets of each series and see the pattern over time.',
+        },
+        sporting: {
+          summary: 'A course across natural ground that imitates hunting situations.',
+          paragraphs: [
+            'Sporting (also called a hunting course) spreads the stations over natural ground — woods, slopes, open fields — so that every target looks like a different game situation: partridge, duck, rabbit, a bird crossing between trees.',
+            'Courses change from club to club and from day to day, which makes reading the target and the moment to shoot as important as the swing itself. Like Compak, the machines are identified by letters.',
+          ],
+          facts: {
+            stations: 'Several, spread out',
+            machines: 'Several (A–F)',
+            shots: '1',
+            targets: '25',
+          },
+          tip: 'Watch a few targets from each station before your turn: the course is part of the challenge.',
+        },
+        fosso: {
+          summary: 'The Olympic trap discipline: fast, going-away targets from a trench.',
+          paragraphs: [
+            'Fifteen machines are hidden in a trench in front of five stations — three in front of each one. The shooter calls for the target without knowing which of the three will throw it, nor its angle or height.',
+            'Shooters rotate through the five stations, five targets at each. A target can be shot twice: the second shot counts the same as the first.',
+          ],
+          facts: { stations: '5', machines: '15 (3 per station)', shots: '2', targets: '25' },
+          tip: 'Keep the same routine at every station — stance, gun hold and the moment you call — so that only the target changes.',
+        },
+        trap: {
+          summary: 'Going-away targets from a few machines in a trench in front of the shooter.',
+          paragraphs: [
+            'The machines — usually three — are in a trench in front of the line of five stations. The target comes out going away from the shooter, at an angle you only discover when it leaves the trench.',
+            'As in Fosso, the shooter moves through the five stations and has two shots per target. It is a common training discipline at clubs, with fewer machines than Olympic trap.',
+          ],
+          facts: { stations: '5', machines: 'Usually 3', shots: '2', targets: '25' },
+          tip: 'Use the second shot as a safety net, not a plan: aim to break every target with the first.',
+        },
+        helice: {
+          summary: 'A two-winged target thrown unpredictably, which must fall inside the fence.',
+          paragraphs: [
+            'The helice (also called ZZ) is a plastic propeller with a white centre piece. Several launchers in front of the shooter spin it and throw it in a direction nobody can predict, with sudden changes of height and direction.',
+            'For the target to count, the shot must knock off the centre piece and it must fall inside the fenced area. The shooter has two shots per target.',
+          ],
+          facts: {
+            stations: '1 shooting line',
+            machines: '5 to 7 launchers',
+            shots: '2',
+            targets: '25',
+          },
+          tip: 'Look at the centre piece, not the wings: it is what has to fall inside the fence.',
+        },
+      },
+    },
+    footer: {
+      tagline: 'A free web app to log clay shooting series.',
+      unofficial: 'Shooting Clays is not affiliated with any federation or club.',
+    },
+    notFound: {
+      title: 'Page not found',
+      text: 'The page you are looking for does not exist or has moved.',
+      back: 'Go to the home page',
     },
   },
   languages: { en: 'English', 'pt-PT': 'Português' } satisfies Record<Locale, string>,

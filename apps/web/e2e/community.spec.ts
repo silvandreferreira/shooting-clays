@@ -31,7 +31,7 @@ test.beforeEach(async ({ request }) => {
 });
 
 async function openFosso(page: import('@playwright/test').Page) {
-  await page.goto('/');
+  await page.goto('/app');
   await goTo(page, 'Community');
   await page.getByRole('combobox', { name: 'Discipline' }).selectOption({ label: 'Fosso' });
 }
@@ -100,7 +100,7 @@ test('R27: switching to week and day, and stepping back to earlier periods', asy
 test('R28: "Show me in the Community" off hides me from the ranking; the display name can change', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('/app');
   await openAccountMenu(page);
   await accountItem(page, 'Settings').click();
   await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();

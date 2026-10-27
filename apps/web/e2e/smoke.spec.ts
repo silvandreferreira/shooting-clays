@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 // S1: read-only checks against production (playwright.smoke.config.ts), signed out. Never writes
 // data and never signs in.
-test('S1 @smoke: production is up, sign-in is reachable and the API requires it', async ({
+test('S1 @smoke: production is up, the public site and sign-in are reachable and the API requires it', async ({
   page,
   request,
 }) => {
@@ -19,7 +19,7 @@ test('S1 @smoke: production is up, sign-in is reachable and the API requires it'
   expect(session.ok()).toBe(true);
 
   // A deep link is served by the app (client route) and shows the sign-in screen.
-  await page.goto('/history');
+  await page.goto('/app/history');
   await expect(page.getByRole('button', { name: 'Sign in with Google' })).toBeVisible();
   await expect(page.getByRole('alert')).toHaveCount(0);
 });

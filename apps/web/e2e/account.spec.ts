@@ -20,7 +20,7 @@ test.describe('pending account', () => {
       const { pathname } = new URL(r.url());
       if (pathname.startsWith('/api/') && pathname !== '/api/me') dataRequests.push(pathname);
     });
-    await page.goto('/');
+    await page.goto('/app');
     await expect(page.getByTestId('pending-banner')).toContainText('waiting for approval');
     await expect(page.getByTestId('welcome')).toHaveText('Welcome, Pat');
 
@@ -44,8 +44,8 @@ test.describe('pending account', () => {
     await expect(page.getByText('once the administrator approves your account')).toBeVisible();
 
     // Data routes are not reachable.
-    await page.goto('/history');
-    await expect(page).toHaveURL(/\/$/);
+    await page.goto('/app/history');
+    await expect(page).toHaveURL(/\/app$/);
     expect(await seriousA11yViolations(page)).toEqual([]);
   });
 });
@@ -54,7 +54,7 @@ test.describe('disabled account', () => {
   test.use({ signedInAs: DISABLED });
 
   test('R21: a disabled user sees only the inactive notice and can sign out', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/app');
     await expect(page.getByRole('heading', { name: 'Your account is inactive' })).toBeVisible();
     await expect(page.getByText(DISABLED.email)).toBeVisible();
     await expect(page.getByRole('navigation', { name: 'Main' })).toHaveCount(0);
@@ -70,7 +70,7 @@ test('R22: the admin approves a pending user, who then sees their real (empty) d
   auth,
 }) => {
   await registerUser(request, PENDING);
-  await page.goto('/');
+  await page.goto('/app');
   const adminTab = (await mainNav(page)).getByRole('link', { name: /Admin/ });
   await expect(adminTab).toContainText('1 waiting for approval');
   await adminTab.click();
@@ -97,7 +97,7 @@ test('R22: the admin approves a pending user, who then sees their real (empty) d
   );
 
   auth.user = PENDING;
-  await page.goto('/');
+  await page.goto('/app');
   await expect(page.getByTestId('welcome')).toHaveText('Welcome, Pat');
   await expect(page.getByTestId('pending-banner')).toHaveCount(0);
   await expect(page.getByText('No sessions yet.', { exact: false })).toBeVisible();
@@ -110,7 +110,7 @@ test('R23: the admin removes a user after typing their name; signing in again st
   auth,
 }) => {
   await registerUser(request, OTHER);
-  await page.goto('/admin');
+  await page.goto('/app/admin');
   const row = page.getByRole('listitem', { name: OTHER.name });
   await row.getByRole('button', { name: 'Remove' }).click();
 
@@ -129,7 +129,7 @@ test('R23: the admin removes a user after typing their name; signing in again st
 
   // Google signs them in again: a new account, waiting for approval.
   auth.user = { ...OTHER, status: undefined };
-  await page.goto('/');
+  await page.goto('/app');
   await expect(page.getByTestId('pending-banner')).toBeVisible();
 });
 
@@ -138,7 +138,7 @@ test('R37: the admin searches users by name or email and filters All Â· Active Â
   request,
 }) => {
   for (const user of [PENDING, OTHER, DISABLED]) await registerUser(request, user);
-  await page.goto('/admin');
+  await page.goto('/app/admin');
   const rows = page.getByRole('listitem');
   const filters = page.getByRole('group', { name: 'Show' });
   // Owner, other, pending and disabled.
@@ -172,10 +172,10 @@ test('R37: the admin searches users by name or email and filters All Â· Active Â
 test('R38: the admin clears this device cache in Settings and the app reloads', async ({
   page,
 }) => {
-  await page.goto('/admin');
+  await page.goto('/app/admin');
   await expect(page.getByRole('heading', { name: 'Users' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Clear cache and reload' })).toHaveCount(0);
-  await page.goto('/settings');
+  await page.goto('/app/settings');
   await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
   await page.evaluate(async () => {
     await (await caches.open('e2e-marker')).put('/marker', new Response('x'));

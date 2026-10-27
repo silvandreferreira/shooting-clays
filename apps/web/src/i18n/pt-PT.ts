@@ -180,7 +180,6 @@ export const ptPT = {
   },
   faq: {
     title: 'Perguntas frequentes',
-    backToSignIn: 'Voltar ao início de sessão',
     items: {
       ranking: {
         question: 'Como é feita a classificação da Comunidade?',
@@ -207,11 +206,185 @@ export const ptPT = {
         answer:
           'No Compak Sporting e no Percurso de Caça, cujos pratos têm as letras A a F. As outras disciplinas não têm pratos com letra.',
       },
+      install: {
+        question: 'Como ponho a app no telemóvel?',
+        answer:
+          'O Shooting Clays é uma aplicação web (PWA): não há nada para descarregar de uma loja de aplicações. No iPhone, abra o site no Safari, toque em Partilhar e depois em "Adicionar ao ecrã principal". No Android, abra-o no Chrome, toque no menu (⋮) e depois em "Instalar app" ou "Adicionar ao ecrã principal". A partir daí abre em ecrã inteiro pelo seu próprio ícone, como qualquer outra app.',
+      },
+      updates: {
+        question: 'Preciso de atualizar a app?',
+        answer:
+          'Não. Instala-a uma vez e ela atualiza-se sozinha: quando há uma versão nova, a app descarrega-a em segundo plano da próxima vez que a abrir com rede. Se uma mudança ainda não aparecer, feche a app e volte a abri-la.',
+      },
       language: {
         question: 'Como mudo o idioma?',
         answer:
           'Nas Definições → Idioma (English ou Português), ou no ecrã de início de sessão. A escolha fica guardada no seu perfil e acompanha-o noutros dispositivos.',
       },
+    },
+  },
+  site: {
+    siteNav: 'Site',
+    skipToContent: 'Saltar para o conteúdo',
+    nav: {
+      home: 'Início',
+      disciplines: 'Modalidades',
+      faq: 'Perguntas frequentes',
+      signIn: 'Entrar',
+      openMenu: 'Abrir menu',
+    },
+    languageLabel: 'Idioma',
+    meta: {
+      home: {
+        title: 'Shooting Clays — os seus resultados de tiro aos pratos, com um desafio saudável',
+        description:
+          'Registe cada série de tiro aos pratos em segundos, acompanhe a evolução por modalidade e veja como estão os outros atiradores. Grátis, no telemóvel.',
+      },
+      disciplines: {
+        title:
+          'Modalidades de tiro aos pratos: Compak, Percurso de Caça, Fosso, Trap e Hélice | Shooting Clays',
+        description:
+          'Como funcionam o Compak Sporting, o Percurso de Caça, o Fosso, o Trap e a Hélice: postos, máquinas, tiros por prato e pratos por série, com dicas para treinar.',
+      },
+      faq: {
+        title: 'Perguntas frequentes | Shooting Clays',
+        description:
+          'Como pôr a app no telemóvel, como funciona a classificação da Comunidade, o que abrangem o Dia, a Semana e o Mês e quem aparece na Comunidade.',
+      },
+      notFound: {
+        title: 'Página não encontrada | Shooting Clays',
+        description: 'Esta página não existe.',
+      },
+    },
+    home: {
+      eyebrow: 'Tiro aos pratos, registado',
+      title: 'Registe as suas séries de tiro aos pratos e supere-se',
+      lead: 'O Shooting Clays guarda cada série que faz — data, modalidade, pontuação em 25 e os pratos que escaparam — e mostra como está a evoluir. E quando vê que alguém fez 18, já sabe o que tentar da próxima vez: 19.',
+      cta: 'Começar grátis',
+      ctaNote: 'Entre com a sua conta Google. Grátis, sem passar pela loja de aplicações.',
+      screenshotAlt:
+        'O painel do Shooting Clays num telemóvel: um gráfico das pontuações ao longo do tempo e a média por modalidade.',
+      how: {
+        title: 'Como funciona',
+        steps: [
+          {
+            title: 'Registe a série',
+            text: 'No fim de cada série, escolha a modalidade e a pontuação em 25. No Compak Sporting e no Percurso de Caça pode também marcar os pratos mais difíceis (A a F).',
+          },
+          {
+            title: 'Veja a sua evolução',
+            text: 'O painel mostra a média, a melhor e a pior pontuação por modalidade, desde sempre, no mês passado e neste mês, com um gráfico de todas as séries.',
+          },
+          {
+            title: 'Compare-se com a Comunidade',
+            text: 'Veja quem fez melhor hoje, esta semana e este mês em cada modalidade — e defina o seu próximo objetivo.',
+          },
+        ],
+      },
+      spirit: {
+        title: 'Competitivo, mas saudável',
+        paragraphs: [
+          'Treinar sozinho é mais divertido quando sabe como estão os outros. O Shooting Clays transforma cada série num pequeno desafio pessoal: bater a sua média, a sua melhor pontuação ou o atirador que está logo acima de si esta semana.',
+          'Não é uma competição oficial. Ninguém é avaliado e cada atirador decide se aparece: a Comunidade só mostra o nome, a foto e a melhor pontuação — nunca o email nem mais nada.',
+        ],
+        points: [
+          'Classificações do dia, da semana e do mês por modalidade',
+          'Ouro, prata e bronze para os três primeiros',
+          'Pode desligar "Mostrar-me na Comunidade" quando quiser',
+        ],
+      },
+      disciplines: {
+        title: 'Cinco modalidades',
+        text: 'Cada modalidade tem as suas estatísticas e a sua classificação.',
+        more: 'Como funciona cada modalidade',
+      },
+      faq: {
+        title: 'Perguntas',
+        more: 'Todas as perguntas',
+      },
+    },
+    disciplines: {
+      title: 'Modalidades de tiro aos pratos',
+      intro:
+        'O Shooting Clays regista séries de 25 pratos em cinco modalidades. Veja como funciona cada uma e no que deve reparar quando treina. As regras variam entre clubes e federações; em competição, siga o regulamento oficial.',
+      facts: {
+        stations: 'Postos',
+        machines: 'Máquinas',
+        shots: 'Tiros por prato',
+        targets: 'Pratos por série',
+      },
+      tip: 'Dica',
+      compareTitle: 'Resumo',
+      discipline: 'Modalidade',
+      cta: 'Registar a primeira série',
+      items: {
+        compak: {
+          summary:
+            'Pratos que imitam a caça, lançados por várias máquinas, para cinco postos alinhados.',
+          paragraphs: [
+            'Cinco postos lado a lado, numa área compacta, de frente para um conjunto de máquinas identificadas por letras (normalmente de A a F). Cada máquina lança uma trajetória diferente: cruzados, de frente, a fugir, coelhos a rolar pelo chão.',
+            'Em cada posto, o atirador faz uma sequência de pratos simples e duplos, cinco pratos por posto, e passa ao seguinte. Cada prato só pode ser atirado uma vez.',
+          ],
+          facts: { stations: '5, alinhados', machines: '6 (A–F)', shots: '1', targets: '25' },
+          tip: 'Repare nas letras que mais falha: no Shooting Clays pode marcar os pratos mais difíceis de cada série e ver o padrão ao longo do tempo.',
+        },
+        sporting: {
+          summary: 'Um percurso em terreno natural que imita situações de caça.',
+          paragraphs: [
+            'No Percurso de Caça (Sporting), os postos estão espalhados por terreno natural — mato, encostas, campo aberto — para que cada prato pareça uma situação de caça diferente: perdiz, pato, coelho, uma ave a cruzar entre as árvores.',
+            'Os percursos mudam de clube para clube e de dia para dia, por isso ler o prato e o momento de atirar conta tanto como o movimento. Tal como no Compak, as máquinas são identificadas por letras.',
+          ],
+          facts: {
+            stations: 'Vários, espalhados',
+            machines: 'Várias (A–F)',
+            shots: '1',
+            targets: '25',
+          },
+          tip: 'Observe alguns pratos de cada posto antes da sua vez: o percurso faz parte do desafio.',
+        },
+        fosso: {
+          summary: 'O Fosso Olímpico: pratos rápidos, a fugir, lançados de uma vala.',
+          paragraphs: [
+            'Quinze máquinas estão escondidas numa vala à frente de cinco postos — três à frente de cada um. O atirador pede o prato sem saber qual das três o vai lançar, nem com que ângulo ou altura.',
+            'Os atiradores rodam pelos cinco postos, cinco pratos em cada. Cada prato pode ser atirado duas vezes: o segundo tiro conta como o primeiro.',
+          ],
+          facts: { stations: '5', machines: '15 (3 por posto)', shots: '2', targets: '25' },
+          tip: 'Mantenha a mesma rotina em todos os postos — posição, arma e o momento de pedir o prato — para que só o prato mude.',
+        },
+        trap: {
+          summary: 'Pratos a fugir, lançados por poucas máquinas numa vala à frente do atirador.',
+          paragraphs: [
+            'As máquinas — normalmente três — estão numa vala à frente da linha de cinco postos. O prato sai a fugir do atirador, com um ângulo que só se descobre quando sai da vala.',
+            'Tal como no Fosso, o atirador passa pelos cinco postos e tem dois tiros por prato. É uma modalidade comum nos treinos dos clubes, com menos máquinas do que o Fosso Olímpico.',
+          ],
+          facts: { stations: '5', machines: 'Normalmente 3', shots: '2', targets: '25' },
+          tip: 'Use o segundo tiro como rede de segurança, não como plano: tente partir cada prato com o primeiro.',
+        },
+        helice: {
+          summary:
+            'Um alvo com duas asas, lançado de forma imprevisível, que tem de cair dentro da vedação.',
+          paragraphs: [
+            'A hélice (também chamada ZZ) é uma hélice de plástico com uma peça central branca. Vários lançadores à frente do atirador fazem-na girar e lançam-na numa direção que ninguém consegue prever, com mudanças bruscas de altura e de direção.',
+            'Para o alvo contar, o tiro tem de soltar a peça central e esta tem de cair dentro da zona vedada. O atirador tem dois tiros por alvo.',
+          ],
+          facts: {
+            stations: '1 linha de tiro',
+            machines: '5 a 7 lançadores',
+            shots: '2',
+            targets: '25',
+          },
+          tip: 'Olhe para a peça central, não para as asas: é ela que tem de cair dentro da vedação.',
+        },
+      },
+    },
+    footer: {
+      tagline: 'Uma aplicação web gratuita para registar séries de tiro aos pratos.',
+      unofficial: 'O Shooting Clays não está associado a nenhuma federação nem clube.',
+    },
+    notFound: {
+      title: 'Página não encontrada',
+      text: 'A página que procura não existe ou mudou de sítio.',
+      back: 'Ir para o início',
     },
   },
   languages: { en: 'English', 'pt-PT': 'Português' },

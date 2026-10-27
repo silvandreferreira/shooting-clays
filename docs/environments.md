@@ -37,6 +37,8 @@ In `pnpm test:e2e`, `ADMIN_EMAILS` is set to `owner@example.test` and no `NEON_A
 
 `ENABLE_EXPERIMENTAL_COREPACK=1` (Production and Preview) makes Vercel install with the pnpm version pinned in `package.json` (`packageManager`). It is only used by Vercel's build, not by the app, so it is not in `.env.example`.
 
+`SITE_URL` (optional, build time) is the canonical address of the public pages, used in their `<link rel="canonical">`, `hreflang`, Open Graph tags, `sitemap.xml` and `robots.txt` (`apps/web/scripts/prerender.mjs`). Default `https://shooting-clays.vercel.app`; set it in Vercel (Production) only when the site moves to its own domain. Previews keep the production address on purpose: they must never compete with it in search results.
+
 Vercel itself sets `VERCEL_ENV` (`production` / `preview`) and `VERCEL_GIT_COMMIT_SHA` (the release in logs).
 
 ## GitHub Actions secrets

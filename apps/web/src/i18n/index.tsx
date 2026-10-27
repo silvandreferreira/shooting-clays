@@ -1,4 +1,4 @@
-import { LOCALES, type Locale } from '@shooting-clays/shared';
+import { LOCALES, type Locale } from '@shooting-clays/shared/locales';
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import { en, type Strings } from './en';
 import { ptPT } from './pt-PT';
@@ -31,7 +31,17 @@ export const currentLocale = () => current;
 /** Makes `locale` the active language for formatting and `<html lang>` (the provider calls it). */
 export function activateLocale(locale: Locale) {
   current = locale;
-  document.documentElement.lang = locale;
+  // Absent while the public pages are prerendered (src/site/entry-server.tsx).
+  if (typeof document !== 'undefined') document.documentElement.lang = locale;
+}
+
+/** Saves the language choice on this device; the app opens in it next time. */
+export function rememberLocale(locale: Locale) {
+  try {
+    localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+  } catch {
+    // Private mode or storage blocked: the choice lasts until the page closes.
+  }
 }
 
 export function initialLocale(): Locale {
@@ -47,19 +57,22 @@ interface I18n {
 
 const I18nContext = createContext<I18n>({ locale: 'en', t: en, setLocale: () => {} });
 
-export function I18nProvider({ children }: { children: ReactNode }) {
+/** `locale` fixes the language (public pages: it comes from the URL); otherwise it is detected. */
+export function I18nProvider({
+  children,
+  locale: fixed,
+}: {
+  children: ReactNode;
+  locale?: Locale;
+}) {
   const [locale, setState] = useState<Locale>(() => {
-    const locale = initialLocale();
+    const locale = fixed ?? initialLocale();
     activateLocale(locale);
     return locale;
   });
   const setLocale = useCallback((next: Locale) => {
     activateLocale(next);
-    try {
-      localStorage.setItem(LOCALE_STORAGE_KEY, next);
-    } catch {
-      // Private mode or storage blocked: the choice lasts until the page closes.
-    }
+    rememberLocale(next);
     setState(next);
   }, []);
   const value = useMemo(() => ({ locale, t: STRINGS[locale], setLocale }), [locale, setLocale]);

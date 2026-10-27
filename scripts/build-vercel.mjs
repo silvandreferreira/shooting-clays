@@ -2,7 +2,7 @@
 // the web app as static files and the API (with the /auth proxy) as one bundled function in fra1.
 // Vercel uses this directory as is; see docs/architecture.md → Hosting.
 import { build } from 'esbuild';
-import { cp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 
 const out = new URL('../.vercel/output/', import.meta.url);
 const fn = new URL('functions/api.func/', out);
@@ -27,6 +27,12 @@ await build({
 });
 
 const json = (value) => JSON.stringify(value, null, 2);
+
+// The prerendered public pages (apps/web/scripts/prerender.mjs), e.g. "/", "/en/faq".
+const sitePaths = JSON.parse(
+  await readFile(new URL('../apps/web/dist-ssr/routes.json', import.meta.url), 'utf8'),
+);
+const regex = (path) => path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 await writeFile(
   new URL('.vc-config.json', fn),
@@ -55,9 +61,21 @@ await writeFile(
       },
       { src: '^/api(/.*)?$', dest: '/api' },
       { src: '^/auth/.*$', dest: '/api' },
+      // Bookmarks from before the app moved to /app.
+      {
+        src: '^/(add|history|community|settings|admin)(/.*)?$',
+        status: 308,
+        headers: { Location: '/app/$1$2' },
+      },
+      // The app is a single-page app: every /app path is a client route.
+      { src: '^/app(/.*)?$', dest: '/app/index.html' },
+      // Public pages: one prerendered file each; a trailing slash is allowed.
+      ...sitePaths.map((path) => ({
+        src: `^${path === '/' ? '' : regex(path)}/?$`,
+        dest: path === '/' ? '/index.html' : `${path}/index.html`,
+      })),
       { handle: 'filesystem' },
-      // Single-page app: every other path is a client route.
-      { src: '^/.*$', dest: '/index.html' },
+      { src: '^/.*$', dest: '/404.html', status: 404 },
     ],
   }),
 );

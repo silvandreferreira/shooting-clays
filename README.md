@@ -274,7 +274,8 @@ pnpm db:import                               # import data/clays-results.csv for
 
 | What            | URL                                |
 | --------------- | ---------------------------------- |
-| App (front end) | <http://localhost:5173>            |
+| Public site     | <http://localhost:5173>            |
+| App (front end) | <http://localhost:5173/app>        |
 | API             | <http://localhost:3000/api/health> |
 
 To test on your **phone** on the same Wi-Fi: run `pnpm dev:host` and open `http://<computer-ip>:5173`. Sign-in does **not** work there: Neon Auth's session cookie is `Secure`, which browsers only accept over HTTPS or on `localhost`. Use a Vercel preview to test sign-in on the phone.
