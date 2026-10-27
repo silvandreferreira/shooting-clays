@@ -298,7 +298,7 @@ export const en = {
         title:
           'Clay shooting disciplines: Compak, Sporting, Fosso, Trap and Helice | Shooting Clays',
         description:
-          'How Compak Sporting, Sporting, Fosso, Trap and Helice work: stations, machines, shots per target and targets per series, with tips for training.',
+          'How Compak Sporting, Sporting, Fosso, Trap and Helice work: stations, machines, shots per target, targets per series and cartridge loads, with tips for training.',
       },
       faq: {
         title: 'Frequently asked questions | Shooting Clays',
@@ -371,9 +371,14 @@ export const en = {
         machines: 'Machines',
         shots: 'Shots per target',
         targets: 'Targets per series',
+        load: 'Max. load',
+        shot: 'Shot size',
       },
       tip: 'Tip',
       compareTitle: 'At a glance',
+      ammunitionSource:
+        'Maximum loads and shot sizes from the FPTAC table of recognised ammunition (exam manual for the federation licence E, version 2.1, August 2026). They can change when the rules are revised: for competitions, check the current rules.',
+      ammunitionSourceLink: 'FPTAC manual (PDF)',
       discipline: 'Discipline',
       cta: 'Log your first series',
       items: {
@@ -383,7 +388,14 @@ export const en = {
             'Five stations stand side by side in a compact area, facing a set of machines labelled with letters (usually A to F). Each machine throws a different trajectory: crossing, incoming, going away, rabbits rolling along the ground.',
             'At each station the shooter gets a menu of singles and doubles, five targets per station, and moves on to the next one. Each target can be shot only once.',
           ],
-          facts: { stations: '5, in a row', machines: '6 (A–F)', shots: '1', targets: '25' },
+          facts: {
+            stations: '5, in a row',
+            machines: '6 (A–F)',
+            shots: '1',
+            targets: '25',
+            load: '28 g (+2% FITASC)',
+            shot: '2.0–2.5 mm (±0.1 mm)',
+          },
           tip: 'Note which letters you miss most: in Shooting Clays you can mark the hardest targets of each series and see the pattern over time.',
         },
         sporting: {
@@ -397,6 +409,8 @@ export const en = {
             machines: 'Several (A–F)',
             shots: '1',
             targets: '25',
+            load: '28 g (+2% FITASC)',
+            shot: '2.0–2.5 mm (±0.1 mm)',
           },
           tip: 'Watch a few targets from each station before your turn: the course is part of the challenge.',
         },
@@ -406,7 +420,14 @@ export const en = {
             'Fifteen machines are hidden in a trench in front of five stations — three in front of each one. The shooter calls for the target without knowing which of the three will throw it, nor its angle or height.',
             'Shooters rotate through the five stations, five targets at each. A target can be shot twice: the second shot counts the same as the first.',
           ],
-          facts: { stations: '5', machines: '15 (3 per station)', shots: '2', targets: '25' },
+          facts: {
+            stations: '5',
+            machines: '15 (3 per station)',
+            shots: '2',
+            targets: '25',
+            load: '24 g (+0.5 g ISSF)',
+            shot: 'Up to 2.6 mm (ISSF 2026)',
+          },
           tip: 'Keep the same routine at every station — stance, gun hold and the moment you call — so that only the target changes.',
         },
         trap: {
@@ -415,7 +436,14 @@ export const en = {
             'The machines — usually three — are in a trench in front of the line of five stations. The target comes out going away from the shooter, at an angle you only discover when it leaves the trench.',
             'As in Fosso, the shooter moves through the five stations and has two shots per target. It is a common training discipline at clubs, with fewer machines than Olympic trap.',
           ],
-          facts: { stations: '5', machines: 'Usually 3', shots: '2', targets: '25' },
+          facts: {
+            stations: '5',
+            machines: 'Usually 3',
+            shots: '2',
+            targets: '25',
+            load: '28 g',
+            shot: 'FPTAC standard',
+          },
           tip: 'Use the second shot as a safety net, not a plan: aim to break every target with the first.',
         },
         helice: {
@@ -429,6 +457,8 @@ export const en = {
             machines: '5 to 7 launchers',
             shots: '2',
             targets: '25',
+            load: '28 g (+2% FITASC)',
+            shot: 'Up to 2.5 mm (±0.1 mm)',
           },
           tip: 'Look at the centre piece, not the wings: it is what has to fall inside the fence.',
         },
