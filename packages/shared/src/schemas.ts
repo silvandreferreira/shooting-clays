@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { CONTACT_LIMITS } from './contact';
 import { LOCALES, type Locale } from './locales';
 import {
   DISCIPLINE_KEYS,
@@ -116,3 +117,30 @@ export const adminUserUpdateSchema = z.object({
 });
 
 export type AdminUserUpdate = z.infer<typeof adminUserUpdateSchema>;
+
+/**
+ * The public contact form. `website` is a honeypot: hidden from people, so a value means a bot.
+ * `locale` is the page's language (for the reply).
+ */
+export const contactInputSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, { error: 'name is required' })
+    .max(CONTACT_LIMITS.name, { error: `name must be at most ${CONTACT_LIMITS.name} characters` }),
+  email: z.email({ error: 'email must be a valid email address' }).max(CONTACT_LIMITS.email, {
+    error: `email must be at most ${CONTACT_LIMITS.email} characters`,
+  }),
+  message: z
+    .string()
+    .trim()
+    .min(CONTACT_LIMITS.messageMin, {
+      error: `message must be at least ${CONTACT_LIMITS.messageMin} characters`,
+    })
+    .max(CONTACT_LIMITS.message, {
+      error: `message must be at most ${CONTACT_LIMITS.message} characters`,
+    }),
+  locale: z.enum(LOCALES, { error: 'locale must be en or pt-PT' }),
+  website: z.string().max(200).optional(),
+});
+export type ContactInput = z.infer<typeof contactInputSchema>;

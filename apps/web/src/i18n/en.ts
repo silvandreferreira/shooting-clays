@@ -238,6 +238,7 @@ export const en = {
       home: 'Home',
       disciplines: 'Disciplines',
       faq: 'FAQ',
+      contact: 'Contact',
       signIn: 'Sign in',
       openMenu: 'Open menu',
     },
@@ -258,6 +259,11 @@ export const en = {
         title: 'Frequently asked questions | Shooting Clays',
         description:
           'How to put the app on your phone, how the Community ranking works, what Day, Week and Month cover and who appears in the Community.',
+      },
+      contact: {
+        title: 'Contact | Shooting Clays',
+        description:
+          'Questions, suggestions or a discipline missing? Send a message to Shooting Clays and get an answer by email.',
       },
       notFound: {
         title: 'Page not found | Shooting Clays',
@@ -391,6 +397,28 @@ export const en = {
       title: 'Page not found',
       text: 'The page you are looking for does not exist or has moved.',
       back: 'Go to the home page',
+    },
+    contact: {
+      title: 'Contact',
+      intro:
+        'Questions, suggestions, or a discipline your club shoots that is missing? Send a message and you will get an answer by email.',
+      name: 'Name',
+      email: 'Email',
+      message: 'Message',
+      messageHint: (min: number) => `At least ${min} characters.`,
+      /** Label of the hidden honeypot field (never shown to people). */
+      website: 'Leave this field empty',
+      privacy: 'Your name and email are only used to reply to you.',
+      send: 'Send message',
+      sending: 'Sending…',
+      sent: 'Thank you! Your message was sent. You will get an answer by email.',
+      errors: {
+        name: 'Write your name.',
+        email: 'Write a valid email address.',
+        message: (min: number) => `Write at least ${min} characters.`,
+        rateLimited: 'Too many messages were sent from here. Try again in an hour.',
+        failed: 'The message could not be sent. Try again later.',
+      },
     },
   },
   languages: { en: 'English', 'pt-PT': 'Português' } satisfies Record<Locale, string>,

@@ -44,7 +44,7 @@ One JSON line per request:
 }
 ```
 
-- **Never** log secrets (`DATABASE_URL`, tokens), cookies, email addresses or session notes.
+- **Never** log secrets (`DATABASE_URL`, tokens, `SMTP_PASSWORD`), cookies, email addresses, session notes or contact form messages. A failed contact email logs only `{ "message": "Contact email failed", "code" }`.
 - Admin actions (iteration 3) add one line each, with ids only: `{ "action": "user_status_changed", "adminId", "status" }` and `{ "action": "user_removed", "adminId", "at" }` (the removed user is not identified).
 - Errors: `level: "error"` with message and stack, without request bodies.
 - Without a token (local, tests, E2E) logs go to the console only and the app works normally.

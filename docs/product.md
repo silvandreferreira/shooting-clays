@@ -61,7 +61,8 @@ Visitors who are not signed in find the product through search engines, so the p
 - **Home** (`/`, `/en`): what Shooting Clays is for — log every series, see the progress, and a **competitive but friendly** Community ("if someone shot 18, try for 19"), not an official competition; how it works in three steps; the five disciplines; three FAQ questions; **Start for free** and **Sign in** go to `/app`. A screenshot of the Dashboard in the page's language.
 - **Disciplines** (`/modalidades`, `/en/disciplines`): one section per discipline (what it is, stations, machines, shots per target, targets per series, a training tip) and a comparison table. Our own text; rules vary between clubs, so it points to the official rules for competitions.
 - **FAQ** (`/faq`, `/en/faq`): every FAQ question.
-- Header (logo, Disciplines, FAQ, **Sign in**) and footer (pages, the other language, "not affiliated with any federation or club") on every page; a 404 page for anything else.
+- **Contact** (`/contactos`, `/en/contact`): name, email and message (at least 10 characters); the message reaches the owner by email and the answer goes back by email. Fields are checked before sending, in the page's language. Spam: a hidden honeypot field and a limit of 5 messages an hour per sender (decision #64).
+- Header (logo, Disciplines, FAQ, Contact, **Sign in**) and footer (pages, the other language, "not affiliated with any federation or club") on every page; a 404 page for anything else.
 
 ## Screens (mobile-first)
 

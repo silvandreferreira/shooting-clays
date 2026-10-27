@@ -22,6 +22,9 @@
 | `E2E`               | api                       | `1` only inside `pnpm test:e2e`                          | **never**                                                                                | **never**                          |
 | `NEON_AUTH_URL`     | api (`/auth` proxy, JWKS) | Neon Auth URL of the `dev` branch                        | Neon Auth URL of the `dev` branch                                                        | Neon Auth URL of the `main` branch |
 | `ADMIN_EMAILS`      | api, scripts              | your email                                               | your email                                                                               | your email                         |
+| `SMTP_USER`         | api (contact form)        | empty (the form answers 503)                             | empty                                                                                    | the Gmail address that sends       |
+| `SMTP_PASSWORD`     | api (contact form)        | empty                                                    | empty                                                                                    | its Google **app password**        |
+| `CONTACT_TO_EMAIL`  | api (contact form)        | empty                                                    | empty                                                                                    | the address that receives messages |
 | `APP_NOW`           | api                       | `2026-10-23` only inside `pnpm test:e2e`                 | **never**                                                                                | **never** (ignored in production)  |
 | `PORT`              | api (local)               | optional, default `3000` (`3100` inside `pnpm test:e2e`) | not used                                                                                 | not used                           |
 
@@ -32,6 +35,10 @@
 In `pnpm test:e2e`, `ADMIN_EMAILS` is set to `owner@example.test` and no `NEON_AUTH_URL` is needed (local signing key).
 
 `ADMIN_EMAILS` is a comma-separated list of the admins: on every request a verified email in this list is an active admin (iteration 3; in iteration 2 only these emails could sign in). The first one owns the imported history. Admin accounts cannot be disabled or removed from the admin screen; edit this variable instead. Set it only in `.env` and Vercel — **never** commit real email addresses.
+
+### Contact form (Gmail)
+
+`POST /api/contact` sends through Gmail SMTP (`smtp.gmail.com:465`) only when `SMTP_USER`, `SMTP_PASSWORD` and `CONTACT_TO_EMAIL` are all set; otherwise it answers 503 and the page says the message could not be sent. To set it up: turn on 2-Step Verification on the Google account, create an app password at <https://myaccount.google.com/apppasswords> (name it "Shooting Clays"), and add the three variables in Vercel (Production). Spaces in the app password are ignored. The email comes from `SMTP_USER` with reply-to the visitor, so answering it replies to them. Previews leave them empty so test messages never reach the inbox. Like `ADMIN_EMAILS`, the addresses live only in Vercel and `.env`, never in the repository.
 
 ### Vercel build setting
 

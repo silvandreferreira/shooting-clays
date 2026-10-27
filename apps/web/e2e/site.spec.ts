@@ -34,7 +34,7 @@ test('R40: public pages are prerendered for search engines, with their own title
   expect(robots).toContain('Disallow: /app');
   expect(robots).toContain('Sitemap: https://shooting-clays.vercel.app/sitemap.xml');
   const sitemap = await (await request.get('/sitemap.xml')).text();
-  expect(sitemap.match(/<loc>/g)).toHaveLength(6);
+  expect(sitemap.match(/<loc>/g)).toHaveLength(8);
   expect(sitemap).not.toContain('/app');
 });
 
@@ -73,7 +73,7 @@ for (const colorScheme of ['light', 'dark'] as const) {
     page,
   }) => {
     await page.emulateMedia({ colorScheme });
-    for (const path of ['/', '/modalidades', '/faq', '/en']) {
+    for (const path of ['/', '/modalidades', '/faq', '/contactos', '/en']) {
       await page.goto(path);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
       expect(await seriousA11yViolations(page), path).toEqual([]);

@@ -4,6 +4,7 @@ import { createApp, type AppDeps } from './app';
 import { createAuthProxy } from './auth-proxy';
 import { createNeonAuthVerifier } from './auth';
 import { createClock, type Config } from './config';
+import { createSmtpSender } from './contact';
 import { createNeonDb, type Db } from './db/client';
 import { createLogger } from './logger';
 
@@ -17,6 +18,14 @@ export function baseDeps(config: Config, db: Db): Omit<AppDeps, 'verifyToken'> {
     adminEmails: config.adminEmails,
     logger: createLogger(config),
     captureException: config.sentryDsn ? (e) => Sentry.captureException(e) : undefined,
+    sendContact:
+      config.smtpUser && config.smtpPassword && config.contactToEmail
+        ? createSmtpSender({
+            user: config.smtpUser,
+            password: config.smtpPassword,
+            to: config.contactToEmail,
+          })
+        : undefined,
   };
 }
 

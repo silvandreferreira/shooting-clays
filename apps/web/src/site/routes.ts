@@ -4,12 +4,12 @@ import type { Locale } from '@shooting-clays/shared/locales';
  * The public site (docs/architecture.md → Public site): prerendered pages, in European Portuguese
  * at the root and in English under /en. The app itself lives under /app.
  */
-export const SITE_PAGES = ['home', 'disciplines', 'faq'] as const;
+export const SITE_PAGES = ['home', 'disciplines', 'faq', 'contact'] as const;
 export type SitePage = (typeof SITE_PAGES)[number];
 
 export const SITE_PATHS: Record<Locale, Record<SitePage, string>> = {
-  'pt-PT': { home: '/', disciplines: '/modalidades', faq: '/faq' },
-  en: { home: '/en', disciplines: '/en/disciplines', faq: '/en/faq' },
+  'pt-PT': { home: '/', disciplines: '/modalidades', faq: '/faq', contact: '/contactos' },
+  en: { home: '/en', disciplines: '/en/disciplines', faq: '/en/faq', contact: '/en/contact' },
 };
 
 export interface SiteRoute {
