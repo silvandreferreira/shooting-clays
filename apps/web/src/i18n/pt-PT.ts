@@ -123,11 +123,6 @@ export const ptPT = {
     filterLabel: 'Mostrar',
     filters: { all: 'Todos', active: 'Ativos', pending: 'Pendentes' },
     noMatches: 'Nenhum utilizador corresponde.',
-    deviceTitle: 'Este dispositivo',
-    clearCache: 'Limpar cache e recarregar',
-    clearingCache: 'A limpar…',
-    clearCacheHelp:
-      'Apaga o que a app guarda neste dispositivo e carrega a versão mais recente. A conta e as sessões não são tocadas; os outros dispositivos não são afetados.',
     signedUp: (date: string) => `Registou-se a ${date}`,
     sessions: (n: number) => (n === 1 ? '1 sessão' : `${n} sessões`),
     lastActivity: (date: string) => `Última atividade a ${date}`,
@@ -164,7 +159,6 @@ export const ptPT = {
     loadError: 'Não foi possível carregar a classificação.',
     hidden: 'Está escondido da Comunidade, por isso não aparece nesta classificação.',
     hiddenLink: 'Alterar nas Definições',
-    howRanked: 'Como funciona a classificação?',
   },
   settings: {
     title: 'Definições',
@@ -178,6 +172,11 @@ export const ptPT = {
     showInCommunityHelp:
       'Os seus resultados aparecem nas classificações da Comunidade. Desligue para os esconder; o seu painel não muda.',
     language: 'Idioma',
+    deviceTitle: 'Este dispositivo',
+    clearCache: 'Limpar cache e recarregar',
+    clearingCache: 'A limpar…',
+    clearCacheHelp:
+      'Apaga o que a app guarda neste dispositivo e carrega a versão mais recente. A conta e as sessões não são tocadas; os outros dispositivos não são afetados.',
   },
   faq: {
     title: 'Perguntas frequentes',

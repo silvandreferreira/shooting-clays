@@ -129,3 +129,17 @@ test('R29: the scores chart has its own time range, 3 months by default', async 
     'true',
   );
 });
+
+test('R39: the Dashboard shows the scores chart first, then the averages, then the cards', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
+  const top = async (locator: import('@playwright/test').Locator) =>
+    (await locator.boundingBox())!.y;
+  const scores = await top(page.getByRole('heading', { name: /Scores over time/ }));
+  const averages = await top(page.getByRole('heading', { name: /Average by discipline/ }));
+  const firstCard = await top(page.getByRole('article').first());
+  expect(scores).toBeLessThan(averages);
+  expect(averages).toBeLessThan(firstCard);
+});

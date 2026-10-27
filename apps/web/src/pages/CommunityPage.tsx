@@ -238,11 +238,6 @@ export function CommunityPage() {
               ))}
             </ol>
           )}
-          <p className="text-center text-sm">
-            <Link to="/faq#ranking" className="font-semibold text-ink-muted underline">
-              {t.community.howRanked}
-            </Link>
-          </p>
         </>
       )}
     </div>

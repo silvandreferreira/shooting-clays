@@ -98,6 +98,12 @@ function DashboardView({ data, sample = false }: { data: Dashboard; sample?: boo
         </p>
       ) : (
         <>
+          <ScoresChart
+            series={Object.fromEntries(disciplines.map((k) => [k, data.series[k]]))}
+            referenceDate={data.referenceDate}
+            sample={sample}
+          />
+          <AveragesChart averages={averages} sample={sample} />
           <div className="grid gap-3 sm:grid-cols-2">
             {disciplines.map((k) => (
               <DisciplineCard
@@ -109,12 +115,6 @@ function DashboardView({ data, sample = false }: { data: Dashboard; sample?: boo
               />
             ))}
           </div>
-          <ScoresChart
-            series={Object.fromEntries(disciplines.map((k) => [k, data.series[k]]))}
-            referenceDate={data.referenceDate}
-            sample={sample}
-          />
-          <AveragesChart averages={averages} sample={sample} />
         </>
       )}
     </div>

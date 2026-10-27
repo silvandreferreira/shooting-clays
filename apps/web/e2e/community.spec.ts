@@ -68,12 +68,9 @@ test('R27: monthly ranking by default: podium for the top three, then the list w
   }
   await expect(rows.getByTestId('medal')).toHaveCount(0);
 
-  // The tie-break rules live in the FAQ.
+  // The tie-break rules live only in the FAQ: no sentence or link here.
   await expect(page.getByText('Most series at 25')).toHaveCount(0);
-  await page.getByRole('link', { name: 'How is the ranking decided?' }).click();
-  await expect(page).toHaveURL('/faq#ranking');
-  await expect(page.locator('#ranking')).toHaveAttribute('open', '');
-  await expect(page.locator('#ranking')).toContainText('more series at 24');
+  await expect(page.getByRole('link', { name: /ranking/i })).toHaveCount(0);
 });
 
 test('R27: switching to week and day, and stepping back to earlier periods', async ({ page }) => {

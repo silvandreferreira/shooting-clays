@@ -1,12 +1,10 @@
 import type { AccountStatus, AdminUser } from '@shooting-clays/shared';
-import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useId, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { Avatar } from '../components/Avatar';
 import { Switch } from '../components/Switch';
 import { useT } from '../i18n';
 import { formatDay } from '../lib/format';
-import { clearDeviceCache } from '../lib/query-client';
 import { useAdminUsers, useRemoveUser, useSetUserStatus } from '../lib/queries';
 
 const TOAST_MS = 6000;
@@ -176,29 +174,6 @@ function UserRow({
   );
 }
 
-function ClearCache() {
-  const t = useT();
-  const queryClient = useQueryClient();
-  const [clearing, setClearing] = useState(false);
-  return (
-    <section className="space-y-2 rounded-2xl border border-line bg-card p-4">
-      <h2 className="font-semibold">{t.admin.deviceTitle}</h2>
-      <p className="text-sm text-ink-muted">{t.admin.clearCacheHelp}</p>
-      <button
-        type="button"
-        disabled={clearing}
-        onClick={() => {
-          setClearing(true);
-          void clearDeviceCache(queryClient);
-        }}
-        className="min-h-11 rounded-lg border-2 border-line px-4 font-semibold disabled:opacity-60"
-      >
-        {clearing ? t.admin.clearingCache : t.admin.clearCache}
-      </button>
-    </section>
-  );
-}
-
 export function AdminPage() {
   const t = useT();
   const { data: users, isPending, isError } = useAdminUsers(true);
@@ -301,7 +276,6 @@ export function AdminPage() {
           ))}
         </ul>
       )}
-      <ClearCache />
       <div
         role="status"
         aria-live="polite"
