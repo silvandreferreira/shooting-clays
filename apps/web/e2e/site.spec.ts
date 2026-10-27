@@ -24,6 +24,10 @@ test('R40: public pages are prerendered for search engines, with their own title
     expect(html, path).toContain(`href="https://shooting-clays.vercel.app${other}" />`);
   }
 
+  // Google Search Console verifies ownership with this tag on the home page.
+  const home = await (await request.get('/')).text();
+  expect(home).toContain('<meta name="google-site-verification" content="');
+
   const app = await (await request.get('/app')).text();
   expect(app).toContain('<meta name="robots" content="noindex" />');
   const robots = await (await request.get('/robots.txt')).text();
