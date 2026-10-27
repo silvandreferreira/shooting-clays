@@ -4,6 +4,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Contact
+
+- **Added:** contact page on the public site (`/contactos`, `/en/contact`), linked in the header and footer; messages are emailed to the owner through Gmail (`SMTP_USER`, `SMTP_PASSWORD`, `CONTACT_TO_EMAIL`). `POST /api/contact`, with a honeypot and a rate limit. Decision #64. R44, R45.
+
 ### Metrics
 
 - **Added:** Vercel Web Analytics and Speed Insights on the public site and the app (only in builds on Vercel; no query strings sent). Decision #63. R42, R43.

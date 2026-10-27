@@ -1,6 +1,7 @@
 import { zValidator } from '@hono/zod-validator';
 import {
   adminUserUpdateSchema,
+  contactInputSchema,
   DISCIPLINES,
   leaderboardQuerySchema,
   profileUpdateSchema,
@@ -15,6 +16,7 @@ import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import { z } from 'zod';
 import { createAdminRepo } from './admin-repo';
 import { createCommunityRepo } from './community-repo';
+import { createContactLimiter, type RateLimiter, type SendContact } from './contact';
 import type { AuthUser, VerifyToken } from './auth';
 import type { Db } from './db/client';
 import { silentLogger, type Logger } from './logger';
@@ -31,6 +33,10 @@ export interface AppDeps {
   logger?: Logger;
   /** Called with unexpected errors (e.g. Sentry). */
   captureException?: (error: unknown) => void;
+  /** Sends contact form messages; without it (no SMTP settings) `POST /api/contact` answers 503. */
+  sendContact?: SendContact;
+  /** Limits contact form messages (one per app instance by default). */
+  contactLimiter?: RateLimiter;
   /** Only provided in E2E mode: test-only routes under /api/__test__. Never set outside E2E. */
   testRoutes?: (app: Hono) => void;
 }
@@ -42,6 +48,7 @@ type ErrorCode =
   | 'ACCOUNT_DISABLED'
   | 'FORBIDDEN'
   | 'NOT_FOUND'
+  | 'RATE_LIMITED'
   | 'INTERNAL_ERROR'
   | 'UNAVAILABLE';
 
@@ -80,6 +87,7 @@ const userIdParamSchema = z.object({ userId: z.string() });
 
 export function createApp(deps: AppDeps) {
   const { db, now, verifyToken, adminEmails, logger = silentLogger, captureException } = deps;
+  const { sendContact, contactLimiter = createContactLimiter() } = deps;
   const repo = createSessionsRepo(db);
   const profilesRepo = createProfilesRepo(db);
   const adminRepo = createAdminRepo(db);
@@ -128,6 +136,28 @@ export function createApp(deps: AppDeps) {
   });
 
   if (deps.testRoutes) deps.testRoutes(app as unknown as Hono);
+
+  // Public: the contact form on the public site. Never logs the sender's details or message.
+  app.post('/contact', zValidator('json', contactInputSchema, validationHook), async (c) => {
+    // On Vercel the first x-forwarded-for address is the client's (set by the platform).
+    const sender = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+    if (!contactLimiter.allow(sender)) {
+      return errorResponse(c, 429, 'RATE_LIMITED', 'Too many messages, try again later');
+    }
+    const { website, ...message } = c.req.valid('json');
+    // Honeypot filled in: a bot. It gets the same answer as a person, and nothing is sent.
+    if (website) return c.json({ ok: true });
+    if (!sendContact) return errorResponse(c, 503, 'UNAVAILABLE', 'Contact form not configured');
+    try {
+      await sendContact(message);
+    } catch (error) {
+      // SMTP errors can quote the addresses: log only the error code.
+      const code = (error as { code?: unknown }).code;
+      logger.log('error', { message: 'Contact email failed', code: String(code ?? 'unknown') });
+      return errorResponse(c, 503, 'UNAVAILABLE', 'Could not send the message, try again later');
+    }
+    return c.json({ ok: true });
+  });
 
   // Every route below requires a signed-in user. Authorization lives here, never only in the UI
   // (CLAUDE.md → Invariants).

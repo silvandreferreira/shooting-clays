@@ -3,6 +3,7 @@ import { LOCALES } from '@shooting-clays/shared/locales';
 import { useSyncExternalStore, type ReactNode } from 'react';
 import { rememberLocale, useLocale, useT } from '../i18n';
 import { FaqList, type FaqId } from '../components/FaqList';
+import { ContactPage } from './ContactPage';
 import { APP_PATH, SITE_PATHS, type SitePage, type SiteRoute } from './routes';
 
 /** The FAQ questions shown on the home page; the rest are on the FAQ page. */
@@ -64,13 +65,14 @@ function Header({ page }: { page: SitePage | null }) {
   const links: [SitePage, string][] = [
     ['disciplines', t.site.nav.disciplines],
     ['faq', t.site.nav.faq],
+    ['contact', t.site.nav.contact],
   ];
   return (
     <header className="border-b border-line bg-card">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-1 px-4 py-2">
         <Logo />
         <nav aria-label={t.site.siteNav} className="order-last w-full sm:order-none sm:w-auto">
-          <ul className="flex gap-5">
+          <ul className="flex flex-wrap gap-x-5">
             {links.map(([id, label]) => (
               <li key={id}>
                 <a
@@ -123,6 +125,11 @@ function Footer({ page }: { page: SitePage | null }) {
             <li>
               <a href={SITE_PATHS[locale].faq} className="inline-flex min-h-11 items-center">
                 {t.site.nav.faq}
+              </a>
+            </li>
+            <li>
+              <a href={SITE_PATHS[locale].contact} className="inline-flex min-h-11 items-center">
+                {t.site.nav.contact}
               </a>
             </li>
           </ul>
@@ -405,6 +412,7 @@ const PAGES: Record<SitePage, () => ReactNode> = {
   home: HomePage,
   disciplines: DisciplinesPage,
   faq: FaqSitePage,
+  contact: ContactPage,
 };
 
 /** A public page (or the 404 page when `route` is null), with the site header and footer. */

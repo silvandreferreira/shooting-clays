@@ -230,6 +230,7 @@ export const ptPT = {
       home: 'Início',
       disciplines: 'Modalidades',
       faq: 'Perguntas frequentes',
+      contact: 'Contactos',
       signIn: 'Entrar',
       openMenu: 'Abrir menu',
     },
@@ -250,6 +251,11 @@ export const ptPT = {
         title: 'Perguntas frequentes | Shooting Clays',
         description:
           'Como pôr a app no telemóvel, como funciona a classificação da Comunidade, o que abrangem o Dia, a Semana e o Mês e quem aparece na Comunidade.',
+      },
+      contact: {
+        title: 'Contactos | Shooting Clays',
+        description:
+          'Dúvidas, sugestões ou falta uma modalidade? Envie uma mensagem ao Shooting Clays e receba resposta por email.',
       },
       notFound: {
         title: 'Página não encontrada | Shooting Clays',
@@ -385,6 +391,28 @@ export const ptPT = {
       title: 'Página não encontrada',
       text: 'A página que procura não existe ou mudou de sítio.',
       back: 'Ir para o início',
+    },
+    contact: {
+      title: 'Contactos',
+      intro:
+        'Tem dúvidas, sugestões ou falta uma modalidade que se pratica no seu clube? Envie uma mensagem e receberá resposta por email.',
+      name: 'Nome',
+      email: 'Email',
+      message: 'Mensagem',
+      messageHint: (min: number) => `Pelo menos ${min} caracteres.`,
+      website: 'Deixe este campo vazio',
+      privacy: 'O seu nome e email só são usados para lhe responder.',
+      send: 'Enviar mensagem',
+      sending: 'A enviar…',
+      sent: 'Obrigado! A sua mensagem foi enviada. Receberá resposta por email.',
+      errors: {
+        name: 'Escreva o seu nome.',
+        email: 'Escreva um endereço de email válido.',
+        message: (min: number) => `Escreva pelo menos ${min} caracteres.`,
+        rateLimited:
+          'Foram enviadas demasiadas mensagens daqui. Tente novamente dentro de uma hora.',
+        failed: 'Não foi possível enviar a mensagem. Tente novamente mais tarde.',
+      },
     },
   },
   languages: { en: 'English', 'pt-PT': 'Português' },

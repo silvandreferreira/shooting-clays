@@ -141,12 +141,14 @@ The pages for visitors who are not signed in (decision #62) live outside the app
 | Home        | `/`                 | `/en`             |
 | Disciplines | `/modalidades`      | `/en/disciplines` |
 | FAQ         | `/faq`              | `/en/faq`         |
+| Contact     | `/contactos`        | `/en/contact`     |
 
 - **Prerendered.** `pnpm --filter @shooting-clays/web build:vite` builds both pages with Vite (`index.html` = site, `app/index.html` = app), then an SSR build of `src/site/entry-server.tsx`, then `scripts/prerender.mjs` writes `dist/<path>/index.html` for each page, `dist/404.html`, `sitemap.xml` and `robots.txt` (which disallows `/app`, `/api`, `/auth`). The browser hydrates the HTML (`src/site/entry-client.tsx`); the dev server renders the same components on the client.
 - **Language from the URL**, not from the browser: `I18nProvider locale=…`. The language links remember the choice (`localStorage`), so the app opens in it.
 - **Head tags** (`src/site/head.ts`): title, description, canonical URL, `hreflang` for both languages (`x-default` = Portuguese), Open Graph and structured data (`WebApplication` on the home page, `FAQPage` on the FAQ). The canonical address comes from `SITE_URL` at build time (default `https://shooting-clays.vercel.app`).
 - **Google Search Console** owns the property `https://shooting-clays.vercel.app/` (URL prefix; a domain property needs DNS, which `vercel.app` does not allow), verified by the `google-site-verification` tag in `index.html`. Keep the tag: removing it unverifies the property.
 - **Small.** The site loads React, the strings and its own components (about 80 kB gzipped), never the charts, the auth client or Zod: it imports `@shooting-clays/shared/disciplines` and `/locales`, not the package root.
+- **Contact form** (`src/site/ContactPage.tsx`): posts to `POST /api/contact`, which emails the owner through Gmail SMTP (`apps/api/src/contact.ts`, `nodemailer`; decision #64). It checks the fields itself (same rules as the API's schema, limits from `@shooting-clays/shared/contact`) so the site still never loads Zod. The button stays disabled until the page is hydrated.
 - **The app** stays a single-page app under `/app` (`app/index.html`, `noindex`). "Sign in" on the site goes to `/app`, which shows the sign-in screen; Google returns to `/app`. Old app paths (`/add`, `/history`, `/community`, `/settings`, `/admin`) redirect there with 308.
 - **PWA.** `start_url` is `/app`; only the app registers the service worker, whose offline fallback covers `/app` only (public pages always come from the network). Phones that installed the app when it lived at `/` still open `/`: a small script on the home page sends an installed app (`display-mode: standalone`) to `/app`.
 

@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { test as base, expect, type APIRequestContext, type Page } from '@playwright/test';
 
-const API_URL = 'http://localhost:3100';
+export const API_URL = 'http://localhost:3100';
 
 export const REFERENCE_DATE = new Date('2026-10-23T12:00:00Z');
 

@@ -17,6 +17,10 @@ export interface Config {
   neonAuthUrl: string | undefined;
   /** Lower-case emails allowed to use the app (iteration 2 safeguard). */
   adminEmails: string[];
+  /** Gmail SMTP for the contact form; all three or the form answers 503. */
+  smtpUser: string | undefined;
+  smtpPassword: string | undefined;
+  contactToEmail: string | undefined;
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
@@ -32,6 +36,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     sentryDsn: env.SENTRY_DSN || undefined,
     neonAuthUrl: env.NEON_AUTH_URL?.replace(/\/$/, '') || undefined,
     adminEmails: parseAdminEmails(env.ADMIN_EMAILS),
+    smtpUser: env.SMTP_USER || undefined,
+    // Google shows app passwords in groups of four; spaces are not part of it.
+    smtpPassword: env.SMTP_PASSWORD?.replace(/\s+/g, '') || undefined,
+    contactToEmail: env.CONTACT_TO_EMAIL || undefined,
   };
 }
 

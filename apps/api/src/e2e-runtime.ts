@@ -5,6 +5,7 @@ import { Hono } from 'hono';
 import { createApp } from './app';
 import { createTestAuth } from './auth';
 import type { Config } from './config';
+import { createContactLimiter, type ContactMessage } from './contact';
 import { createMemoryDb, upsertAuthUser } from './db/memory';
 import { profiles } from './db/schema';
 import { HISTORY_CSV_PATH, parseHistoryCsv, resetToHistory } from './import/history-csv';
@@ -19,14 +20,19 @@ export const E2E_OWNER = {
 
 /**
  * E2E app: in-memory PGlite seeded from the CSV history, a local signing key instead of Neon Auth,
- * and test-only routes (`/api/__test__/reset`, `/api/__test__/token`). Never used outside E2E, and
+ * an outbox instead of Gmail, and test-only routes (`/api/__test__/reset`, `/api/__test__/token`,
+ * `/api/__test__/outbox`). Never used outside E2E, and
  * never part of the Vercel bundle.
  */
 export async function createE2eApp(config: Config) {
   const db = await createMemoryDb();
   const rows = parseHistoryCsv(await readFile(HISTORY_CSV_PATH, 'utf8'));
   const testAuth = await createTestAuth();
+  const outbox: ContactMessage[] = [];
+  const contactLimiter = createContactLimiter();
   const reset = async () => {
+    outbox.length = 0;
+    contactLimiter.reset();
     await db.execute(sql`truncate table neon_auth."user"`);
     await upsertAuthUser(db, {
       id: E2E_OWNER.id,
@@ -42,6 +48,8 @@ export async function createE2eApp(config: Config) {
       await reset();
       return c.json({ ok: true });
     });
+    // Contact form messages "sent" since the last reset.
+    app.get('/__test__/outbox', (c) => c.json(outbox));
     // Signs in like Neon Auth (the user exists in neon_auth."user") and mints a JWT like Neon
     // Auth's, so the browser tests never use Google. `status` gives a new user that account state.
     app.post('/__test__/token', async (c) => {
@@ -62,5 +70,13 @@ export async function createE2eApp(config: Config) {
       return c.json({ token: await testAuth.signToken(user) });
     });
   };
-  return createApp({ ...baseDeps(config, db), verifyToken: testAuth.verifyToken, testRoutes });
+  return createApp({
+    ...baseDeps(config, db),
+    verifyToken: testAuth.verifyToken,
+    sendContact: async (message) => {
+      outbox.push(message);
+    },
+    contactLimiter,
+    testRoutes,
+  });
 }
