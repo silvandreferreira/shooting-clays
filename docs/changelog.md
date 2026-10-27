@@ -9,6 +9,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 - **Added:** public pages for visitors, prerendered for search engines: home (`/`), disciplines (`/modalidades`) and FAQ (`/faq`) in European Portuguese, and the same in English under `/en`; `sitemap.xml`, `robots.txt`, a 404 page. Decision #62. E2E R40, R41.
 - **Added:** FAQ questions on installing the app on a phone and on updates.
 - **Changed:** the app moved to `/app` (old links redirect); the sign-in screen links to the public home page and FAQ. The installed app keeps opening the app.
+- **Added:** Google Search Console verification tag on the public pages.
 - **Changed:** `@shooting-clays/shared` exposes `./disciplines` and `./locales`, and `LOCALES` moved to `locales.ts`.
 
 ### Dashboard order and Settings
