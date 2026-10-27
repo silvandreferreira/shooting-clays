@@ -4,6 +4,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Disciplines page
+
+- **Added:** maximum cartridge load and shot size for each discipline, from the FPTAC table of recognised ammunition (August 2026), with the source linked. R41.
+
 ### Notifications
 
 - **Added:** notifications in the app (`/app/notifications`) with a bell counting the unread ones: sign-up received and account active for users; new sign-ups (with a link to the pending users) and contact form messages for admins. Pending users see theirs too. Decision #65. R46, R48.

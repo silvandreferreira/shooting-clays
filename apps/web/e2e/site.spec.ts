@@ -54,7 +54,23 @@ test('R41: from the home page to the disciplines, the other language and the sig
     await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
   }
   const trap = page.getByRole('row', { name: /^Trap/ });
-  await expect(trap.getByRole('cell')).toHaveText(['5', 'Normalmente 3', '2', '25']);
+  await expect(trap.getByRole('cell')).toHaveText([
+    '5',
+    'Normalmente 3',
+    '2',
+    '25',
+    '28 g',
+    'Norma FPTAC',
+  ]);
+  // Loads and shot sizes from the FPTAC table of recognised ammunition, with the source.
+  await expect(page.getByRole('row', { name: /^Fosso/ }).getByRole('cell')).toContainText([
+    '24 g (+0,5 g ISSF)',
+    'Até 2,6 mm (ISSF 2026)',
+  ]);
+  await expect(page.getByRole('link', { name: 'Manual da FPTAC (PDF)' })).toHaveAttribute(
+    'href',
+    /fptac\.pt\/.*\.pdf$/,
+  );
 
   await page.getByRole('link', { name: 'English' }).click();
   await expect(page).toHaveURL('/en/disciplines');

@@ -6,6 +6,10 @@ import { FaqList, type FaqId } from '../components/FaqList';
 import { ContactPage } from './ContactPage';
 import { APP_PATH, SITE_PATHS, type SitePage, type SiteRoute } from './routes';
 
+/** Source of the loads and shot sizes on the Disciplines page (table "Munições reconhecidas"). */
+const FPTAC_AMMUNITION_URL =
+  'https://fptac.pt/Regulamentos/MANUAL_LIC_FED_E/MANUAL_EXAMES_FINAL_AGO2026.pdf';
+
 /** The FAQ questions shown on the home page; the rest are on the FAQ page. */
 const HOME_FAQ: FaqId[] = ['ranking', 'community', 'install'];
 
@@ -145,7 +149,7 @@ function DisciplineFacts({ id }: { id: DisciplineKey }) {
   const facts = t.site.disciplines.items[id].facts;
   const labels = t.site.disciplines.facts;
   return (
-    <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+    <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3">
       {(Object.keys(labels) as (keyof typeof labels)[]).map((k) => (
         <div key={k} className="rounded-xl bg-surface p-3">
           <dt className="text-sm text-ink-muted">{labels[k]}</dt>
@@ -361,6 +365,12 @@ function DisciplinesPage() {
             </tbody>
           </table>
         </div>
+        <p className="text-sm text-ink-muted">
+          {page.ammunitionSource}{' '}
+          <a href={FPTAC_AMMUNITION_URL} className="font-semibold text-accent underline">
+            {page.ammunitionSourceLink}
+          </a>
+        </p>
       </section>
 
       <p className="text-center">

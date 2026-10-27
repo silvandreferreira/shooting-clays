@@ -290,7 +290,7 @@ export const ptPT = {
         title:
           'Modalidades de tiro aos pratos: Compak, Percurso de Caça, Fosso, Trap e Hélice | Shooting Clays',
         description:
-          'Como funcionam o Compak Sporting, o Percurso de Caça, o Fosso, o Trap e a Hélice: postos, máquinas, tiros por prato e pratos por série, com dicas para treinar.',
+          'Como funcionam o Compak Sporting, o Percurso de Caça, o Fosso, o Trap e a Hélice: postos, máquinas, tiros por prato, pratos por série e cargas dos cartuchos, com dicas para treinar.',
       },
       faq: {
         title: 'Perguntas frequentes | Shooting Clays',
@@ -363,9 +363,14 @@ export const ptPT = {
         machines: 'Máquinas',
         shots: 'Tiros por prato',
         targets: 'Pratos por série',
+        load: 'Carga máxima',
+        shot: 'Diâmetro dos bagos',
       },
       tip: 'Dica',
       compareTitle: 'Resumo',
+      ammunitionSource:
+        'Cargas máximas e diâmetros dos bagos da tabela de munições reconhecidas da FPTAC (Manual para Exame de Aptidão – Licença Federativa E, versão 2.1, agosto de 2026). Podem mudar com a revisão dos regulamentos: para competição, consulte o regulamento em vigor.',
+      ammunitionSourceLink: 'Manual da FPTAC (PDF)',
       discipline: 'Modalidade',
       cta: 'Registar a primeira série',
       items: {
@@ -376,7 +381,14 @@ export const ptPT = {
             'Cinco postos lado a lado, numa área compacta, de frente para um conjunto de máquinas identificadas por letras (normalmente de A a F). Cada máquina lança uma trajetória diferente: cruzados, de frente, a fugir, coelhos a rolar pelo chão.',
             'Em cada posto, o atirador faz uma sequência de pratos simples e duplos, cinco pratos por posto, e passa ao seguinte. Cada prato só pode ser atirado uma vez.',
           ],
-          facts: { stations: '5, alinhados', machines: '6 (A–F)', shots: '1', targets: '25' },
+          facts: {
+            stations: '5, alinhados',
+            machines: '6 (A–F)',
+            shots: '1',
+            targets: '25',
+            load: '28 g (+2% FITASC)',
+            shot: '2,0–2,5 mm (±0,1 mm)',
+          },
           tip: 'Repare nas letras que mais falha: no Shooting Clays pode marcar os pratos mais difíceis de cada série e ver o padrão ao longo do tempo.',
         },
         sporting: {
@@ -390,6 +402,8 @@ export const ptPT = {
             machines: 'Várias (A–F)',
             shots: '1',
             targets: '25',
+            load: '28 g (+2% FITASC)',
+            shot: '2,0–2,5 mm (±0,1 mm)',
           },
           tip: 'Observe alguns pratos de cada posto antes da sua vez: o percurso faz parte do desafio.',
         },
@@ -399,7 +413,14 @@ export const ptPT = {
             'Quinze máquinas estão escondidas numa vala à frente de cinco postos — três à frente de cada um. O atirador pede o prato sem saber qual das três o vai lançar, nem com que ângulo ou altura.',
             'Os atiradores rodam pelos cinco postos, cinco pratos em cada. Cada prato pode ser atirado duas vezes: o segundo tiro conta como o primeiro.',
           ],
-          facts: { stations: '5', machines: '15 (3 por posto)', shots: '2', targets: '25' },
+          facts: {
+            stations: '5',
+            machines: '15 (3 por posto)',
+            shots: '2',
+            targets: '25',
+            load: '24 g (+0,5 g ISSF)',
+            shot: 'Até 2,6 mm (ISSF 2026)',
+          },
           tip: 'Mantenha a mesma rotina em todos os postos — posição, arma e o momento de pedir o prato — para que só o prato mude.',
         },
         trap: {
@@ -408,7 +429,14 @@ export const ptPT = {
             'As máquinas — normalmente três — estão numa vala à frente da linha de cinco postos. O prato sai a fugir do atirador, com um ângulo que só se descobre quando sai da vala.',
             'Tal como no Fosso, o atirador passa pelos cinco postos e tem dois tiros por prato. É uma modalidade comum nos treinos dos clubes, com menos máquinas do que o Fosso Olímpico.',
           ],
-          facts: { stations: '5', machines: 'Normalmente 3', shots: '2', targets: '25' },
+          facts: {
+            stations: '5',
+            machines: 'Normalmente 3',
+            shots: '2',
+            targets: '25',
+            load: '28 g',
+            shot: 'Norma FPTAC',
+          },
           tip: 'Use o segundo tiro como rede de segurança, não como plano: tente partir cada prato com o primeiro.',
         },
         helice: {
@@ -423,6 +451,8 @@ export const ptPT = {
             machines: '5 a 7 lançadores',
             shots: '2',
             targets: '25',
+            load: '28 g (+2% FITASC)',
+            shot: 'Até 2,5 mm (±0,1 mm)',
           },
           tip: 'Olhe para a peça central, não para as asas: é ela que tem de cair dentro da vedação.',
         },
