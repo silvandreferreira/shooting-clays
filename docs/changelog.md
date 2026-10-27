@@ -4,6 +4,12 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Notifications
+
+- **Added:** notifications in the app (`/app/notifications`) with a bell counting the unread ones: sign-up received and account active for users; new sign-ups (with a link to the pending users) and contact form messages for admins. Pending users see theirs too. Decision #65. R46, R48.
+- **Changed:** **Remove** in Admin now revokes the access with a message: the sessions are deleted at once and the account is deleted when the user reads the message; **Delete now** removes it straight away. R23, R47.
+- **Added:** migration 0005 (`notifications` table, `revoked` status).
+
 ### Contact
 
 - **Added:** contact page on the public site (`/contactos`, `/en/contact`), linked in the header and footer; messages are emailed to the owner through Gmail (`SMTP_USER`, `SMTP_PASSWORD`, `CONTACT_TO_EMAIL`). `POST /api/contact`, with a honeypot and a rate limit. Decision #64. R44, R45.

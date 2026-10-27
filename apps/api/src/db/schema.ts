@@ -1,10 +1,11 @@
-import { ACCOUNT_STATUSES, LOCALES, ROLES } from '@shooting-clays/shared';
+import { ACCOUNT_STATUSES, LOCALES, NOTIFICATION_KINDS, ROLES } from '@shooting-clays/shared';
 import { sql } from 'drizzle-orm';
 import {
   boolean,
   check,
   date,
   index,
+  jsonb,
   pgTable,
   smallint,
   text,
@@ -34,7 +35,10 @@ export const profiles = pgTable(
   },
   (t) => [
     check('profiles_role_values', sql`${t.role} in ('user', 'admin')`),
-    check('profiles_status_values', sql`${t.status} in ('pending', 'active', 'disabled')`),
+    check(
+      'profiles_status_values',
+      sql`${t.status} in ('pending', 'active', 'disabled', 'revoked')`,
+    ),
     check('profiles_locale_values', sql`${t.locale} in ('en', 'pt-PT')`),
   ],
 );
@@ -71,3 +75,30 @@ export const sessions = pgTable(
 );
 
 export type SessionRow = typeof sessions.$inferSelect;
+
+/**
+ * In-app notifications (decision #65): one row per recipient. `kind` says what happened and the
+ * app renders it in the reader's language; `params` holds what the text needs.
+ */
+export const notifications = pgTable(
+  'notifications',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => profiles.userId, { onDelete: 'cascade' }),
+    kind: text('kind', { enum: NOTIFICATION_KINDS }).notNull(),
+    params: jsonb('params').$type<Record<string, string>>().notNull().default({}),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    readAt: timestamp('read_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('notifications_user_id_created_at_idx').on(t.userId, t.createdAt),
+    check(
+      'notifications_kind_values',
+      sql`${t.kind} in ('registered', 'approved', 'revoked', 'signup', 'contact')`,
+    ),
+  ],
+);
+
+export type NotificationRow = typeof notifications.$inferSelect;

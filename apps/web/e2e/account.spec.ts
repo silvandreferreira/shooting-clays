@@ -18,7 +18,9 @@ test.describe('pending account', () => {
     const dataRequests: string[] = [];
     page.on('request', (r) => {
       const { pathname } = new URL(r.url());
-      if (pathname.startsWith('/api/') && pathname !== '/api/me') dataRequests.push(pathname);
+      // Their account and notifications only: no data endpoint is called.
+      const allowed = ['/api/me', '/api/notifications'];
+      if (pathname.startsWith('/api/') && !allowed.includes(pathname)) dataRequests.push(pathname);
     });
     await page.goto('/app');
     await expect(page.getByTestId('pending-banner')).toContainText('waiting for approval');
@@ -104,7 +106,7 @@ test('R22: the admin approves a pending user, who then sees their real (empty) d
   await expect((await mainNav(page)).getByRole('link', { name: 'History' })).toBeVisible();
 });
 
-test('R23: the admin removes a user after typing their name; signing in again starts over', async ({
+test('R23: the admin revokes a user with a message; they read it, the account is deleted, and signing in again starts over', async ({
   page,
   request,
   auth,
@@ -114,9 +116,12 @@ test('R23: the admin removes a user after typing their name; signing in again st
   const row = page.getByRole('listitem', { name: OTHER.name });
   await row.getByRole('button', { name: 'Remove' }).click();
 
-  const dialog = page.getByRole('dialog', { name: `Remove ${OTHER.name}?` });
-  await expect(dialog).toContainText('cannot be undone');
-  const confirm = dialog.getByRole('button', { name: 'Remove permanently' });
+  const dialog = page.getByRole('dialog', { name: `Revoke access for ${OTHER.name}?` });
+  await expect(dialog).toContainText('Their sessions are deleted at once');
+  const message = dialog.getByLabel('Message to the user');
+  await expect(message).toHaveValue(/^Thank you for your interest in Shooting Clays\./);
+  await message.fill('We are closing the beta. Thank you!');
+  const confirm = dialog.getByRole('button', { name: 'Revoke access' });
   await expect(confirm).toBeDisabled();
   await dialog.getByLabel(`Type "${OTHER.name}" to confirm`).fill('Other');
   await expect(confirm).toBeDisabled();
@@ -124,13 +129,47 @@ test('R23: the admin removes a user after typing their name; signing in again st
   await confirm.click();
 
   await expect(dialog).toHaveCount(0);
-  await expect(row).toHaveCount(0);
-  await expect(page.getByText(`${OTHER.name} has been removed.`)).toBeVisible();
+  await expect(page.getByText(`${OTHER.name}'s access has been revoked.`)).toBeVisible();
+  await expect(row).toContainText('Revoked: waiting to be read');
+  await expect(row).toContainText('0 sessions');
+  await expect(row.getByRole('switch')).toHaveCount(0);
+  await expect(row.getByRole('button', { name: 'Delete now' })).toBeVisible();
+
+  // They open the app: only the message is left. Reading it deletes the account.
+  auth.user = { ...OTHER, status: undefined };
+  await page.goto('/app');
+  await expect(page.getByRole('heading', { name: 'Your access has been revoked' })).toBeVisible();
+  await expect(page.getByTestId('revoked-message')).toHaveText(
+    'We are closing the beta. Thank you!',
+  );
+  await page.getByRole('button', { name: 'Mark as read' }).click();
+  await expect(page).toHaveURL('/en');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+    'Log your clay shooting series and beat your own best',
+  );
 
   // Google signs them in again: a new account, waiting for approval.
   auth.user = { ...OTHER, status: undefined };
   await page.goto('/app');
   await expect(page.getByTestId('pending-banner')).toBeVisible();
+});
+
+test('R23: "Delete now" removes a revoked account at once', async ({ page, request }) => {
+  await registerUser(request, OTHER);
+  await page.goto('/app/admin');
+  const row = page.getByRole('listitem', { name: OTHER.name });
+  await row.getByRole('button', { name: 'Remove' }).click();
+  const revoke = page.getByRole('dialog', { name: `Revoke access for ${OTHER.name}?` });
+  await revoke.getByLabel(`Type "${OTHER.name}" to confirm`).fill(OTHER.name);
+  await revoke.getByRole('button', { name: 'Revoke access' }).click();
+
+  await row.getByRole('button', { name: 'Delete now' }).click();
+  const dialog = page.getByRole('dialog', { name: `Remove ${OTHER.name}?` });
+  await expect(dialog).toContainText('cannot be undone');
+  await dialog.getByLabel(`Type "${OTHER.name}" to confirm`).fill(OTHER.name);
+  await dialog.getByRole('button', { name: 'Remove permanently' }).click();
+  await expect(row).toHaveCount(0);
+  await expect(page.getByText(`${OTHER.name} has been removed.`)).toBeVisible();
 });
 
 test('R37: the admin searches users by name or email and filters All · Active · Pending', async ({

@@ -47,6 +47,29 @@ export function createAdminRepo(db: Db) {
     },
 
     /**
+     * Revokes a non-admin user's access in one statement: their sessions and earlier
+     * notifications are deleted, the status becomes `revoked` and the admin's message is their
+     * only notification. The account itself goes when they read it (or an admin removes it).
+     * Returns whether a user was revoked.
+     */
+    async revokeUser(userId: string, message: string): Promise<boolean> {
+      const result = await db.execute(sql`
+        with target as (
+          update profiles set status = 'revoked', status_changed_at = now()
+          where user_id = ${userId} and role <> 'admin' returning user_id
+        ), removed_sessions as (
+          delete from sessions where user_id in (select user_id from target)
+        ), removed_notifications as (
+          delete from notifications where user_id in (select user_id from target)
+        ), message as (
+          insert into notifications (user_id, kind, params)
+          select user_id, 'revoked', jsonb_build_object('message', ${message}::text) from target
+        )
+        select user_id from target`);
+      return rowsOf(result).length > 0;
+    },
+
+    /**
      * Deletes the user completely in one statement (one transaction): their profile, their
      * sessions (foreign key cascade) and their Neon Auth user, whose sessions and linked Google
      * account Neon Auth deletes in turn. Admins are never removed. Returns whether a profile

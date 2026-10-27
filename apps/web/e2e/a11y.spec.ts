@@ -1,7 +1,10 @@
-import { expect, expectCard, seriousA11yViolations, test } from './fixtures';
+import { API_URL, expect, expectCard, seriousA11yViolations, test } from './fixtures';
 
 for (const colorScheme of ['light', 'dark'] as const) {
-  test(`R10: no serious accessibility violations (${colorScheme} mode)`, async ({ page }) => {
+  test(`R10: no serious accessibility violations (${colorScheme} mode)`, async ({
+    page,
+    request,
+  }) => {
     await page.emulateMedia({ colorScheme });
     await page.goto('/app');
     await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
@@ -22,6 +25,13 @@ for (const colorScheme of ['light', 'dark'] as const) {
 
     await page.goto('/app/settings');
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
+    expect(await seriousA11yViolations(page)).toEqual([]);
+
+    // An unread contact message for the admin.
+    const data = { name: 'Ana', email: 'ana@example.test', message: 'Hello there!', locale: 'en' };
+    expect((await request.post(`${API_URL}/api/contact`, { data })).ok()).toBe(true);
+    await page.goto('/app/notifications');
+    await expect(page.getByTestId('notification')).toContainText('Message from Ana');
     expect(await seriousA11yViolations(page)).toEqual([]);
   });
 }

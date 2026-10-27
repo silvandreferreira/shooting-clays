@@ -14,6 +14,8 @@ import { EditSessionPage } from './pages/EditSessionPage';
 import { FaqPage } from './pages/FaqPage';
 import { HistoryPage } from './pages/HistoryPage';
 import { InactivePage } from './pages/InactivePage';
+import { NotificationsPage } from './pages/NotificationsPage';
+import { RevokedPage } from './pages/RevokedPage';
 import { SettingsPage } from './pages/SettingsPage';
 
 export function App({ user }: { user: CurrentUser }) {
@@ -33,10 +35,11 @@ export function App({ user }: { user: CurrentUser }) {
   }, [savedLocale]);
 
   useEffect(() => {
-    // A disabled account keeps nothing personal on the device: drop every cached query but the
-    // account itself.
-    if (status === 'disabled') {
-      queryClient.removeQueries({ predicate: (q) => q.queryKey[0] !== queryKeys.me[0] });
+    // A disabled or revoked account keeps nothing personal on the device: drop every cached
+    // query but the account itself (and the revoked user's message).
+    if (status === 'disabled' || status === 'revoked') {
+      const keep: unknown[] = [queryKeys.me[0], queryKeys.notifications[0]];
+      queryClient.removeQueries({ predicate: (q) => !keep.includes(q.queryKey[0]) });
     }
   }, [status, queryClient]);
 
@@ -59,6 +62,7 @@ export function App({ user }: { user: CurrentUser }) {
     );
   }
   if (me.status === 'disabled') return <InactivePage email={me.email} />;
+  if (me.status === 'revoked') return <RevokedPage />;
 
   return (
     <Routes>
@@ -66,6 +70,7 @@ export function App({ user }: { user: CurrentUser }) {
         {me.status === 'pending' ? (
           <>
             <Route index element={<SampleDashboardPage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
             <Route path="faq" element={<FaqPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </>
@@ -77,6 +82,7 @@ export function App({ user }: { user: CurrentUser }) {
             <Route path="history/:id" element={<EditSessionPage />} />
             <Route path="community" element={<CommunityPage />} />
             <Route path="settings" element={<SettingsPage me={me} />} />
+            <Route path="notifications" element={<NotificationsPage />} />
             <Route path="faq" element={<FaqPage />} />
             {me.role === 'admin' && <Route path="admin" element={<AdminPage />} />}
             <Route path="*" element={<p className="py-8 text-center">{t.notFound}</p>} />

@@ -33,7 +33,7 @@ async function countRows(db: Awaited<ReturnType<typeof createTestApp>>['db'], us
 
 // R19: account states and admin, enforced by the API.
 describe('account states', () => {
-  it('a pending user can only call GET /api/me; everything else is 403 ACCOUNT_PENDING', async () => {
+  it('a pending user can only call GET /api/me and the notifications; everything else is 403 ACCOUNT_PENDING', async () => {
     const { json } = await createTestApp({ empty: true });
     expect(await (await json('GET', '/api/me', undefined, NEWCOMER)).json()).toMatchObject({
       status: 'pending',

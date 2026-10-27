@@ -5,6 +5,7 @@ import type {
   Leaderboard,
   LeaderboardQuery,
   Me,
+  NotificationList,
   ProfileUpdate,
   Session,
   SessionInput,
@@ -91,6 +92,18 @@ export const api = {
     request<{ userId: string; status: AccountStatus }>(
       `/admin/users/${encodeURIComponent(userId)}`,
       { method: 'PATCH', body: JSON.stringify({ status }) },
+    ),
+  notifications: () => request<NotificationList>('/notifications'),
+  /** The list after reading it, or `accountRemoved` when it was the revocation message. */
+  readNotification: (id: string) =>
+    request<NotificationList | { accountRemoved: true }>(
+      `/notifications/${encodeURIComponent(id)}/read`,
+      { method: 'POST' },
+    ),
+  revokeUser: (userId: string, message: string) =>
+    request<{ userId: string; status: 'revoked' }>(
+      `/admin/users/${encodeURIComponent(userId)}/revoke`,
+      { method: 'POST', body: JSON.stringify({ message }) },
     ),
   removeUser: (userId: string) =>
     request<{ removed: true }>(`/admin/users/${encodeURIComponent(userId)}`, { method: 'DELETE' }),

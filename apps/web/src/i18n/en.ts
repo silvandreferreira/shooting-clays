@@ -22,6 +22,8 @@ export const en = {
     menu: 'Menu',
     faq: 'FAQ',
     closeMenu: 'Close menu',
+    notifications: 'Notifications',
+    unreadBadge: (n: number) => (n === 1 ? '1 unread' : `${n} unread`),
   },
   disciplines: {
     compak: 'Compak Sporting',
@@ -146,6 +148,49 @@ export const en = {
     removing: 'Removing…',
     removeError: 'Could not remove the account. Try again.',
     removed: (name: string) => `${name} has been removed.`,
+    revokeTitle: (name: string) => `Revoke access for ${name}?`,
+    revokeWarning:
+      'Their sessions are deleted at once. They see your message the next time they open the app, and when they mark it as read the account is deleted. If they sign in again, they start over as a new user waiting for approval.',
+    revokeMessageLabel: 'Message to the user',
+    revokeDefaultMessage:
+      'Thank you for your interest in Shooting Clays. We cannot keep your account at the moment, so your access has been revoked and your data has been deleted.',
+    revokeConfirm: 'Revoke access',
+    revoking: 'Revoking…',
+    revokeError: 'Could not revoke the access. Try again.',
+    revokedToast: (name: string) => `${name}'s access has been revoked.`,
+    revokedStatus: 'Revoked: waiting to be read',
+    removeNow: 'Delete now',
+  },
+  notifications: {
+    title: 'Notifications',
+    loading: 'Loading…',
+    loadError: 'Could not load the notifications.',
+    empty: 'No notifications yet.',
+    markRead: 'Mark as read',
+    unread: 'Unread',
+    readError: 'Could not mark it as read. Try again.',
+    registered: {
+      title: 'Sign-up received',
+      text: 'Your account is waiting for approval. You will get a notification here when it is active.',
+    },
+    approved: {
+      title: 'Your account is active',
+      text: 'You can now log your series and appear in the Community.',
+    },
+    revoked: { title: 'Your access has been revoked' },
+    signup: {
+      title: (name: string) => `${name} signed up`,
+      text: 'The account is waiting for your approval.',
+      link: 'See pending users',
+    },
+    contact: {
+      title: (name: string) => `Message from ${name}`,
+      reply: 'Reply by email',
+    },
+  },
+  revoked: {
+    note: 'When you mark it as read, your account is deleted and you are signed out.',
+    removing: 'Deleting your account…',
   },
   community: {
     title: 'Community',
@@ -428,6 +473,8 @@ export const en = {
     UNAUTHENTICATED: 'Your session has ended. Sign in again.',
     ACCOUNT_PENDING: 'Your account is waiting for approval.',
     ACCOUNT_DISABLED: 'Your account is inactive.',
+    ACCOUNT_REVOKED: 'Your access has been revoked.',
+    RATE_LIMITED: 'Too many requests. Try again later.',
     FORBIDDEN: 'You are not allowed to do this.',
     NOT_FOUND: 'Not found. It may have been deleted.',
     INTERNAL_ERROR: 'Something went wrong on the server.',
