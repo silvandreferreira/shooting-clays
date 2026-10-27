@@ -2,8 +2,11 @@
   "name": "@shooting-clays/shared",
   "private": true,
   "type": "module",
+  "sideEffects": false,
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./disciplines": "./src/disciplines.ts",
+    "./locales": "./src/locales.ts"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",

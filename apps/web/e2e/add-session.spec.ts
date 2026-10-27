@@ -1,7 +1,7 @@
 import { card, expect, expectCard, goTo, selectPeriod, test } from './fixtures';
 
 test('R4: adding a session updates the dashboard without a reload', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/app');
   await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
   await goTo(page, 'Add');
 
@@ -23,7 +23,7 @@ test('R4: adding a session updates the dashboard without a reload', async ({ pag
     if (r.url().endsWith('/api/dashboard')) dashboardRequests.push(r.url());
   });
 
-  await expect(page).toHaveURL('/');
+  await expect(page).toHaveURL('/app');
   await selectPeriod(page, 'This month');
   await expectCard(page, 'Compak Sporting', '17 / 13 / 25');
   await expect(card(page, 'Compak Sporting').getByTestId('count')).toHaveText('8');
@@ -34,7 +34,7 @@ test('R4: adding a session updates the dashboard without a reload', async ({ pag
 });
 
 test('R5: A–F only for Compak Sporting and Sporting, cleared when switching', async ({ page }) => {
-  await page.goto('/add');
+  await page.goto('/app/add');
   const targets = page.getByRole('group', { name: 'Hardest targets' });
 
   await page.getByText('Compak Sporting', { exact: true }).click();
@@ -57,13 +57,13 @@ test('R6: a score outside 0–25 is rejected', async ({ page }) => {
   page.on('request', (r) => {
     if (r.url().endsWith('/api/sessions') && r.method() === 'POST') posted = true;
   });
-  await page.goto('/add');
+  await page.goto('/app/add');
   const score = page.getByLabel('Score (out of 25)');
 
   await score.fill('26');
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByRole('alert')).toHaveText('Score must be a whole number from 0 to 25.');
-  await expect(page).toHaveURL('/add');
+  await expect(page).toHaveURL('/app/add');
 
   await score.fill('-1');
   await page.getByRole('button', { name: 'Save' }).click();
@@ -85,14 +85,14 @@ test('R7: an API error on save keeps the form filled in', async ({ page }) => {
         })
       : route.continue(),
   );
-  await page.goto('/add');
+  await page.goto('/app/add');
   await page.getByText('Trap', { exact: true }).click();
   await page.getByLabel('Score (out of 25)').fill('21');
   await page.getByLabel('Notes').fill('Windy');
   await page.getByRole('button', { name: 'Save' }).click();
 
   await expect(page.getByRole('alert')).toContainText('Could not save');
-  await expect(page).toHaveURL('/add');
+  await expect(page).toHaveURL('/app/add');
   await expect(page.getByRole('radio', { name: 'Trap' })).toBeChecked();
   await expect(page.getByLabel('Score (out of 25)')).toHaveValue('21');
   await expect(page.getByLabel('Notes')).toHaveValue('Windy');

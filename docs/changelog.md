@@ -4,6 +4,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Public site
+
+- **Added:** public pages for visitors, prerendered for search engines: home (`/`), disciplines (`/modalidades`) and FAQ (`/faq`) in European Portuguese, and the same in English under `/en`; `sitemap.xml`, `robots.txt`, a 404 page. Decision #62. E2E R40, R41.
+- **Added:** FAQ questions on installing the app on a phone and on updates.
+- **Changed:** the app moved to `/app` (old links redirect); the sign-in screen links to the public home page and FAQ. The installed app keeps opening the app.
+- **Changed:** `@shooting-clays/shared` exposes `./disciplines` and `./locales`, and `LOCALES` moved to `locales.ts`.
+
 ### Dashboard order and Settings
 
 - **Changed:** the Dashboard shows the scores-over-time chart first, then the averages chart, then the discipline cards. E2E R39.

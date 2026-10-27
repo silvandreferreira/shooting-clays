@@ -1,5 +1,6 @@
 import { jwtClient } from 'better-auth/client/plugins';
 import { createAuthClient } from 'better-auth/react';
+import { APP_PATH } from '../site/routes';
 
 /**
  * Neon Auth (managed Better Auth) is reached through our own origin: `/auth/*` is proxied to the
@@ -26,7 +27,10 @@ export async function completeSignInRedirect() {
 }
 
 export function signInWithGoogle() {
-  return authClient.signIn.social({ provider: 'google', callbackURL: window.location.origin });
+  return authClient.signIn.social({
+    provider: 'google',
+    callbackURL: `${window.location.origin}${APP_PATH}`,
+  });
 }
 
 const TOKEN_MARGIN_MS = 60_000;

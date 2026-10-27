@@ -4,7 +4,7 @@ const menuButton = (page: import('@playwright/test').Page) =>
   page.getByRole('button', { name: /^Menu/ });
 
 async function expectMenuFlow(page: import('@playwright/test').Page) {
-  await page.goto('/');
+  await page.goto('/app');
   // No bottom bar and no account menu: one menu button in the header.
   await expect(page.getByRole('navigation', { name: 'Main' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Account' })).toHaveCount(0);
@@ -54,7 +54,7 @@ test.describe('on a tablet', () => {
 
 test('R35: on desktop the bottom bar and the account menu stay as they are', async ({ page }) => {
   test.skip(usesMenu(page), 'Desktop only (phones and tablets have R34)');
-  await page.goto('/');
+  await page.goto('/app');
   await expect(menuButton(page)).toHaveCount(0);
   const nav = page.getByRole('navigation', { name: 'Main' });
   for (const name of ['Dashboard', 'Add', 'History', 'Community', 'Admin']) {

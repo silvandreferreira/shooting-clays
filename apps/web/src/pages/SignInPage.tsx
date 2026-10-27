@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Link } from 'react-router';
-import { useT } from '../i18n';
+import { useLocale, useT } from '../i18n';
 import { LanguagePicker } from '../components/LanguagePicker';
 import { signInWithGoogle } from '../lib/auth';
+import { SITE_PATHS } from '../site/routes';
 
 function GoogleIcon() {
   return (
@@ -26,6 +26,7 @@ function GoogleIcon() {
 
 export function SignInPage() {
   const t = useT();
+  const { locale } = useLocale();
   const [state, setState] = useState<'idle' | 'redirecting' | 'error'>('idle');
   const onSignIn = async () => {
     setState('redirecting');
@@ -56,9 +57,15 @@ export function SignInPage() {
       <div className="mx-auto w-full max-w-60">
         <LanguagePicker />
       </div>
-      <Link to="/faq" className="text-center font-semibold text-ink-muted underline">
-        {t.nav.faq}
-      </Link>
+      {/* The public pages are outside the app's router: plain links. */}
+      <nav aria-label={t.site.siteNav} className="flex justify-center gap-6">
+        <a href={SITE_PATHS[locale].home} className="font-semibold text-ink-muted underline">
+          {t.site.nav.home}
+        </a>
+        <a href={SITE_PATHS[locale].faq} className="font-semibold text-ink-muted underline">
+          {t.nav.faq}
+        </a>
+      </nav>
     </main>
   );
 }

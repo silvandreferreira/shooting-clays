@@ -29,7 +29,7 @@ test.describe('signed out', () => {
     page.on('request', (r) => {
       if (new URL(r.url()).pathname.startsWith('/api/')) apiCalls++;
     });
-    await page.goto('/history');
+    await page.goto('/app/history');
     await expect(page.getByRole('button', { name: 'Sign in with Google' })).toBeVisible();
     await expect(page.getByRole('navigation', { name: 'Main' })).toHaveCount(0);
     expect(apiCalls).toBe(0);
@@ -43,7 +43,7 @@ test.describe('signed out', () => {
 test('R15: the header greets the user by first name and signing out clears the cache', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('/app');
   await expect(page.getByTestId('welcome')).toHaveText('Welcome, Test');
   await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
   await expect.poll(() => hasPersistedCache(page)).toBe(true);
@@ -63,7 +63,7 @@ test("R16: switching account never shows the previous user's cached data", async
   page,
   auth,
 }) => {
-  await page.goto('/');
+  await page.goto('/app');
   await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
   await expect.poll(() => hasPersistedCache(page)).toBe(true);
 

@@ -18,14 +18,14 @@ function skipWithoutBaseline(testInfo: TestInfo, name: string) {
 
 test('R9: dashboard looks the same', async ({ page }, testInfo) => {
   skipWithoutBaseline(testInfo, 'dashboard.png');
-  await page.goto('/');
+  await page.goto('/app');
   await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
   await expect(page).toHaveScreenshot('dashboard.png', { fullPage: true });
 });
 
 test('R9: add screen looks the same', async ({ page }, testInfo) => {
   skipWithoutBaseline(testInfo, 'add.png');
-  await page.goto('/add');
+  await page.goto('/app/add');
   await expect(page.getByRole('heading', { name: 'Add session' })).toBeVisible();
   await expect(page).toHaveScreenshot('add.png', { fullPage: true });
 });
@@ -35,7 +35,7 @@ test.describe('in Portuguese', () => {
 
   test('R9: dashboard in pt-PT looks the same', async ({ page }, testInfo) => {
     skipWithoutBaseline(testInfo, 'dashboard-pt-PT.png');
-    await page.goto('/');
+    await page.goto('/app');
     await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
     await expect(page).toHaveScreenshot('dashboard-pt-PT.png', { fullPage: true });
   });

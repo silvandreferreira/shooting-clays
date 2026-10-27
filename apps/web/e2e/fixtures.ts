@@ -111,9 +111,9 @@ async function routeFakeNeonAuth(page: Page, auth: FakeNeonAuth, nextSignIn: () 
     }
     if (pathname.endsWith('/sign-in/social')) {
       auth.user = nextSignIn();
-      return route.fulfill({
-        json: { url: new URL('/', route.request().url()).href, redirect: true },
-      });
+      // Back to where the app asked Google to return (src/lib/auth.ts).
+      const { callbackURL } = route.request().postDataJSON() as { callbackURL: string };
+      return route.fulfill({ json: { url: callbackURL, redirect: true } });
     }
     return route.fulfill({ status: 404, json: { message: 'Not mocked' } });
   });

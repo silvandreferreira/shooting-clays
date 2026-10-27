@@ -42,7 +42,7 @@ export default defineConfig({
       cwd: '../..',
     },
     {
-      command: 'vite build && vite preview',
+      command: 'pnpm build:vite && vite preview',
       url: WEB_URL,
       reuseExistingServer: !process.env.CI,
       env: { API_URL: E2E_API_URL },

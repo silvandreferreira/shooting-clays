@@ -3,7 +3,7 @@ import { expect, expectCard, test } from './fixtures';
 test('R3: offline (API and auth down), the dashboard opens from the persisted cache', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('/app');
   await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
   // Wait until the persister has written the cache to IndexedDB (it is throttled).
   await expect

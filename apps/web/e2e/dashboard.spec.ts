@@ -23,7 +23,7 @@ const REFERENCE = {
 } as const;
 
 test('R1: dashboard shows the reference values for all three periods', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/app');
   for (const [period, cards] of Object.entries(REFERENCE)) {
     await selectPeriod(page, period as keyof typeof REFERENCE);
     for (const [name, values] of Object.entries(cards)) {
@@ -33,7 +33,7 @@ test('R1: dashboard shows the reference values for all three periods', async ({ 
 });
 
 test('R2: a period without data shows "—", never 0', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/app');
   await selectPeriod(page, 'This month');
   const fosso = card(page, 'Fosso');
   await expect(fosso.getByTestId('avg')).toHaveText('—');
@@ -45,7 +45,7 @@ test('R2: a period without data shows "—", never 0', async ({ page }) => {
 test('R24: tapping a discipline in the scores chart legend hides its line; tapping again shows it', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('/app');
   await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
   const chart = page.getByRole('img', { name: 'Scores over time' });
   const legend = page.getByRole('group', { name: 'Disciplines shown in the chart' });
@@ -74,7 +74,7 @@ test('R24: tapping a discipline in the scores chart legend hides its line; tappi
 test('R25: each bar of "Average by discipline" shows the average and the lowest–highest score', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('/app');
   const range = (d: string) => page.getByTestId(`range-${d}`);
   await expect(range('compak')).toHaveText('168–23');
   await expect(range('fosso')).toHaveText('105–16');
@@ -87,7 +87,7 @@ test('R25: each bar of "Average by discipline" shows the average and the lowest�
 });
 
 test('R29: the scores chart has its own time range, 3 months by default', async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/app');
   await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
   const ranges = page.getByRole('group', { name: 'Time range of the chart' });
   const dots = page.getByRole('img', { name: 'Scores over time' }).locator('.recharts-line-dot');
@@ -133,7 +133,7 @@ test('R29: the scores chart has its own time range, 3 months by default', async 
 test('R39: the Dashboard shows the scores chart first, then the averages, then the cards', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('/app');
   await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
   const top = async (locator: import('@playwright/test').Locator) =>
     (await locator.boundingBox())!.y;

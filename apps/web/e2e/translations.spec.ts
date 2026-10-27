@@ -12,7 +12,7 @@ import {
 test('R30: switching to Português in Settings translates the app at once, without a reload', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('/app');
   await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
   let reloaded = false;
   page.on('load', () => (reloaded = true));
@@ -50,7 +50,7 @@ test('R31: the language is kept after a reload, before sign-in and on a new devi
   page,
   auth,
 }) => {
-  await page.goto('/settings');
+  await page.goto('/app/settings');
   await page
     .getByRole('group', { name: 'Language' })
     .getByRole('button', { name: 'Português' })
@@ -81,7 +81,7 @@ test.describe('browser in Portuguese', () => {
   test('R32: a Portuguese browser starts in pt-PT; English can be chosen before signing in', async ({
     page,
   }) => {
-    await page.goto('/');
+    await page.goto('/app');
     await expect(page.locator('html')).toHaveAttribute('lang', 'pt-PT');
     await expect(page.getByRole('button', { name: 'Entrar com Google' })).toBeVisible();
 
@@ -98,7 +98,7 @@ test.describe('validation and API errors', () => {
   test('R33: form validation and API error messages appear in the active language', async ({
     page,
   }) => {
-    await page.goto('/add');
+    await page.goto('/app/add');
     const score = page.getByLabel('Resultado (em 25)');
     await score.fill('26');
     await page.getByRole('button', { name: 'Guardar' }).click();

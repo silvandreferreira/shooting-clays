@@ -1,7 +1,7 @@
 import { card, expect, expectCard, goTo, test } from './fixtures';
 
 test('R8: editing and deleting in History updates the dashboard', async ({ page }) => {
-  await page.goto('/history');
+  await page.goto('/app/history');
   await page.getByRole('combobox', { name: 'Discipline' }).selectOption({ label: 'Helice' });
   const items = page.getByTestId('session-item');
   await expect(items).toHaveCount(1);
@@ -11,7 +11,7 @@ test('R8: editing and deleting in History updates the dashboard', async ({ page 
   await page.getByLabel('Score (out of 25)').fill('10');
   await page.getByRole('button', { name: 'Save' }).click();
   // Back to History with the filter kept.
-  await expect(page).toHaveURL('/history?discipline=helice');
+  await expect(page).toHaveURL('/app/history?discipline=helice');
   await expect(items).toHaveCount(1);
   await expect(items).toContainText('10/25');
 
@@ -30,12 +30,12 @@ test('R8: editing and deleting in History updates the dashboard', async ({ page 
 });
 
 test('R12: History shows hardest targets as "A, C and F", only when recorded', async ({ page }) => {
-  await page.goto('/add');
+  await page.goto('/app/add');
   await page.getByText('Compak Sporting', { exact: true }).click();
   const targets = page.getByRole('group', { name: 'Hardest targets' });
   for (const letter of ['F', 'A', 'C']) await targets.getByText(letter, { exact: true }).click();
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page).toHaveURL('/');
+  await expect(page).toHaveURL('/app');
 
   await goTo(page, 'History');
   const newest = page.getByTestId('session-item').first();

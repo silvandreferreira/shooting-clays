@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { LOCALES, type Locale } from './locales';
 import {
   DISCIPLINE_KEYS,
   MAX_NOTES_LENGTH,
@@ -57,10 +58,6 @@ export interface Session extends SessionData {
 }
 
 export const MAX_DISPLAY_NAME_LENGTH = 50;
-
-/** UI languages (BCP 47). See docs/roadmap.md → Iteration 6. */
-export const LOCALES = ['en', 'pt-PT'] as const;
-export type Locale = (typeof LOCALES)[number];
 
 export const profileUpdateSchema = z
   .object({
