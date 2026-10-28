@@ -17,6 +17,8 @@ export function toSession(row: SessionRow): Session {
     score: row.score,
     hardestTargets: row.hardestTargets as Session['hardestTargets'],
     notes: row.notes,
+    clubId: row.clubId,
+    fieldId: row.fieldId,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };

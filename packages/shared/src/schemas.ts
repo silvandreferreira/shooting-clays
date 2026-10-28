@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { CLUBS, placeIssue } from './clubs';
 import { CONTACT_LIMITS } from './contact';
 import { LOCALES, type Locale } from './locales';
 import {
@@ -8,6 +9,12 @@ import {
   TARGET_LETTERS,
   hasTargetLetters,
 } from './disciplines';
+
+const optionalId = z
+  .string({ error: 'must be a string' })
+  .max(50)
+  .nullish()
+  .transform((id) => id || null);
 
 export const isoDateSchema = z.iso.date({ error: 'date must be a valid YYYY-MM-DD date' });
 
@@ -33,11 +40,24 @@ export const sessionInputSchema = z
       .max(MAX_NOTES_LENGTH, { error: `notes must be at most ${MAX_NOTES_LENGTH} characters` })
       .nullish()
       .transform((notes) => (notes?.trim() ? notes.trim() : null)),
+    /** Where the series was shot (decision #66); empty or missing = not recorded. */
+    clubId: optionalId,
+    fieldId: optionalId,
   })
   .refine((s) => s.hardestTargets.length === 0 || hasTargetLetters(s.discipline), {
-    error: 'hardestTargets are only allowed for disciplines with lettered targets',
+    error: 'hardestTargets are only allowed for compak',
     path: ['hardestTargets'],
+  })
+  .superRefine((s, ctx) => {
+    const issue = placeIssue(s);
+    if (issue) ctx.addIssue({ code: 'custom', message: issue.message, path: [issue.path] });
   });
+
+/** A new series also says on which field it was shot; older ones may have none. */
+export const newSessionInputSchema = sessionInputSchema.refine((s) => s.fieldId !== null, {
+  error: 'fieldId is required',
+  path: ['fieldId'],
+});
 
 /** What the client sends (before defaults/transforms). */
 export type SessionInput = z.input<typeof sessionInputSchema>;
@@ -72,6 +92,13 @@ export const profileUpdateSchema = z
       .optional(),
     showInCommunity: z.boolean({ error: 'showInCommunity must be true or false' }).optional(),
     locale: z.enum(LOCALES, { error: 'locale must be en or pt-PT' }).optional(),
+    homeClubId: z
+      .enum(
+        CLUBS.map((c) => c.id),
+        { error: `homeClubId must be one of: ${CLUBS.map((c) => c.id).join(', ')}` },
+      )
+      .nullable()
+      .optional(),
   })
   .refine((p) => Object.values(p).some((value) => value !== undefined), {
     error: 'Nothing to update',
@@ -104,6 +131,8 @@ export interface Me {
   showInCommunity: boolean;
   /** Chosen UI language; null = not chosen yet (follow the browser). */
   locale: Locale | null;
+  /** The club chosen first when adding a series; null = not chosen (the first club). */
+  homeClubId: string | null;
 }
 
 /** A row of the admin's user list (`GET /api/admin/users`). */

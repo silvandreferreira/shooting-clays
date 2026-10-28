@@ -43,6 +43,13 @@
       "when": 1793115963942,
       "tag": "0005_notifications",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793224828898,
+      "tag": "0006_sessions_club_field",
+      "breakpoints": true
     }
   ]
 }

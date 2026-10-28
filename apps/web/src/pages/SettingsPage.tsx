@@ -1,4 +1,4 @@
-import { MAX_DISPLAY_NAME_LENGTH, type Me } from '@shooting-clays/shared';
+import { CLUBS, MAX_DISPLAY_NAME_LENGTH, homeClub, type Me } from '@shooting-clays/shared';
 import { useId, useState, type FormEvent } from 'react';
 import { ClearCache } from '../components/ClearCache';
 import { LanguagePicker } from '../components/LanguagePicker';
@@ -89,6 +89,42 @@ function CommunitySwitch({ me }: { me: Me }) {
   );
 }
 
+/** The club chosen first in Add and shown first on the Dashboard (decision #66). */
+function HomeClubSetting({ me }: { me: Me }) {
+  const t = useT();
+  const update = useUpdateProfile();
+  const selectId = useId();
+  const helpId = useId();
+  return (
+    <div className="space-y-2 rounded-2xl border border-line bg-card p-4">
+      <label htmlFor={selectId} className="block font-semibold">
+        {t.settings.homeClub}
+      </label>
+      <select
+        id={selectId}
+        value={update.isPending ? update.variables.homeClubId! : homeClub(me.homeClubId).id}
+        onChange={(e) => update.mutate({ homeClubId: e.target.value })}
+        aria-describedby={helpId}
+        className="min-h-11 w-full rounded-lg border-2 border-line bg-surface px-3"
+      >
+        {CLUBS.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.name}
+          </option>
+        ))}
+      </select>
+      <p id={helpId} className="text-sm text-ink-muted">
+        {t.settings.homeClubHelp}
+      </p>
+      {update.isError && (
+        <p role="alert" className="font-medium text-danger">
+          {t.settings.saveError}
+        </p>
+      )}
+    </div>
+  );
+}
+
 /** Saved in the profile too, so the choice follows the user to other devices. */
 function LanguageSetting() {
   const t = useT();
@@ -114,6 +150,7 @@ export function SettingsPage({ me }: { me: Me }) {
     <div className="space-y-4">
       <h1 className="text-2xl font-bold">{t.settings.title}</h1>
       <DisplayNameForm me={me} />
+      <HomeClubSetting me={me} />
       <CommunitySwitch me={me} />
       <LanguageSetting />
       {me.role === 'admin' && <ClearCache />}

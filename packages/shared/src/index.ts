@@ -4,3 +4,4 @@ export * from './schemas';
 export * from './stats';
 export * from './community';
 export * from './contact';
+export * from './clubs';

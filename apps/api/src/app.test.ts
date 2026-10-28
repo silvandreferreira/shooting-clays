@@ -1,4 +1,4 @@
-import type { Dashboard, Me, Session } from '@shooting-clays/shared';
+import { CLUBS, type Dashboard, type Me, type Session } from '@shooting-clays/shared';
 import { describe, expect, it } from 'vitest';
 import { createApp } from './app';
 import { createTestAuth } from './auth';
@@ -14,6 +14,8 @@ const newSession = {
   score: 25,
   hardestTargets: ['E', 'B'],
   notes: 'Field A',
+  clubId: 'ccm',
+  fieldId: '1',
 };
 
 const neverCalled = async () => {
@@ -93,6 +95,7 @@ describe('profile', () => {
       status: 'pending',
       showInCommunity: true,
       locale: null,
+      homeClubId: null,
     });
   });
 
@@ -285,6 +288,90 @@ describe('data isolation between users', () => {
     expect(other).toHaveLength(1);
     const owner = (await (await json('GET', '/api/sessions')).json()) as [];
     expect(owner).toHaveLength(historyRows().length);
+  });
+});
+
+// R49: where a series was shot (club and field).
+describe('clubs and fields', () => {
+  interface ApiErrorBody {
+    code: string;
+    message: string;
+    details: { issues: { path: string; message: string }[] };
+  }
+  const error = async (res: Response) => ((await res.json()) as { error: ApiErrorBody }).error;
+
+  it('lists the clubs with their fields and disciplines', async () => {
+    const { json } = await createTestApp({ empty: true });
+    const clubs = (await (await json('GET', '/api/clubs')).json()) as typeof CLUBS;
+    expect(clubs).toEqual(CLUBS);
+    expect(clubs[0]).toMatchObject({
+      id: 'ccm',
+      fields: [
+        { id: '1', disciplines: ['compak', 'fosso', 'helice'] },
+        { id: '2', disciplines: ['compak', 'fosso'] },
+        { id: '3', disciplines: ['compak'] },
+        { id: '4', disciplines: ['compak'] },
+      ],
+    });
+  });
+
+  it.each([
+    [{ fieldId: undefined }, 'fieldId', 'fieldId is required'],
+    [{ clubId: undefined, fieldId: undefined }, 'fieldId', 'fieldId is required'],
+    [{ clubId: 'nowhere' }, 'clubId', 'clubId must be one of: ccm'],
+    [{ fieldId: '9' }, 'fieldId', 'fieldId must be one of: 1, 2, 3, 4'],
+    [{ fieldId: '3', discipline: 'fosso', hardestTargets: [] }, 'discipline', "field's: compak"],
+    [{ clubId: null }, 'fieldId', 'fieldId needs a clubId'],
+  ])(
+    'a new series needs a field of the club that has the discipline',
+    async (change, path, message) => {
+      const { json } = await createTestApp({ empty: true });
+      const res = await json('POST', '/api/sessions', { ...newSession, ...change });
+      expect(res.status).toBe(400);
+      const { code, details } = await error(res);
+      expect(code).toBe('VALIDATION_ERROR');
+      expect(details.issues).toContainEqual({ path, message: expect.stringContaining(message) });
+    },
+  );
+
+  it('saves the club and field; an edit may leave the field (or both) empty', async () => {
+    const { json } = await createTestApp({ empty: true });
+    const created = await json('POST', '/api/sessions', newSession);
+    const { session } = (await created.json()) as { session: Session };
+    expect(session).toMatchObject({ clubId: 'ccm', fieldId: '1' });
+
+    const put = (body: object) => json('PUT', `/api/sessions/${session.id}`, body);
+    const noField = (await (await put({ ...newSession, fieldId: null })).json()) as {
+      session: Session;
+    };
+    expect(noField.session).toMatchObject({ clubId: 'ccm', fieldId: null });
+    // Without a field any discipline goes, even one the club's fields do not have.
+    const trap = { ...newSession, discipline: 'trap', hardestTargets: [], fieldId: '' };
+    expect((await put(trap)).status).toBe(200);
+    const none = (await (await put({ ...trap, clubId: '' })).json()) as { session: Session };
+    expect(none.session).toMatchObject({ clubId: null, fieldId: null });
+    expect(
+      await error(
+        await put({ ...newSession, fieldId: '3', discipline: 'helice', hardestTargets: [] }),
+      ),
+    ).toMatchObject({ code: 'VALIDATION_ERROR' });
+  });
+
+  it('the imported history is at CCM, without a field', async () => {
+    const { json } = await createTestApp();
+    const sessions = (await (await json('GET', '/api/sessions')).json()) as Session[];
+    expect(new Set(sessions.map((s) => `${s.clubId}/${s.fieldId}`))).toEqual(new Set(['ccm/null']));
+  });
+
+  it('the home club is saved in the profile', async () => {
+    const { json } = await createTestApp({ empty: true });
+    const me = async () => (await (await json('GET', '/api/me')).json()) as Me;
+    expect((await me()).homeClubId).toBeNull();
+    expect((await json('PUT', '/api/me/profile', { homeClubId: 'ccm' })).status).toBe(200);
+    expect((await me()).homeClubId).toBe('ccm');
+    expect((await json('PUT', '/api/me/profile', { homeClubId: 'nowhere' })).status).toBe(400);
+    expect((await json('PUT', '/api/me/profile', { homeClubId: null })).status).toBe(200);
+    expect((await me()).homeClubId).toBeNull();
   });
 });
 

@@ -1,3 +1,4 @@
+import { hasTargetLetters } from '@shooting-clays/shared';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { SessionForm } from '../components/SessionForm';
 import { useT } from '../i18n';
@@ -20,9 +21,12 @@ export function EditSessionPage() {
       title={t.form.editTitle}
       defaultValues={{
         date: session.date,
+        clubId: session.clubId ?? '',
         discipline: session.discipline,
+        fieldId: session.fieldId ?? '',
         score: session.score,
-        hardestTargets: session.hardestTargets,
+        // Only Compak Sporting keeps them (decision #67).
+        hardestTargets: hasTargetLetters(session.discipline) ? session.hardestTargets : [],
         notes: session.notes ?? '',
       }}
       onSubmit={async (data) => {
@@ -30,6 +34,7 @@ export function EditSessionPage() {
         await navigate(back);
       }}
       onCancel={() => void navigate(back)}
+      allowNoPlace
     />
   );
 }

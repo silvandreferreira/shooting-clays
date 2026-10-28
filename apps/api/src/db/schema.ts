@@ -27,6 +27,8 @@ export const profiles = pgTable(
     showInCommunity: boolean('show_in_community').notNull().default(true),
     /** UI language; null = follow the browser (iteration 6). */
     locale: text('locale', { enum: LOCALES }),
+    /** Club chosen first when adding a series (an id from CLUBS); null = the first club. */
+    homeClubId: text('home_club_id'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true })
       .notNull()
@@ -60,6 +62,12 @@ export const sessions = pgTable(
       .notNull()
       .default(sql`'{}'::text[]`),
     notes: text('notes'),
+    /**
+     * Where the series was shot: ids from CLUBS (packages/shared/src/clubs.ts, decision #66);
+     * null on series logged before clubs existed.
+     */
+    clubId: text('club_id'),
+    fieldId: text('field_id'),
     importKey: text('import_key').unique(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true })
@@ -71,6 +79,7 @@ export const sessions = pgTable(
     index('sessions_user_id_date_idx').on(t.userId, t.date),
     index('sessions_discipline_date_idx').on(t.discipline, t.date),
     check('sessions_score_range', sql`${t.score} between 0 and 25`),
+    check('sessions_field_needs_club', sql`${t.fieldId} is null or ${t.clubId} is not null`),
   ],
 );
 

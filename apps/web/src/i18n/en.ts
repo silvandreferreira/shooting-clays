@@ -21,6 +21,7 @@ export const en = {
     pendingBadge: (n: number) => `${n} waiting for approval`,
     menu: 'Menu',
     faq: 'FAQ',
+    clubs: 'Clubs',
     closeMenu: 'Close menu',
     notifications: 'Notifications',
     unreadBadge: (n: number) => (n === 1 ? '1 unread' : `${n} unread`),
@@ -69,6 +70,9 @@ export const en = {
     editTitle: 'Edit session',
     date: 'Date',
     discipline: 'Discipline',
+    club: 'Club',
+    field: 'Field',
+    noFields: (discipline: string) => `No field at this club has ${discipline}.`,
     score: 'Score (out of 25)',
     decrease: 'Decrease score',
     increase: 'Increase score',
@@ -83,8 +87,19 @@ export const en = {
       date: 'Enter a valid date.',
       score: 'Score must be a whole number from 0 to 25.',
       notes: 'Notes can have at most 1000 characters.',
-      hardestTargets: 'Hardest targets are only for disciplines with lettered targets.',
+      hardestTargets: 'Hardest targets are only for Compak Sporting.',
+      field: 'Choose the field.',
     },
+  },
+  clubs: {
+    title: 'Clubs',
+    intro: 'Where you shoot. Your home club is chosen first when you add a series.',
+    field: (id: string) => `Field ${id}`,
+    noClub: 'No club',
+    noField: 'No field',
+    home: 'Home club',
+    makeHome: 'Make home club',
+    saveError: 'Could not save. Try again.',
   },
   history: {
     title: 'History',
@@ -223,6 +238,8 @@ export const en = {
     showInCommunityHelp:
       'Your results appear on the Community rankings. Switch off to hide them; your own dashboard does not change.',
     language: 'Language',
+    homeClub: 'My club',
+    homeClubHelp: 'Chosen first when you add a series, and the club shown first on the Dashboard.',
     deviceTitle: 'This device',
     clearCache: 'Clear cache and reload',
     clearingCache: 'Clearing…',
@@ -255,8 +272,7 @@ export const en = {
       },
       targets: {
         question: 'Where can I record the hardest targets?',
-        answer:
-          'In Compak Sporting and Sporting, whose targets are labelled A to F. The other disciplines do not have target letters.',
+        answer: 'In Compak Sporting, whose targets are labelled A to F.',
       },
       install: {
         question: 'How do I put the app on my phone?',
@@ -328,7 +344,7 @@ export const en = {
         steps: [
           {
             title: 'Log the series',
-            text: 'After each series, pick the discipline and the score out of 25. In Compak Sporting and Sporting you can also mark the hardest targets (A to F).',
+            text: 'After each series, pick the club, the discipline, the field and the score out of 25. In Compak Sporting you can also mark the hardest targets (A to F).',
           },
           {
             title: 'See your progress',

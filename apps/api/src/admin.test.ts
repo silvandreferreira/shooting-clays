@@ -7,7 +7,13 @@ import type { LogFields } from './logger';
 import { createProfilesRepo } from './profiles-repo';
 import { createTestApp, historyRows, NEWCOMER, OTHER, OWNER } from './test-utils';
 
-const newSession = { date: '2026-10-23', discipline: 'trap', score: 20 };
+const newSession = {
+  date: '2026-10-23',
+  discipline: 'compak',
+  score: 20,
+  clubId: 'ccm',
+  fieldId: '3',
+};
 
 /** Every endpoint that needs an active account, with a valid body where one is required. */
 const DATA_ENDPOINTS: [string, string, unknown?][] = [

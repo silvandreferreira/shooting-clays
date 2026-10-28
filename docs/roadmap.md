@@ -347,6 +347,8 @@ Done and in production (PR #13): migration 0004 (`profiles.locale`), `pt-PT.ts`,
 
 Goal: let shooting clubs exist in the app, with their own managers and members, so that iteration 8 can tell **official** results (recorded by a club) from **unofficial** ones (recorded by the shooter). This section is a proposal: confirm the open questions at the start of the iteration.
 
+Already in place (decision #66): each series records the club and field where it was shot, with ids from `packages/shared/src/clubs.ts`, and each user has a home club. This iteration moves that list to tables with the same ids (series unchanged); clubs as memberships (below) are a separate, complementary idea.
+
 ### Roles
 
 | Who          | How they get it                                           | What they can do                                                                             |

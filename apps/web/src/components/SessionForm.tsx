@@ -1,10 +1,15 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-  DISCIPLINES,
+  CLUBS,
+  DISCIPLINE_KEYS,
   MAX_SCORE,
   TARGET_LETTERS,
+  clubDisciplines,
+  disciplineFields,
   hasTargetLetters,
+  newSessionInputSchema,
   sessionInputSchema,
+  type DisciplineKey,
   type SessionData,
   type SessionInput,
 } from '@shooting-clays/shared';
@@ -18,12 +23,21 @@ interface Props {
   defaultValues: SessionInput;
   onSubmit: (data: SessionData) => Promise<unknown>;
   onCancel?: () => void;
+  /**
+   * Editing a series: "No club" and "No field" can be chosen (series logged before clubs
+   * existed). A new series needs a field.
+   */
+  allowNoPlace?: boolean;
 }
 
 const fieldLabel = 'mb-2 block text-sm font-semibold';
 const errorText = 'mt-1 text-sm font-medium text-danger';
 
-export function SessionForm({ title, defaultValues, onSubmit, onCancel }: Props) {
+const choice =
+  'flex min-h-14 cursor-pointer items-center justify-center rounded-xl border-2 border-line bg-card px-2 text-center font-semibold has-checked:border-accent has-checked:bg-accent has-checked:text-accent-ink has-focus-visible:outline-2 has-focus-visible:outline-accent';
+
+/** Club → discipline → field (decision #66): each choice narrows the next one. */
+export function SessionForm({ title, defaultValues, onSubmit, onCancel, allowNoPlace }: Props) {
   const t = useT();
   // The failure, not its text: the message follows the active language.
   const [saveError, setSaveError] = useState<{ code?: string } | null>(null);
@@ -35,15 +49,46 @@ export function SessionForm({ title, defaultValues, onSubmit, onCancel }: Props)
     control,
     formState: { errors, isSubmitting },
   } = useForm<SessionInput, unknown, SessionData>({
-    resolver: zodResolver(sessionInputSchema),
+    resolver: zodResolver(allowNoPlace ? sessionInputSchema : newSessionInputSchema),
     defaultValues,
   });
+  const clubId = useWatch({ control, name: 'clubId' }) ?? '';
   const discipline = useWatch({ control, name: 'discipline' });
   const showTargets = hasTargetLetters(discipline);
+  // The club's disciplines, and the one being edited even if no field has it any more.
+  const disciplines = DISCIPLINE_KEYS.filter(
+    (d) => clubDisciplines(clubId).includes(d) || d === defaultValues.discipline,
+  );
+  const fields = disciplineFields(clubId, discipline);
+
+  /** Keeps the field only if it has the discipline; a single possible field is chosen. */
+  const fitField = (club: string, next: DisciplineKey) => {
+    const options = disciplineFields(club, next);
+    const current = getValues('fieldId');
+    if (options.length === 1) setValue('fieldId', options[0]!.id);
+    else if (!options.some((f) => f.id === current)) setValue('fieldId', '');
+  };
+
+  const clubField = register('clubId', {
+    onChange: (e: { target: { value: string } }) => {
+      const club = e.target.value;
+      let next = getValues('discipline');
+      if (!clubDisciplines(club).includes(next) && next !== defaultValues.discipline) {
+        next = clubDisciplines(club)[0] ?? next;
+        setValue('discipline', next);
+        setValue('hardestTargets', []);
+      }
+      setValue('fieldId', '');
+      fitField(club, next);
+    },
+  });
 
   const disciplineField = register('discipline', {
-    // Hardest targets never carry over to another discipline.
-    onChange: () => setValue('hardestTargets', []),
+    onChange: (e: { target: { value: DisciplineKey } }) => {
+      // Hardest targets never carry over to another discipline.
+      setValue('hardestTargets', []);
+      fitField(getValues('clubId') ?? '', e.target.value);
+    },
   });
 
   const step = (delta: number) => {
@@ -79,20 +124,67 @@ export function SessionForm({ title, defaultValues, onSubmit, onCancel }: Props)
         {errors.date && <p className={errorText}>{t.form.errors.date}</p>}
       </div>
 
+      <div>
+        <label htmlFor="club" className={fieldLabel}>
+          {t.form.club}
+        </label>
+        <select
+          id="club"
+          {...clubField}
+          className="min-h-12 w-full rounded-xl border border-line bg-card px-3 text-lg"
+        >
+          {allowNoPlace && <option value="">{t.clubs.noClub}</option>}
+          {CLUBS.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <fieldset>
         <legend className={fieldLabel}>{t.form.discipline}</legend>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {DISCIPLINES.map((d) => (
-            <label
-              key={d.key}
-              className="flex min-h-14 cursor-pointer items-center justify-center rounded-xl border-2 border-line bg-card px-2 text-center font-semibold has-checked:border-accent has-checked:bg-accent has-checked:text-accent-ink has-focus-visible:outline-2 has-focus-visible:outline-accent"
-            >
-              <input type="radio" value={d.key} {...disciplineField} className="sr-only" />
-              {t.disciplines[d.key]}
+          {disciplines.map((key) => (
+            <label key={key} className={choice}>
+              <input type="radio" value={key} {...disciplineField} className="sr-only" />
+              {t.disciplines[key]}
             </label>
           ))}
         </div>
       </fieldset>
+
+      {clubId && (
+        <fieldset aria-describedby={errors.fieldId ? 'field-error' : undefined}>
+          <legend className={fieldLabel}>{t.form.field}</legend>
+          {fields.length === 0 && !allowNoPlace ? null : (
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {allowNoPlace && (
+                <label className={choice}>
+                  <input type="radio" value="" {...register('fieldId')} className="sr-only" />
+                  {t.clubs.noField}
+                </label>
+              )}
+              {fields.map((f) => (
+                <label key={f.id} className={choice}>
+                  <input type="radio" value={f.id} {...register('fieldId')} className="sr-only" />
+                  {t.clubs.field(f.id)}
+                </label>
+              ))}
+            </div>
+          )}
+          {fields.length === 0 && (
+            <p className="mt-2 text-sm text-ink-muted">
+              {t.form.noFields(t.disciplines[discipline])}
+            </p>
+          )}
+          {errors.fieldId && (
+            <p id="field-error" role="alert" className={errorText}>
+              {t.form.errors.field}
+            </p>
+          )}
+        </fieldset>
+      )}
 
       <div>
         <label htmlFor="score" className={fieldLabel}>

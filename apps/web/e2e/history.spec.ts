@@ -32,6 +32,7 @@ test('R8: editing and deleting in History updates the dashboard', async ({ page 
 test('R12: History shows hardest targets as "A, C and F", only when recorded', async ({ page }) => {
   await page.goto('/app/add');
   await page.getByText('Compak Sporting', { exact: true }).click();
+  await page.getByText('Field 4', { exact: true }).click();
   const targets = page.getByRole('group', { name: 'Hardest targets' });
   for (const letter of ['F', 'A', 'C']) await targets.getByText(letter, { exact: true }).click();
   await page.getByRole('button', { name: 'Save' }).click();
