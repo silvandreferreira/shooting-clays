@@ -8,16 +8,16 @@ Log each clay shooting series quickly at the range, and see progress per discipl
 
 ## Disciplines
 
-| Key        | Display name                  | Targets labelled A–F |
-| ---------- | ----------------------------- | -------------------- |
-| `compak`   | Compak Sporting               | Yes                  |
-| `sporting` | Sporting (_Percurso de Caça_) | No (decision #67)    |
-| `fosso`    | Fosso                         | No                   |
-| `trap`     | Trap                          | No                   |
-| `helice`   | Helice                        | No                   |
+The app records and shows **three** disciplines (decision #68):
 
-- Defined once in `packages/shared/src/disciplines.ts` with a `hasTargetLetters` flag; easy to extend.
-- `fosso` and `trap` stay separate because the history records them separately (see `decisions.md`).
+| Key      | Display name    | Hardest targets A–F |
+| -------- | --------------- | ------------------- |
+| `compak` | Compak Sporting | Yes (decision #67)  |
+| `fosso`  | Fosso           | No                  |
+| `helice` | Helice          | No                  |
+
+- Defined once in `packages/shared/src/disciplines.ts` (`DISCIPLINE_KEYS`, with a `hasTargetLetters` flag); the database only accepts these keys.
+- The public site's Disciplines page still describes five: also Sporting (_Percurso de Caça_) and Trap (`SITE_DISCIPLINE_KEYS`). The owner's 3 Trap series were converted to Fosso; series in any other discipline are deleted.
 - Display names come from the i18n file, not from the keys.
 
 ## Session (one series of 25 targets)
@@ -58,7 +58,7 @@ Metrics: **average** (rounded to the nearest integer), **min**, **max**, **numbe
 
 The calculation lives in `packages/shared/src/stats.ts` and receives the reference date as a parameter (never calls `new Date()` internally), so it is deterministic and testable.
 
-Cards are shown only for disciplines with at least one session ever (all time); in a period without sessions those cards show "—". A discipline with no history (e.g. Sporting today) gets a card after its first session.
+Cards are shown only for disciplines with at least one session ever (all time); in a period without sessions those cards show "—". A discipline with no history gets a card after its first session.
 
 Charts:
 

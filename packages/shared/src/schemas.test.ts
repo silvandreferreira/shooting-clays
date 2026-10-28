@@ -35,7 +35,7 @@ describe('sessionInputSchema', () => {
 
   it('only allows hardest targets in Compak Sporting (decision #67)', () => {
     expect(sessionInputSchema.safeParse({ ...valid, hardestTargets: ['A'] }).success).toBe(true);
-    for (const discipline of ['sporting', 'fosso']) {
+    for (const discipline of ['fosso', 'helice']) {
       expect(
         sessionInputSchema.safeParse({ ...valid, discipline, hardestTargets: ['A'] }).success,
       ).toBe(false);

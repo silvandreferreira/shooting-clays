@@ -116,8 +116,8 @@ test('R49: club → discipline → field; History shows where; older series get 
   await page.goto('/app/add');
   const fields = page.getByRole('group', { name: 'Field' });
   await expect(fields.getByRole('radio')).toHaveCount(4);
-  // CCM has no Trap or Sporting field.
-  await expect(page.getByRole('radio', { name: 'Trap' })).toHaveCount(0);
+  // The app records Compak Sporting, Fosso and Helice only.
+  await expect(page.getByRole('group', { name: 'Discipline' }).getByRole('radio')).toHaveCount(3);
 
   await page.getByText('Fosso', { exact: true }).click();
   await expect(fields.getByRole('radio')).toHaveCount(2);

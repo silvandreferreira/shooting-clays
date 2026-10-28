@@ -23,7 +23,8 @@ export const HISTORY_CLUB_ID = 'ccm';
 const DISCIPLINE_MAP: Record<string, DisciplineKey> = {
   Compak: 'compak',
   Fosso: 'fosso',
-  Trap: 'trap',
+  // These series were shot at Fosso (their notes say so); the app has no Trap (decision #68).
+  Trap: 'fosso',
   Helices: 'helice',
 };
 

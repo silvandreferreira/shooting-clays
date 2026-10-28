@@ -1,4 +1,4 @@
-import { DISCIPLINE_KEYS, type DisciplineKey } from '@shooting-clays/shared/disciplines';
+import { SITE_DISCIPLINE_KEYS, type SiteDisciplineKey } from '@shooting-clays/shared/disciplines';
 import { LOCALES } from '@shooting-clays/shared/locales';
 import { useSyncExternalStore, type ReactNode } from 'react';
 import { rememberLocale, useLocale, useT } from '../i18n';
@@ -144,7 +144,7 @@ function Footer({ page }: { page: SitePage | null }) {
   );
 }
 
-function DisciplineFacts({ id }: { id: DisciplineKey }) {
+function DisciplineFacts({ id }: { id: SiteDisciplineKey }) {
   const t = useT();
   const facts = t.site.disciplines.items[id].facts;
   const labels = t.site.disciplines.facts;
@@ -236,7 +236,7 @@ function HomePage() {
         </h2>
         <p className="mt-1 text-ink-muted">{home.disciplines.text}</p>
         <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          {DISCIPLINE_KEYS.map((id) => (
+          {SITE_DISCIPLINE_KEYS.map((id) => (
             <li key={id}>
               <a
                 href={`${SITE_PATHS[locale].disciplines}#${id}`}
@@ -294,7 +294,7 @@ function DisciplinesPage() {
         <h1 className="text-3xl font-bold">{page.title}</h1>
         <p className="text-lg text-ink-muted">{page.intro}</p>
       </div>
-      {DISCIPLINE_KEYS.map((id) => {
+      {SITE_DISCIPLINE_KEYS.map((id) => {
         const item = page.items[id];
         return (
           <section
@@ -350,7 +350,7 @@ function DisciplinesPage() {
               </tr>
             </thead>
             <tbody>
-              {DISCIPLINE_KEYS.map((id) => (
+              {SITE_DISCIPLINE_KEYS.map((id) => (
                 <tr key={id} className="border-b border-line last:border-0">
                   <th scope="row" className="p-3 font-semibold">
                     {t.disciplines[id]}

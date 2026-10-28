@@ -22,7 +22,7 @@ async function addSeries(
   userId: string,
   scores: number[],
   date = '2026-10-10',
-  discipline = 'trap',
+  discipline = 'fosso',
 ) {
   await db.insert(sessions).values(scores.map((score) => ({ userId, date, discipline, score })));
 }
@@ -39,11 +39,11 @@ describe('community leaderboard', () => {
     await addSeries(db, 'b', [25, 25, 24, 23, 23]);
     await addSeries(db, OTHER.id, [24, 24, 24, 24, 24]);
 
-    const res = await json('GET', '/api/community/leaderboard?discipline=trap', undefined, OTHER);
+    const res = await json('GET', '/api/community/leaderboard?discipline=fosso', undefined, OTHER);
     expect(res.status).toBe(200);
     const board = (await res.json()) as Leaderboard;
     expect(board).toMatchObject({
-      discipline: 'trap',
+      discipline: 'fosso',
       period: 'month',
       from: '2026-10-01',
       to: '2026-10-31',
@@ -74,7 +74,7 @@ describe('community leaderboard', () => {
     await addSeries(db, OTHER.id, [20, 21, 22]);
 
     const board = (await (
-      await json('GET', '/api/community/leaderboard?discipline=trap', undefined, OTHER)
+      await json('GET', '/api/community/leaderboard?discipline=fosso', undefined, OTHER)
     ).json()) as Leaderboard;
     expect(names(board)).toEqual([[1, OTHER.name]]);
   });
@@ -84,12 +84,12 @@ describe('community leaderboard', () => {
     await addShooter(db, 'a');
     await addSeries(db, 'a', [25], '2026-10-18'); // Sunday, first day of the week of 2026-10-23
     await addSeries(db, 'a', [25], '2026-10-17'); // Saturday of the week before
-    await addSeries(db, 'a', [25], '2026-10-23', 'fosso');
+    await addSeries(db, 'a', [25], '2026-10-23', 'compak');
     await addSeries(db, 'a', [10, 11], '2026-10-23');
 
     const get = async (query: string) =>
       (await (
-        await json('GET', `/api/community/leaderboard?discipline=trap&${query}`, undefined, OTHER)
+        await json('GET', `/api/community/leaderboard?discipline=fosso&${query}`, undefined, OTHER)
       ).json()) as Leaderboard;
 
     expect((await get('period=day')).entries[0]).toMatchObject({ bestScore: 11, series: 2 });
@@ -105,8 +105,8 @@ describe('community leaderboard', () => {
     for (const query of [
       '',
       'discipline=golf',
-      'discipline=trap&period=year',
-      'discipline=trap&date=2026-13-01',
+      'discipline=fosso&period=year',
+      'discipline=fosso&date=2026-13-01',
     ]) {
       const res = await json('GET', `/api/community/leaderboard?${query}`, undefined, OTHER);
       expect(res.status).toBe(400);
@@ -118,7 +118,7 @@ describe('community leaderboard', () => {
     await addSeries(db, OTHER.id, [20]);
     const board = async () =>
       (await (
-        await json('GET', '/api/community/leaderboard?discipline=trap', undefined, OTHER)
+        await json('GET', '/api/community/leaderboard?discipline=fosso', undefined, OTHER)
       ).json()) as Leaderboard;
 
     expect(
@@ -140,7 +140,7 @@ describe('community leaderboard', () => {
     const res = await json('PUT', '/api/me/profile', { displayName: '  Ace  ' }, OTHER);
     expect(((await res.json()) as Me).displayName).toBe('Ace');
     const board = (await (
-      await json('GET', '/api/community/leaderboard?discipline=trap', undefined, OTHER)
+      await json('GET', '/api/community/leaderboard?discipline=fosso', undefined, OTHER)
     ).json()) as Leaderboard;
     expect(board.entries[0]?.displayName).toBe('Ace');
   });
@@ -155,7 +155,7 @@ describe('community leaderboard', () => {
     await addSeries(db, 'letter', [24]);
 
     const board = (await (
-      await json('GET', '/api/community/leaderboard?discipline=trap', undefined, OTHER)
+      await json('GET', '/api/community/leaderboard?discipline=fosso', undefined, OTHER)
     ).json()) as Leaderboard;
     expect(board.entries.map((e) => e.avatarUrl)).toEqual([image, null]);
   });

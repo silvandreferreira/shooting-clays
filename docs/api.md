@@ -104,7 +104,7 @@ Input rules (shared Zod schema `sessionInputSchema`): `hardestTargets` defaults 
 ```bash
 curl -X POST http://localhost:3000/api/sessions \
   -H "Content-Type: application/json" \
-  -d '{"date":"2026-10-23","discipline":"trap","score":30}'
+  -d '{"date":"2026-10-23","discipline":"fosso","score":30,"clubId":"ccm","fieldId":"1"}'
 ```
 
 ```json

@@ -10,19 +10,19 @@ import {
 const SAMPLE: [number, DisciplineKey, number][] = [
   [86, 'compak', 11],
   [79, 'compak', 13],
-  [72, 'trap', 15],
+  [72, 'helice', 6],
   [65, 'compak', 12],
   [58, 'fosso', 9],
   [51, 'compak', 15],
-  [44, 'trap', 17],
+  [44, 'fosso', 11],
   [37, 'compak', 14],
   [33, 'fosso', 12],
   [30, 'compak', 17],
-  [23, 'trap', 18],
+  [23, 'helice', 9],
   [16, 'compak', 16],
   [12, 'fosso', 14],
   [9, 'compak', 19],
-  [5, 'trap', 20],
+  [5, 'fosso', 15],
   [2, 'compak', 18],
 ];
 

@@ -18,7 +18,8 @@ const fosso = (date: string, ...scores: number[]) =>
   scores.map((score) => ({ date, discipline: 'fosso', score }));
 
 /**
- * Fosso in October 2026 (the owner's history has none): Other and Ana both have two 25s, Other
+ * Fosso in October 2026 (the owner's history has 15, 19 and 18 on the 13th, 17th and 23rd, the
+ * former Trap series, decision #68): Other and Ana both have two 25s, Other
  * has a 24 and Ana a 23, so Other wins. The reference date (Friday 2026-10-23) is in the week of
  * 18–24 October (Sunday to Saturday).
  */
@@ -86,7 +87,8 @@ test('R27: switching to week and day, and stepping back to earlier periods', asy
   await page.getByRole('button', { name: 'Day' }).click();
   await expect(page.getByTestId('period-label')).toHaveText('23 Oct 2026');
   await expect(page.getByTestId('podium-1')).toContainText('Bruno Dias');
-  await expect(page.getByTestId('podium-2')).toHaveCount(0);
+  await expect(page.getByTestId('podium-2')).toContainText('Test Owner');
+  await expect(page.getByTestId('podium-3')).toHaveCount(0);
 
   await page.getByRole('button', { name: 'Month' }).click();
   await page.getByRole('button', { name: 'Previous period' }).click();

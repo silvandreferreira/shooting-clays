@@ -4,21 +4,18 @@ import { expect, expectCard, selectPeriod, test, card } from './fixtures';
 const REFERENCE = {
   'All time': {
     'Compak Sporting': '16 / 8 / 23',
-    Fosso: '10 / 5 / 16',
+    Fosso: '12 / 5 / 19',
     Helice: '4 / 4 / 4',
-    Trap: '17 / 15 / 19',
   },
   'Last month': {
     'Compak Sporting': '18 / 14 / 23',
     Fosso: '10 / 5 / 16',
     Helice: '4 / 4 / 4',
-    Trap: '—',
   },
   'This month': {
     'Compak Sporting': '16 / 13 / 18',
-    Fosso: '—',
+    Fosso: '17 / 15 / 19',
     Helice: '—',
-    Trap: '17 / 15 / 19',
   },
 } as const;
 
@@ -35,11 +32,11 @@ test('R1: dashboard shows the reference values for all three periods', async ({ 
 test('R2: a period without data shows "—", never 0', async ({ page }) => {
   await page.goto('/app');
   await selectPeriod(page, 'This month');
-  const fosso = card(page, 'Fosso');
-  await expect(fosso.getByTestId('avg')).toHaveText('—');
-  await expect(fosso.getByTestId('count')).toHaveText('0');
-  // Disciplines never shot do not get a card.
-  await expect(card(page, 'Sporting')).toHaveCount(0);
+  const helice = card(page, 'Helice');
+  await expect(helice.getByTestId('avg')).toHaveText('—');
+  await expect(helice.getByTestId('count')).toHaveText('0');
+  // Disciplines the app does not record (decision #68) have no card.
+  await expect(card(page, 'Trap')).toHaveCount(0);
 });
 
 test('R24: tapping a discipline in the scores chart legend hides its line; tapping again shows it', async ({
@@ -50,7 +47,7 @@ test('R24: tapping a discipline in the scores chart legend hides its line; tappi
   const chart = page.getByRole('img', { name: 'Scores over time' });
   const legend = page.getByRole('group', { name: 'Disciplines shown in the chart' });
   const lines = chart.locator('.recharts-line');
-  await expect(lines).toHaveCount(4);
+  await expect(lines).toHaveCount(3);
   for (const button of await legend.getByRole('button').all()) {
     await expect(button).toHaveAttribute('aria-pressed', 'true');
   }
@@ -58,17 +55,17 @@ test('R24: tapping a discipline in the scores chart legend hides its line; tappi
   const fosso = legend.getByRole('button', { name: 'Fosso' });
   await fosso.click();
   await expect(fosso).toHaveAttribute('aria-pressed', 'false');
-  await expect(lines).toHaveCount(3);
-  await legend.getByRole('button', { name: 'Trap' }).click();
   await expect(lines).toHaveCount(2);
+  await legend.getByRole('button', { name: 'Helice' }).click();
+  await expect(lines).toHaveCount(1);
 
   await fosso.click();
   await expect(fosso).toHaveAttribute('aria-pressed', 'true');
-  await expect(lines).toHaveCount(3);
+  await expect(lines).toHaveCount(2);
 
   // Per visit: everything is shown again after a reload.
   await page.reload();
-  await expect(lines).toHaveCount(4);
+  await expect(lines).toHaveCount(3);
 });
 
 test('R25: each bar of "Average by discipline" shows the average and the lowest–highest score', async ({
@@ -77,13 +74,13 @@ test('R25: each bar of "Average by discipline" shows the average and the lowest�
   await page.goto('/app');
   const range = (d: string) => page.getByTestId(`range-${d}`);
   await expect(range('compak')).toHaveText('168–23');
-  await expect(range('fosso')).toHaveText('105–16');
-  await expect(range('trap')).toHaveText('1715–19');
+  await expect(range('fosso')).toHaveText('125–19');
   await expect(range('helice')).toHaveText('44–4');
 
   await selectPeriod(page, 'This month');
   await expect(range('compak')).toHaveText('1613–18');
-  await expect(range('fosso')).toHaveCount(0);
+  await expect(range('fosso')).toHaveText('1715–19');
+  await expect(range('helice')).toHaveCount(0);
 });
 
 test('R29: the scores chart has its own time range, 3 months by default', async ({ page }) => {

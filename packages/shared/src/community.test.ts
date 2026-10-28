@@ -133,18 +133,18 @@ describe('shiftPeriod', () => {
 
 describe('leaderboardQuerySchema', () => {
   it('defaults to the month', () => {
-    expect(leaderboardQuerySchema.parse({ discipline: 'trap' })).toEqual({
-      discipline: 'trap',
+    expect(leaderboardQuerySchema.parse({ discipline: 'fosso' })).toEqual({
+      discipline: 'fosso',
       period: 'month',
     });
   });
 
   it('rejects unknown periods and invalid dates', () => {
-    expect(leaderboardQuerySchema.safeParse({ discipline: 'trap', period: 'year' }).success).toBe(
+    expect(leaderboardQuerySchema.safeParse({ discipline: 'fosso', period: 'year' }).success).toBe(
       false,
     );
     expect(
-      leaderboardQuerySchema.safeParse({ discipline: 'trap', date: '2026-02-30' }).success,
+      leaderboardQuerySchema.safeParse({ discipline: 'fosso', date: '2026-02-30' }).success,
     ).toBe(false);
   });
 });
