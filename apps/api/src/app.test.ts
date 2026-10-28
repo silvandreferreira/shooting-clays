@@ -144,7 +144,7 @@ describe('GET /api/dashboard', () => {
       max: null,
       count: 0,
     });
-    expect(dashboard.periods.lastMonth.trap.count).toBe(0);
+    expect(dashboard.periods.thisMonth.helice.count).toBe(0);
   });
 });
 
@@ -167,7 +167,8 @@ describe('sessions', () => {
   it.each([
     [{ ...newSession, score: 26 }, 'score must be between 0 and 25'],
     [{ ...newSession, score: -1 }, 'score must be between 0 and 25'],
-    [{ ...newSession, discipline: 'trap' }, 'hardestTargets are only allowed'],
+    [{ ...newSession, discipline: 'fosso' }, 'hardestTargets are only allowed'],
+    [{ ...newSession, discipline: 'trap', hardestTargets: [] }, 'discipline must be one of'],
     [{ ...newSession, date: 'yesterday' }, 'date must be a valid'],
   ])('rejects invalid input with 400 VALIDATION_ERROR', async (body, message) => {
     const { json } = await createTestApp({ empty: true });
@@ -185,12 +186,13 @@ describe('sessions', () => {
     expect(all[0]!.date).toBe('2026-10-23');
     expect(all.at(-1)!.date).toBe('2026-04-12');
 
-    const trap = (await (
-      await json('GET', '/api/sessions?discipline=trap&from=2026-10-14&to=2026-10-31')
+    const compak = (await (
+      await json('GET', '/api/sessions?discipline=compak&from=2026-10-14&to=2026-10-17')
     ).json()) as Session[];
-    expect(trap.map((s) => [s.date, s.score])).toEqual([
-      ['2026-10-23', 18],
-      ['2026-10-17', 19],
+    expect(compak.map((s) => [s.date, s.score])).toEqual([
+      ['2026-10-17', 18],
+      ['2026-10-15', 17],
+      ['2026-10-14', 14],
     ]);
 
     expect((await json('GET', '/api/sessions?discipline=skeet')).status).toBe(400);
@@ -345,10 +347,9 @@ describe('clubs and fields', () => {
       session: Session;
     };
     expect(noField.session).toMatchObject({ clubId: 'ccm', fieldId: null });
-    // Without a field any discipline goes, even one the club's fields do not have.
-    const trap = { ...newSession, discipline: 'trap', hardestTargets: [], fieldId: '' };
-    expect((await put(trap)).status).toBe(200);
-    const none = (await (await put({ ...trap, clubId: '' })).json()) as { session: Session };
+    const fosso = { ...newSession, discipline: 'fosso', hardestTargets: [], fieldId: '' };
+    expect((await put(fosso)).status).toBe(200);
+    const none = (await (await put({ ...fosso, clubId: '' })).json()) as { session: Session };
     expect(none.session).toMatchObject({ clubId: null, fieldId: null });
     expect(
       await error(

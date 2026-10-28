@@ -20,10 +20,12 @@ export interface HistoryRow {
 
 export const HISTORY_CLUB_ID = 'ccm';
 
+/** Recorded before the app kept only three disciplines; skipped (decision #68). */
+const DISCARDED = new Set(['Trap']);
+
 const DISCIPLINE_MAP: Record<string, DisciplineKey> = {
   Compak: 'compak',
   Fosso: 'fosso',
-  Trap: 'trap',
   Helices: 'helice',
 };
 
@@ -61,9 +63,10 @@ export function parseHistoryCsv(text: string): HistoryRow[] {
     string,
     string
   >[];
-  return records.map((record, index) => {
+  return records.flatMap((record, index) => {
     const date = parseCsvDate(record['Data'] ?? '');
     const modality = (record['Modalidade'] ?? '').trim();
+    if (DISCARDED.has(modality)) return [];
     const discipline = DISCIPLINE_MAP[modality];
     if (!discipline) throw new Error(`Row ${index + 2}: unknown discipline "${modality}"`);
     const score = Number(record['Resultado X/25']);

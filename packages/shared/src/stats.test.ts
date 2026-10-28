@@ -45,7 +45,7 @@ describe('computeDashboard', () => {
       { date: '2026-10-02', discipline: 'compak', score: 18 },
       { date: '2026-09-15', discipline: 'compak', score: 14 },
       { date: '2026-10-20', discipline: 'compak', score: 13 },
-      { date: '2026-08-01', discipline: 'trap', score: 19 },
+      { date: '2026-08-01', discipline: 'fosso', score: 19 },
     ],
     '2026-10-23',
   );
@@ -54,17 +54,17 @@ describe('computeDashboard', () => {
     expect(dashboard.periods.allTime.compak).toEqual({ avg: 15, min: 13, max: 18, count: 3 });
     expect(dashboard.periods.thisMonth.compak).toEqual({ avg: 16, min: 13, max: 18, count: 2 });
     expect(dashboard.periods.lastMonth.compak).toEqual({ avg: 14, min: 14, max: 14, count: 1 });
-    expect(dashboard.periods.thisMonth.trap.count).toBe(0);
+    expect(dashboard.periods.thisMonth.fosso.count).toBe(0);
   });
 
   it('includes every discipline, even without sessions', () => {
-    expect(dashboard.periods.allTime.sporting).toEqual({
+    expect(dashboard.periods.allTime.helice).toEqual({
       avg: null,
       min: null,
       max: null,
       count: 0,
     });
-    expect(dashboard.series.sporting).toEqual([]);
+    expect(dashboard.series.helice).toEqual([]);
   });
 
   it('sorts series by date', () => {

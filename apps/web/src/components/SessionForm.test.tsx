@@ -84,38 +84,37 @@ describe('SessionForm', () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
-  it('when editing, "No field" and "No club" can be chosen and every discipline is offered without a club', async () => {
+  it('when editing, "No field" and "No club" can be chosen', async () => {
     const { onSubmit, user } = setup(undefined, {
-      values: { discipline: 'trap', fieldId: '' },
+      values: { discipline: 'helice', fieldId: '' },
       allowNoPlace: true,
     });
-    // An older Trap series at CCM: kept, though no field there has Trap.
-    expect(disciplineNames()).toEqual(['Compak Sporting', 'Fosso', 'Trap', 'Helice']);
-    expect(fieldNames()).toEqual(['No field']);
-    expect(screen.getByText('No field at this club has Trap.')).toBeVisible();
+    // An older series at CCM, field not recorded.
+    expect(fieldNames()).toEqual(['No field', 'Field 1']);
+    expect(screen.getByRole('radio', { name: 'No field' })).toBeChecked();
 
     await user.selectOptions(screen.getByLabelText('Club'), 'No club');
     expect(screen.queryByRole('group', { name: 'Field' })).toBeNull();
-    expect(disciplineNames()).toEqual(['Compak Sporting', 'Sporting', 'Fosso', 'Trap', 'Helice']);
+    expect(disciplineNames()).toEqual(['Compak Sporting', 'Fosso', 'Helice']);
     await user.click(screen.getByRole('button', { name: 'Save' }));
     expect(onSubmit).toHaveBeenCalledWith(
-      expect.objectContaining({ clubId: null, fieldId: null, discipline: 'trap' }),
+      expect.objectContaining({ clubId: null, fieldId: null, discipline: 'helice' }),
     );
   });
 
   it('A–F only for Compak Sporting, cleared when switching discipline', async () => {
-    const { onSubmit, user } = setup(undefined, { values: { clubId: '' }, allowNoPlace: true });
+    const { onSubmit, user } = setup();
     await user.click(screen.getByRole('checkbox', { name: 'A' }));
-    for (const name of ['Sporting', 'Fosso', 'Trap', 'Helice']) {
+    for (const name of ['Fosso', 'Helice']) {
       await user.click(screen.getByRole('radio', { name }));
       expect(screen.queryByRole('group', { name: 'Hardest targets' })).toBeNull();
     }
     await user.click(screen.getByRole('radio', { name: 'Compak Sporting' }));
     expect(screen.getByRole('checkbox', { name: 'A' })).not.toBeChecked();
-    await user.click(screen.getByRole('radio', { name: 'Trap' }));
+    await user.click(screen.getByRole('radio', { name: 'Helice' }));
     await user.click(screen.getByRole('button', { name: 'Save' }));
     expect(onSubmit).toHaveBeenCalledWith(
-      expect.objectContaining({ discipline: 'trap', hardestTargets: [] }),
+      expect.objectContaining({ discipline: 'helice', fieldId: '1', hardestTargets: [] }),
     );
   });
 

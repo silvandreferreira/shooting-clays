@@ -1,4 +1,14 @@
-export const DISCIPLINE_KEYS = ['compak', 'sporting', 'fosso', 'trap', 'helice'] as const;
+/** Every discipline the public site describes (decision #68). */
+export const SITE_DISCIPLINE_KEYS = ['compak', 'sporting', 'fosso', 'trap', 'helice'] as const;
+
+export type SiteDisciplineKey = (typeof SITE_DISCIPLINE_KEYS)[number];
+
+/** The disciplines the app records and shows (decision #68). */
+export const DISCIPLINE_KEYS = [
+  'compak',
+  'fosso',
+  'helice',
+] as const satisfies readonly SiteDisciplineKey[];
 
 export type DisciplineKey = (typeof DISCIPLINE_KEYS)[number];
 
@@ -13,9 +23,7 @@ export interface Discipline {
 
 export const DISCIPLINES: readonly Discipline[] = [
   { key: 'compak', hasTargetLetters: true },
-  { key: 'sporting', hasTargetLetters: false },
   { key: 'fosso', hasTargetLetters: false },
-  { key: 'trap', hasTargetLetters: false },
   { key: 'helice', hasTargetLetters: false },
 ];
 

@@ -79,6 +79,7 @@ export const sessions = pgTable(
     index('sessions_user_id_date_idx').on(t.userId, t.date),
     index('sessions_discipline_date_idx').on(t.discipline, t.date),
     check('sessions_score_range', sql`${t.score} between 0 and 25`),
+    check('sessions_discipline_values', sql`${t.discipline} in ('compak', 'fosso', 'helice')`),
     check('sessions_field_needs_club', sql`${t.fieldId} is null or ${t.clubId} is not null`),
   ],
 );

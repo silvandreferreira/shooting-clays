@@ -9,14 +9,14 @@ describe('toScoreRows', () => {
           { date: '2026-10-23', score: 13 },
           { date: '2026-10-23', score: 16 },
         ],
-        trap: [
+        fosso: [
           { date: '2026-10-17', score: 19 },
           { date: '2026-10-23', score: 18 },
         ],
       }),
     ).toEqual([
-      { key: '2026-10-17#0', date: '2026-10-17', trap: 19 },
-      { key: '2026-10-23#0', date: '2026-10-23', compak: 13, trap: 18 },
+      { key: '2026-10-17#0', date: '2026-10-17', fosso: 19 },
+      { key: '2026-10-23#0', date: '2026-10-23', compak: 13, fosso: 18 },
       { key: '2026-10-23#1', date: '2026-10-23', compak: 16 },
     ]);
   });

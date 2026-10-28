@@ -4,6 +4,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Disciplines
+
+- **Changed:** the app records only Compak Sporting, Fosso and Helice. Series in other disciplines are deleted (migration 0007) and the CSV import skips Trap. The public site still describes all five. R1, R2, R24, R25.
+
 ### Clubs and fields
 
 - **Added:** each series records the club and field where it was shot. Add asks for the club (the home club first), then the discipline (the club's), then the field (only those with that discipline; required). History shows "CCM · Field 2". Older series can get a field when edited, or stay without one. R49.

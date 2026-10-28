@@ -39,6 +39,13 @@ describe('parseHistoryCsv', () => {
     expect(rows[0]!.importKey).not.toBe(rows[1]!.importKey);
   });
 
+  it('discards disciplines the app no longer records (Trap, decision #68)', () => {
+    const rows = parseHistoryCsv(
+      header + '06-Sep-2026,Trap,17,28,7.5,S,,\n' + '07-Sep-2026,Compak,18,28,7.5,S,,\n',
+    );
+    expect(rows.map((r) => [r.date, r.discipline])).toEqual([['2026-09-07', 'compak']]);
+  });
+
   it('rejects unknown disciplines', () => {
     expect(() => parseHistoryCsv(header + '06-Sep-2026,Skeet,17,28,7.5,S,,\n')).toThrow(
       'unknown discipline',
@@ -56,8 +63,6 @@ describe('reference values (data/clays-results.csv, 2026-10-23)', () => {
     ['compak', '16 / 8 / 23', '18 / 14 / 23', '16 / 13 / 18'],
     ['fosso', '10 / 5 / 16', '10 / 5 / 16', '—'],
     ['helice', '4 / 4 / 4', '4 / 4 / 4', '—'],
-    ['trap', '17 / 15 / 19', '—', '17 / 15 / 19'],
-    ['sporting', '—', '—', '—'],
   ] as const)('%s', (discipline, allTime, lastMonth, thisMonth) => {
     expect(triple(periods.allTime[discipline])).toBe(allTime);
     expect(triple(periods.lastMonth[discipline])).toBe(lastMonth);

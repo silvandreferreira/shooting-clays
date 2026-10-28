@@ -1,9 +1,9 @@
 import type {
   ChartRange,
   CommunityPeriod,
-  DisciplineKey,
   Locale,
   Period,
+  SiteDisciplineKey,
 } from '@shooting-clays/shared';
 
 /**
@@ -32,7 +32,7 @@ export const en = {
     fosso: 'Fosso',
     trap: 'Trap',
     helice: 'Helice',
-  } satisfies Record<DisciplineKey, string>,
+  } satisfies Record<SiteDisciplineKey, string>,
   periods: {
     allTime: 'All time',
     lastMonth: 'Last month',
