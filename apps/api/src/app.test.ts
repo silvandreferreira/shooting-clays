@@ -138,13 +138,13 @@ describe('GET /api/dashboard', () => {
     expect(dashboard.periods.allTime.compak).toMatchObject({ avg: 16, min: 8, max: 23 });
     expect(dashboard.periods.lastMonth.compak).toMatchObject({ avg: 18, min: 14, max: 23 });
     expect(dashboard.periods.thisMonth.compak).toMatchObject({ avg: 16, min: 13, max: 18 });
-    expect(dashboard.periods.thisMonth.fosso).toEqual({
+    expect(dashboard.periods.thisMonth.fosso).toEqual({ avg: 17, min: 15, max: 19, count: 3 });
+    expect(dashboard.periods.thisMonth.helice).toEqual({
       avg: null,
       min: null,
       max: null,
       count: 0,
     });
-    expect(dashboard.periods.thisMonth.helice.count).toBe(0);
   });
 });
 

@@ -17,7 +17,7 @@ The app records and shows **three** disciplines (decision #68):
 | `helice` | Helice          | No                  |
 
 - Defined once in `packages/shared/src/disciplines.ts` (`DISCIPLINE_KEYS`, with a `hasTargetLetters` flag); the database only accepts these keys.
-- The public site's Disciplines page still describes five: also Sporting (_Percurso de Caça_) and Trap (`SITE_DISCIPLINE_KEYS`). Series in other disciplines were discarded, the 3 imported Trap series included.
+- The public site's Disciplines page still describes five: also Sporting (_Percurso de Caça_) and Trap (`SITE_DISCIPLINE_KEYS`). The owner's 3 Trap series were converted to Fosso; series in any other discipline are deleted.
 - Display names come from the i18n file, not from the keys.
 
 ## Session (one series of 25 targets)

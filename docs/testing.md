@@ -117,10 +117,10 @@ With `data/clays-results.csv` and reference date **2026-10-23** (rounded average
 | Discipline      | All time    | Last month (Sep 2026) | This month (Oct 2026) |
 | --------------- | ----------- | --------------------- | --------------------- |
 | Compak Sporting | 16 / 8 / 23 | 18 / 14 / 23          | 16 / 13 / 18          |
-| Fosso           | 10 / 5 / 16 | 10 / 5 / 16           | —                     |
+| Fosso           | 12 / 5 / 19 | 10 / 5 / 16           | 17 / 15 / 19          |
 | Helice          | 4 / 4 / 4   | 4 / 4 / 4             | —                     |
 
-Source: `data/clays-data.csv`. Its Trap row no longer applies: Trap series are skipped by the import (decision #68).
+Source: `data/clays-data.csv`. Its Trap series count as Fosso: the import converts them (decision #68).
 
 ## Rules
 

@@ -75,13 +75,13 @@ Script: `apps/api/scripts/import-csv.ts` (`pnpm db:import`), writes to the datab
 
 Source: `data/clays-results.csv` — columns `Data, Modalidade, Resultado X/25, Gramas, Chumbo, Marca, Observações, Pratos mais exigentes`; dates like `26-Sep-2026`; some quoted fields contain line breaks (use a real CSV parser).
 
-| CSV column                              | Target                                                                                                             |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `Data`                                  | `date`                                                                                                             |
-| `Modalidade`                            | `discipline` (`Compak` → `compak`, `Fosso` → `fosso`, `Helices` → `helice`; `Trap` rows are skipped, decision #68) |
-| `Resultado X/25`                        | `score`                                                                                                            |
-| `Observações` + `Pratos mais exigentes` | `notes` (joined; `N/A` and empty values ignored; kept in the original language)                                    |
-| `Gramas`, `Chumbo`, `Marca`             | ignored                                                                                                            |
+| CSV column                              | Target                                                                                                      |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `Data`                                  | `date`                                                                                                      |
+| `Modalidade`                            | `discipline` (`Compak` → `compak`, `Fosso` → `fosso`, `Helices` → `helice`; `Trap` → `fosso`, decision #68) |
+| `Resultado X/25`                        | `score`                                                                                                     |
+| `Observações` + `Pratos mais exigentes` | `notes` (joined; `N/A` and empty values ignored; kept in the original language)                             |
+| `Gramas`, `Chumbo`, `Marca`             | ignored                                                                                                     |
 
 - `club_id` is `ccm` for every imported row (the whole history was shot there); `field_id` stays empty (not recorded).
 - `hardest_targets` stays empty for imported rows (the old free text cannot be converted reliably).
@@ -100,4 +100,4 @@ Generate with `pnpm db:generate` (Drizzle Kit; add `--name <description>` for a 
 | 0004 | 2026-10-26 | `0004_locale.sql`: `profiles.locale` (nullable, `en` or `pt-PT`)                                                                                                                                                                                                           |
 | 0005 | 2026-10-27 | `0005_notifications.sql`: table `notifications` (FK to `profiles`, cascade; index `(user_id, created_at)`; kind check); `profiles.status` check also allows `revoked`. Additive only                                                                                       |
 | 0006 | 2026-10-28 | `0006_sessions_club_field.sql`: `sessions.club_id`, `sessions.field_id` (nullable, check that a field has a club), `profiles.home_club_id` (nullable). Additive only. Production: the owner's existing sessions were then set to `club_id = 'ccm'` (one-off, decision #66) |
-| 0007 | 2026-10-28 | `0007_three_disciplines.sql`: **deletes** the series in other disciplines than `compak`, `fosso` and `helice` (decision #68; in production, the owner's 3 Trap series) and adds the check `sessions_discipline_values`                                                     |
+| 0007 | 2026-10-28 | `0007_three_disciplines.sql`: **deletes** the series in other disciplines than `compak`, `fosso` and `helice` (decision #68; none in production: the owner's 3 Trap series were converted to Fosso first) and adds the check `sessions_discipline_values`                  |
