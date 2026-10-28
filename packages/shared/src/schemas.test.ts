@@ -5,7 +5,13 @@ const valid = { date: '2026-10-23', discipline: 'compak', score: 16 };
 
 describe('sessionInputSchema', () => {
   it('accepts a minimal session and applies defaults', () => {
-    expect(sessionInputSchema.parse(valid)).toEqual({ ...valid, hardestTargets: [], notes: null });
+    expect(sessionInputSchema.parse(valid)).toEqual({
+      ...valid,
+      hardestTargets: [],
+      notes: null,
+      clubId: null,
+      fieldId: null,
+    });
   });
 
   it.each([-1, 26, 12.5])('rejects score %s', (score) => {
@@ -27,15 +33,13 @@ describe('sessionInputSchema', () => {
     expect(parsed.hardestTargets).toEqual(['B', 'E']);
   });
 
-  it('only allows hardest targets for disciplines with target letters', () => {
-    expect(
-      sessionInputSchema.safeParse({ ...valid, discipline: 'sporting', hardestTargets: ['A'] })
-        .success,
-    ).toBe(true);
-    expect(
-      sessionInputSchema.safeParse({ ...valid, discipline: 'fosso', hardestTargets: ['A'] })
-        .success,
-    ).toBe(false);
+  it('only allows hardest targets in Compak Sporting (decision #67)', () => {
+    expect(sessionInputSchema.safeParse({ ...valid, hardestTargets: ['A'] }).success).toBe(true);
+    for (const discipline of ['sporting', 'fosso']) {
+      expect(
+        sessionInputSchema.safeParse({ ...valid, discipline, hardestTargets: ['A'] }).success,
+      ).toBe(false);
+    }
     expect(sessionInputSchema.safeParse({ ...valid, hardestTargets: ['G'] }).success).toBe(false);
   });
 

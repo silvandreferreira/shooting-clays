@@ -108,7 +108,7 @@ describe('revoke', () => {
     await json(
       'POST',
       '/api/sessions',
-      { date: '2026-10-23', discipline: 'trap', score: 20 },
+      { date: '2026-10-23', discipline: 'compak', score: 20, clubId: 'ccm', fieldId: '3' },
       OTHER,
     );
 

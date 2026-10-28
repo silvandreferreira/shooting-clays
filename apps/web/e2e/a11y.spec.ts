@@ -23,6 +23,10 @@ for (const colorScheme of ['light', 'dark'] as const) {
     await expect(page.getByTestId('podium-1')).toBeVisible();
     expect(await seriousA11yViolations(page)).toEqual([]);
 
+    await page.goto('/app/clubs');
+    await expect(page.getByRole('heading', { name: 'Clubs' })).toBeVisible();
+    expect(await seriousA11yViolations(page)).toEqual([]);
+
     await page.goto('/app/settings');
     await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible();
     expect(await seriousA11yViolations(page)).toEqual([]);

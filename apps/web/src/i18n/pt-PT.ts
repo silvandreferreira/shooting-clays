@@ -15,6 +15,7 @@ export const ptPT = {
     pendingBadge: (n: number) => `${n} à espera de aprovação`,
     menu: 'Menu',
     faq: 'Perguntas frequentes',
+    clubs: 'Clubes',
     closeMenu: 'Fechar menu',
     notifications: 'Notificações',
     unreadBadge: (n: number) => `${n} por ler`,
@@ -63,6 +64,9 @@ export const ptPT = {
     editTitle: 'Editar sessão',
     date: 'Data',
     discipline: 'Disciplina',
+    club: 'Clube',
+    field: 'Campo',
+    noFields: (discipline: string) => `Nenhum campo deste clube tem ${discipline}.`,
     score: 'Resultado (em 25)',
     decrease: 'Diminuir resultado',
     increase: 'Aumentar resultado',
@@ -78,8 +82,19 @@ export const ptPT = {
       date: 'Indique uma data válida.',
       score: 'O resultado tem de ser um número inteiro de 0 a 25.',
       notes: 'As notas podem ter no máximo 1000 caracteres.',
-      hardestTargets: 'Os pratos mais difíceis só existem nas disciplinas com pratos com letra.',
+      hardestTargets: 'Os pratos mais difíceis só existem no Compak Sporting.',
+      field: 'Escolha o campo.',
     },
+  },
+  clubs: {
+    title: 'Clubes',
+    intro: 'Onde atira. O clube habitual vem já escolhido quando adiciona uma série.',
+    field: (id: string) => `Campo ${id}`,
+    noClub: 'Sem clube',
+    noField: 'Sem campo',
+    home: 'Clube habitual',
+    makeHome: 'Tornar habitual',
+    saveError: 'Não foi possível guardar. Tente novamente.',
   },
   history: {
     title: 'Histórico',
@@ -217,6 +232,9 @@ export const ptPT = {
     showInCommunityHelp:
       'Os seus resultados aparecem nas classificações da Comunidade. Desligue para os esconder; o seu painel não muda.',
     language: 'Idioma',
+    homeClub: 'O meu clube',
+    homeClubHelp:
+      'Vem já escolhido quando adiciona uma série, e é o clube que o Painel mostra primeiro.',
     deviceTitle: 'Este dispositivo',
     clearCache: 'Limpar cache e recarregar',
     clearingCache: 'A limpar…',
@@ -248,8 +266,7 @@ export const ptPT = {
       },
       targets: {
         question: 'Onde posso registar os pratos mais difíceis?',
-        answer:
-          'No Compak Sporting e no Percurso de Caça, cujos pratos têm as letras A a F. As outras disciplinas não têm pratos com letra.',
+        answer: 'No Compak Sporting, cujos pratos têm as letras A a F.',
       },
       install: {
         question: 'Como ponho a app no telemóvel?',
@@ -320,7 +337,7 @@ export const ptPT = {
         steps: [
           {
             title: 'Registe a série',
-            text: 'No fim de cada série, escolha a modalidade e a pontuação em 25. No Compak Sporting e no Percurso de Caça pode também marcar os pratos mais difíceis (A a F).',
+            text: 'No fim de cada série, escolha o clube, a modalidade, o campo e a pontuação em 25. No Compak Sporting pode também marcar os pratos mais difíceis (A a F).',
           },
           {
             title: 'Veja a sua evolução',

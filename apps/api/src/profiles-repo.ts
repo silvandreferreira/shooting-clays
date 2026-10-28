@@ -6,7 +6,14 @@ import { profiles, type ProfileRow } from './db/schema';
 
 export type Profile = Pick<
   ProfileRow,
-  'userId' | 'displayName' | 'avatarUrl' | 'role' | 'status' | 'showInCommunity' | 'locale'
+  | 'userId'
+  | 'displayName'
+  | 'avatarUrl'
+  | 'role'
+  | 'status'
+  | 'showInCommunity'
+  | 'locale'
+  | 'homeClubId'
 >;
 
 export const toMe = (profile: Profile, email: string): Me => ({
@@ -17,6 +24,7 @@ export const toMe = (profile: Profile, email: string): Me => ({
   status: profile.status,
   showInCommunity: profile.showInCommunity,
   locale: profile.locale,
+  homeClubId: profile.homeClubId,
 });
 
 const columns = {
@@ -27,6 +35,7 @@ const columns = {
   status: profiles.status,
   showInCommunity: profiles.showInCommunity,
   locale: profiles.locale,
+  homeClubId: profiles.homeClubId,
 };
 
 export function createProfilesRepo(db: Db) {

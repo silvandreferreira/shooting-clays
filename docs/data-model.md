@@ -13,8 +13,10 @@ One row = one series of 25 targets.
 | `date`            | `date`        | `not null`                                                                                                                                                             |
 | `discipline`      | `text`        | `not null`; allowed values in `packages/shared/src/disciplines.ts`                                                                                                     |
 | `score`           | `smallint`    | `not null`, `check (score between 0 and 25)`                                                                                                                           |
-| `hardest_targets` | `text[]`      | `not null default '{}'`; letters `A`–`F` only; empty when the discipline has no target letters                                                                         |
+| `hardest_targets` | `text[]`      | `not null default '{}'`; letters `A`–`F` only; empty except in Compak Sporting (decision #67)                                                                          |
 | `notes`           | `text`        | nullable; max 1000 characters (validated by the API)                                                                                                                   |
+| `club_id`         | `text`        | nullable; where the series was shot, an id from `packages/shared/src/clubs.ts` (decision #66; migration 0006). Null for series logged before clubs existed             |
+| `field_id`        | `text`        | nullable; a field of that club that has the discipline (validated by the API; required when creating). `check (field_id is null or club_id is not null)`               |
 | `import_key`      | `text`        | `unique`, nullable; set only for imported history, makes the import idempotent                                                                                         |
 | `created_at`      | `timestamptz` | `not null default now()`                                                                                                                                               |
 | `updated_at`      | `timestamptz` | `not null default now()`; updated on every change                                                                                                                      |
@@ -32,6 +34,7 @@ Indexes: `(user_id, date)` and `(discipline, date)` (migration 0003, for the Com
 | `role`                      | `text`        | `not null default 'user'`, `check (role in ('user','admin'))` (iteration 3)                                                         |
 | `status`                    | `text`        | `not null default 'pending'`, `check (status in ('pending','active','disabled','revoked'))` (iteration 3; `revoked` migration 0005) |
 | `status_changed_at`         | `timestamptz` | nullable; set whenever the admin changes the status (iteration 3)                                                                   |
+| `home_club_id`              | `text`        | nullable; the club chosen first when adding a series (an id from `packages/shared/src/clubs.ts`; migration 0006)                    |
 | `locale`                    | `text`        | nullable, `check (locale in ('en','pt-PT'))`; `null` = follow the browser (iteration 6)                                             |
 | `created_at` / `updated_at` | `timestamptz` |                                                                                                                                     |
 
@@ -80,6 +83,7 @@ Source: `data/clays-results.csv` — columns `Data, Modalidade, Resultado X/25, 
 | `Observações` + `Pratos mais exigentes` | `notes` (joined; `N/A` and empty values ignored; kept in the original language)              |
 | `Gramas`, `Chumbo`, `Marca`             | ignored                                                                                      |
 
+- `club_id` is `ccm` for every imported row (the whole history was shot there); `field_id` stays empty (not recorded).
 - `hardest_targets` stays empty for imported rows (the old free text cannot be converted reliably).
 - `import_key` = hash of date + discipline + score + CSV row index; inserts use `ON CONFLICT DO NOTHING`, so the import can be re-run safely.
 
@@ -87,11 +91,12 @@ Source: `data/clays-results.csv` — columns `Data, Modalidade, Resultado X/25, 
 
 Generate with `pnpm db:generate` (Drizzle Kit; add `--name <description>` for a readable file name, e.g. `pnpm db:generate --name account_states`), apply with `pnpm db:migrate` (`apps/api/scripts/migrate.ts`, Drizzle migrator over the Neon HTTP driver). Tests and E2E apply the same migrations to PGlite. Stored in `apps/api/drizzle/` and committed. Production migrations must be backward compatible and applied **before** merging the code that needs them (see `README.md` → "Deploying").
 
-| #    | Date       | Description                                                                                                                                                                                                                        |
-| ---- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0000 | 2026-10-23 | `0000_create_sessions.sql`: table `sessions`, index `(user_id, date)`, score check                                                                                                                                                 |
-| 0001 | 2026-10-23 | `0001_create_profiles.sql`: table `profiles`; placeholder profile for `'local'` sessions; FK `sessions.user_id → profiles.user_id` (cascade)                                                                                       |
-| 0002 | 2026-10-23 | `0002_account_states.sql`: `profiles.role` (default `user`), `status` (default `pending`), `status_changed_at`, with checks. Existing profiles become `pending` until their next request (admins are promoted from `ADMIN_EMAILS`) |
-| 0003 | 2026-10-23 | `0003_community.sql`: `profiles.show_in_community` (default `true`, decision #53); index `sessions (discipline, date)` for the leaderboards                                                                                        |
-| 0004 | 2026-10-26 | `0004_locale.sql`: `profiles.locale` (nullable, `en` or `pt-PT`)                                                                                                                                                                   |
-| 0005 | 2026-10-27 | `0005_notifications.sql`: table `notifications` (FK to `profiles`, cascade; index `(user_id, created_at)`; kind check); `profiles.status` check also allows `revoked`. Additive only                                               |
+| #    | Date       | Description                                                                                                                                                                                                                                                                |
+| ---- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0000 | 2026-10-23 | `0000_create_sessions.sql`: table `sessions`, index `(user_id, date)`, score check                                                                                                                                                                                         |
+| 0001 | 2026-10-23 | `0001_create_profiles.sql`: table `profiles`; placeholder profile for `'local'` sessions; FK `sessions.user_id → profiles.user_id` (cascade)                                                                                                                               |
+| 0002 | 2026-10-23 | `0002_account_states.sql`: `profiles.role` (default `user`), `status` (default `pending`), `status_changed_at`, with checks. Existing profiles become `pending` until their next request (admins are promoted from `ADMIN_EMAILS`)                                         |
+| 0003 | 2026-10-23 | `0003_community.sql`: `profiles.show_in_community` (default `true`, decision #53); index `sessions (discipline, date)` for the leaderboards                                                                                                                                |
+| 0004 | 2026-10-26 | `0004_locale.sql`: `profiles.locale` (nullable, `en` or `pt-PT`)                                                                                                                                                                                                           |
+| 0005 | 2026-10-27 | `0005_notifications.sql`: table `notifications` (FK to `profiles`, cascade; index `(user_id, created_at)`; kind check); `profiles.status` check also allows `revoked`. Additive only                                                                                       |
+| 0006 | 2026-10-28 | `0006_sessions_club_field.sql`: `sessions.club_id`, `sessions.field_id` (nullable, check that a field has a club), `profiles.home_club_id` (nullable). Additive only. Production: the owner's existing sessions were then set to `club_id = 'ccm'` (one-off, decision #66) |

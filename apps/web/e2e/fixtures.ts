@@ -50,9 +50,14 @@ export interface E2ESession {
   date: string;
   discipline: string;
   score: number;
+  clubId?: string;
+  fieldId?: string;
 }
 
-/** Registers the user (active unless they say otherwise) and logs sessions through the API. */
+/**
+ * Registers the user (active unless they say otherwise) and logs sessions through the API, at CCM
+ * Field 1 unless they say otherwise (it has Compak Sporting, Fosso and Helice).
+ */
 export async function seedSessions(
   request: APIRequestContext,
   user: E2EUser,
@@ -65,7 +70,7 @@ export async function seedSessions(
   const { token } = (await res.json()) as { token: string };
   for (const data of sessions) {
     const created = await request.post(`${API_URL}/api/sessions`, {
-      data,
+      data: { clubId: 'ccm', fieldId: '1', ...data },
       headers: { Authorization: `Bearer ${token}` },
     });
     expect(created.ok()).toBe(true);

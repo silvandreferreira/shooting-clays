@@ -4,6 +4,13 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Clubs and fields
+
+- **Added:** each series records the club and field where it was shot. Add asks for the club (the home club first), then the discipline (the club's), then the field (only those with that discipline; required). History shows "CCM · Field 2". Older series can get a field when edited, or stay without one. R49.
+- **Added:** **My club** in Settings, chosen from the list of clubs (the first one until chosen), and a **Clubs** page (account menu) with each club's fields and disciplines. R50.
+- **Added:** migration 0006 (`sessions.club_id`, `sessions.field_id`, `profiles.home_club_id`) and `GET /api/clubs`. The imported history is at CCM.
+- **Changed:** hardest targets (A–F) only in Compak Sporting, no longer in Sporting. R5.
+
 ### Disciplines page
 
 - **Added:** maximum cartridge load and shot size for each discipline, from the FPTAC table of recognised ammunition (August 2026), with the source linked. R41.

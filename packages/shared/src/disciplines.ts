@@ -4,13 +4,16 @@ export type DisciplineKey = (typeof DISCIPLINE_KEYS)[number];
 
 export interface Discipline {
   key: DisciplineKey;
-  /** Whether targets are labelled A–F, so "hardest targets" can be recorded. */
+  /**
+   * Whether "hardest targets" (A–F) can be recorded: Compak Sporting only, at the owner's request
+   * (decision #67).
+   */
   hasTargetLetters: boolean;
 }
 
 export const DISCIPLINES: readonly Discipline[] = [
   { key: 'compak', hasTargetLetters: true },
-  { key: 'sporting', hasTargetLetters: true },
+  { key: 'sporting', hasTargetLetters: false },
   { key: 'fosso', hasTargetLetters: false },
   { key: 'trap', hasTargetLetters: false },
   { key: 'helice', hasTargetLetters: false },

@@ -2,8 +2,10 @@ import { zValidator } from '@hono/zod-validator';
 import {
   adminUserUpdateSchema,
   contactInputSchema,
+  CLUBS,
   DISCIPLINES,
   leaderboardQuerySchema,
+  newSessionInputSchema,
   profileUpdateSchema,
   revokeInputSchema,
   sessionInputSchema,
@@ -334,6 +336,8 @@ export function createApp(deps: AppDeps) {
 
   app.get('/disciplines', (c) => c.json(DISCIPLINES));
 
+  app.get('/clubs', (c) => c.json(CLUBS));
+
   app.get(
     '/community/leaderboard',
     zValidator('query', leaderboardQuerySchema, validationHook),
@@ -355,7 +359,7 @@ export function createApp(deps: AppDeps) {
     c.json(await repo.list(c.get('user').id, c.req.valid('query'))),
   );
 
-  app.post('/sessions', zValidator('json', sessionInputSchema, validationHook), async (c) => {
+  app.post('/sessions', zValidator('json', newSessionInputSchema, validationHook), async (c) => {
     const userId = c.get('user').id;
     const session = await repo.create(userId, c.req.valid('json'));
     return c.json({ session, dashboard: await dashboard(userId) }, 201);

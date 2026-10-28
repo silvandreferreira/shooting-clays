@@ -99,6 +99,9 @@ test.describe('validation and API errors', () => {
     page,
   }) => {
     await page.goto('/app/add');
+    await page.getByRole('button', { name: 'Guardar' }).click();
+    await expect(page.getByRole('alert')).toHaveText('Escolha o campo.');
+    await page.getByText('Campo 1', { exact: true }).click();
     const score = page.getByLabel('Resultado (em 25)');
     await score.fill('26');
     await page.getByRole('button', { name: 'Guardar' }).click();

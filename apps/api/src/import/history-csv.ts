@@ -13,8 +13,12 @@ export interface HistoryRow {
   discipline: DisciplineKey;
   score: number;
   notes: string | null;
+  /** The whole history was shot at CCM; the field was not recorded. */
+  clubId: string;
   importKey: string;
 }
+
+export const HISTORY_CLUB_ID = 'ccm';
 
 const DISCIPLINE_MAP: Record<string, DisciplineKey> = {
   Compak: 'compak',
@@ -74,7 +78,7 @@ export function parseHistoryCsv(text: string): HistoryRow[] {
     const importKey = createHash('sha256')
       .update(`${date}|${discipline}|${score}|${index}`)
       .digest('hex');
-    return { date, discipline, score, notes, importKey };
+    return { date, discipline, score, notes, clubId: HISTORY_CLUB_ID, importKey };
   });
 }
 

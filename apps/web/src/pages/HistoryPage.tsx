@@ -1,12 +1,23 @@
-import { DISCIPLINE_KEYS, type Session } from '@shooting-clays/shared';
+import { DISCIPLINE_KEYS, findClub, type Session } from '@shooting-clays/shared';
 import { Link, useLocation, useSearchParams } from 'react-router';
 import { useT } from '../i18n';
 import { disciplineColor } from '../lib/colors';
 import { formatDate, formatList } from '../lib/format';
 import { useDeleteSession, useSessions } from '../lib/queries';
 
+/** "CCM · Field 2", "CCM" without a field, nothing without a club. */
+export function usePlaceLabel() {
+  const t = useT();
+  return (session: Pick<Session, 'clubId' | 'fieldId'>) => {
+    const club = findClub(session.clubId);
+    if (!club) return null;
+    return session.fieldId ? `${club.name} · ${t.clubs.field(session.fieldId)}` : club.name;
+  };
+}
+
 function SessionItem({ session }: { session: Session }) {
   const t = useT();
+  const place = usePlaceLabel()(session);
   const location = useLocation();
   const deleteSession = useDeleteSession();
   const onDelete = () => {
@@ -16,7 +27,14 @@ function SessionItem({ session }: { session: Session }) {
     <li
       data-testid="session-item"
       className="rounded-2xl border border-line bg-card p-4 shadow-sm"
-      aria-label={`${formatDate(session.date)}, ${t.disciplines[session.discipline]}, ${session.score}`}
+      aria-label={[
+        formatDate(session.date),
+        place,
+        t.disciplines[session.discipline],
+        session.score,
+      ]
+        .filter((part) => part !== null)
+        .join(', ')}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
@@ -29,6 +47,11 @@ function SessionItem({ session }: { session: Session }) {
             />
             {t.disciplines[session.discipline]}
           </p>
+          {place && (
+            <p className="text-sm text-ink-muted" data-testid="place">
+              {place}
+            </p>
+          )}
         </div>
         <p className="text-3xl font-bold tabular-nums">
           {session.score}
