@@ -6,6 +6,7 @@ import { BrowserRouter } from 'react-router';
 import { App } from './App';
 import { VercelMetrics } from './components/VercelMetrics';
 import { I18nProvider, strings, useT } from './i18n';
+import { registerServiceWorker } from './lib/app-update';
 import { completeSignInRedirect } from './lib/auth';
 import { createQueryClient, persistOptionsFor } from './lib/query-client';
 import { useAuthState } from './lib/session';
@@ -19,9 +20,7 @@ if (import.meta.env.VITE_SENTRY_DSN) {
 
 // Only the app registers the service worker (built by vite-plugin-pwa); the public pages do not
 // need it (vite.config.ts).
-if (import.meta.env.PROD && 'serviceWorker' in navigator) {
-  void navigator.serviceWorker.register('/sw.js', { scope: '/' });
-}
+if (import.meta.env.PROD) registerServiceWorker();
 
 const queryClient = createQueryClient();
 
