@@ -191,7 +191,7 @@ function DashboardView({
                   setClub(e.target.value);
                   store(CLUB_STORAGE_KEY, e.target.value);
                 }}
-                className="min-h-11 min-w-0 flex-1 rounded-xl border border-line bg-card px-3 font-normal"
+                className="min-h-11 min-w-28 flex-1 rounded-xl border border-line bg-card px-3 font-normal"
               >
                 {CLUBS.map((c) => (
                   <option key={c.id} value={c.id}>
