@@ -1,20 +1,48 @@
 import { z } from 'zod';
 import { MAX_SCORE } from './disciplines';
 import { disciplineSchema, isoDateSchema } from './schemas';
+import { clubDisciplines, CLUBS, disciplineFields, findClub } from './clubs';
 import type { DisciplineKey } from './disciplines';
 
-/** Leaderboard periods (docs/roadmap.md → Iteration 4). Month is the default. */
-export const COMMUNITY_PERIODS = ['day', 'week', 'month'] as const;
-export type CommunityPeriod = (typeof COMMUNITY_PERIODS)[number];
-
-export const leaderboardQuerySchema = z.object({
-  discipline: disciplineSchema,
-  period: z
-    .enum(COMMUNITY_PERIODS, { error: 'period must be day, week or month' })
-    .default('month'),
-  /** Any day inside the period; the API uses today (Europe/Lisbon) when it is missing. */
-  date: isoDateSchema.optional(),
-});
+/**
+ * One club, discipline and month (decision #71); the field is optional (every field by default,
+ * series without a field included). The discipline must be one of the club's, the field one that
+ * has it.
+ */
+export const leaderboardQuerySchema = z
+  .object({
+    clubId: z.string({ error: 'clubId is required' }),
+    discipline: disciplineSchema,
+    fieldId: z.string().optional(),
+    /** Any day inside the month; the API uses today (Europe/Lisbon) when it is missing. */
+    date: isoDateSchema.optional(),
+  })
+  .superRefine((q, ctx) => {
+    if (!findClub(q.clubId)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['clubId'],
+        message: `clubId must be one of: ${CLUBS.map((c) => c.id).join(', ')}`,
+      });
+      return;
+    }
+    if (!clubDisciplines(q.clubId).includes(q.discipline)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['discipline'],
+        message: `discipline must be one of the club's: ${clubDisciplines(q.clubId).join(', ')}`,
+      });
+      return;
+    }
+    const fields = disciplineFields(q.clubId, q.discipline);
+    if (q.fieldId !== undefined && !fields.some((f) => f.id === q.fieldId)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['fieldId'],
+        message: `fieldId must be one of the fields with ${q.discipline}: ${fields.map((f) => f.id).join(', ')}`,
+      });
+    }
+  });
 
 export type LeaderboardQuery = z.input<typeof leaderboardQuerySchema>;
 
@@ -31,9 +59,11 @@ export interface LeaderboardEntry {
 }
 
 export interface Leaderboard {
+  clubId: string;
   discipline: DisciplineKey;
-  period: CommunityPeriod;
-  /** First and last day of the period (YYYY-MM-DD, inclusive). */
+  /** null: every field. */
+  fieldId: string | null;
+  /** First and last day of the month (YYYY-MM-DD, inclusive). */
   from: string;
   to: string;
   entries: LeaderboardEntry[];
@@ -50,26 +80,17 @@ function addDays(iso: string, days: number): string {
   return toIso(date);
 }
 
-/**
- * First and last day of the period containing `date`. Dates are calendar days in Europe/Lisbon
- * already, so this is plain calendar arithmetic. Weeks run Sunday to Saturday.
- */
-export function periodBounds(period: CommunityPeriod, date: string): { from: string; to: string } {
-  if (period === 'day') return { from: date, to: date };
-  if (period === 'week') {
-    // getUTCDay() is 0 on Sunday, the first day of the week.
-    const from = addDays(date, -toDate(date).getUTCDay());
-    return { from, to: addDays(from, 6) };
-  }
+/** First and last day of the month containing `date` (calendar days in Europe/Lisbon already). */
+export function monthBounds(date: string): { from: string; to: string } {
   const from = `${date.slice(0, 7)}-01`;
   const next = toDate(from);
   next.setUTCMonth(next.getUTCMonth() + 1);
   return { from, to: addDays(toIso(next), -1) };
 }
 
-/** A day inside the period just before (`step` -1) or after (+1) the one containing `date`. */
-export function shiftPeriod(period: CommunityPeriod, date: string, step: -1 | 1): string {
-  const { from, to } = periodBounds(period, date);
+/** A day inside the month just before (`step` -1) or after (+1) the one containing `date`. */
+export function shiftMonth(date: string, step: -1 | 1): string {
+  const { from, to } = monthBounds(date);
   return step < 0 ? addDays(from, -1) : addDays(to, 1);
 }
 

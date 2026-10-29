@@ -1,4 +1,4 @@
-import { todayInLisbon, type CommunityPeriod, type Locale } from '@shooting-clays/shared';
+import { todayInLisbon, type Locale } from '@shooting-clays/shared';
 import { currentLocale, strings } from '../i18n';
 
 export const formatStat = (value: number | null) =>
@@ -52,12 +52,5 @@ export const formatDate = (iso: string) => `${formatShortDate(iso)} ${iso.slice(
 /** An instant ("2026-10-23T21:06:07Z") as its calendar day in Lisbon: "23 Oct 2026". */
 export const formatDay = (timestamp: string) => formatDate(todayInLisbon(new Date(timestamp)));
 
-/** A leaderboard period: "24 Oct 2026", "19–25 Oct 2026" or "October 2026" / "outubro de 2026". */
-export function formatPeriod(period: CommunityPeriod, from: string, to: string): string {
-  if (period === 'month') return formatters().monthYear.format(toDate(from));
-  if (period === 'day') return formatDate(from);
-  // Built by hand: Intl's formatRange spacing differs between browsers.
-  if (from.slice(0, 7) === to.slice(0, 7)) return `${Number(from.slice(8))}–${formatDate(to)}`;
-  const first = from.slice(0, 4) === to.slice(0, 4) ? formatShortDate(from) : formatDate(from);
-  return `${first} – ${formatDate(to)}`;
-}
+/** A leaderboard month: "October 2026" / "outubro de 2026". */
+export const formatMonth = (from: string) => formatters().monthYear.format(toDate(from));

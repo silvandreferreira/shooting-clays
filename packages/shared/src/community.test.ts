@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   leaderboardQuerySchema,
-  periodBounds,
+  monthBounds,
   rankShooters,
-  shiftPeriod,
+  shiftMonth,
   type RankableShooter,
 } from './community';
 import { profileUpdateSchema } from './schemas';
@@ -96,55 +96,49 @@ describe('rankShooters', () => {
   });
 });
 
-describe('periodBounds', () => {
-  it('day is the day itself', () => {
-    expect(periodBounds('day', '2026-10-24')).toEqual({ from: '2026-10-24', to: '2026-10-24' });
-  });
-
-  it('week runs Sunday to Saturday', () => {
-    // 2026-10-24 is a Saturday; 2026-10-26 a Monday; 2026-11-01 a Sunday.
-    expect(periodBounds('week', '2026-10-24')).toEqual({ from: '2026-10-18', to: '2026-10-24' });
-    expect(periodBounds('week', '2026-10-26')).toEqual({ from: '2026-10-25', to: '2026-10-31' });
-    expect(periodBounds('week', '2026-11-01')).toEqual({ from: '2026-11-01', to: '2026-11-07' });
-  });
-
-  it('week across the end of the year and the daylight-saving change', () => {
-    expect(periodBounds('week', '2027-01-01')).toEqual({ from: '2026-12-27', to: '2027-01-02' });
-    // Clocks go back in Lisbon on 2026-10-25: calendar days are unaffected.
-    expect(periodBounds('week', '2026-10-25')).toEqual({ from: '2026-10-25', to: '2026-10-31' });
-  });
-
-  it('month is the calendar month, including February in a leap year', () => {
-    expect(periodBounds('month', '2026-10-24')).toEqual({ from: '2026-10-01', to: '2026-10-31' });
-    expect(periodBounds('month', '2028-02-10')).toEqual({ from: '2028-02-01', to: '2028-02-29' });
-    expect(periodBounds('month', '2026-12-31')).toEqual({ from: '2026-12-01', to: '2026-12-31' });
+describe('monthBounds', () => {
+  it('runs from the 1st to the last day of the month', () => {
+    expect(monthBounds('2026-10-24')).toEqual({ from: '2026-10-01', to: '2026-10-31' });
+    expect(monthBounds('2028-02-10')).toEqual({ from: '2028-02-01', to: '2028-02-29' });
+    expect(monthBounds('2026-12-31')).toEqual({ from: '2026-12-01', to: '2026-12-31' });
   });
 });
 
-describe('shiftPeriod', () => {
-  it('steps to the previous and next period', () => {
-    expect(shiftPeriod('day', '2026-10-01', -1)).toBe('2026-09-30');
-    expect(shiftPeriod('week', '2026-10-24', -1)).toBe('2026-10-17');
-    expect(shiftPeriod('week', '2026-10-24', 1)).toBe('2026-10-25');
-    expect(shiftPeriod('month', '2026-01-15', -1)).toBe('2025-12-31');
-    expect(shiftPeriod('month', '2026-12-15', 1)).toBe('2027-01-01');
+describe('shiftMonth', () => {
+  it('steps to a day in the month before or after, across years', () => {
+    expect(shiftMonth('2026-10-24', -1)).toBe('2026-09-30');
+    expect(shiftMonth('2026-01-15', -1)).toBe('2025-12-31');
+    expect(shiftMonth('2026-12-15', 1)).toBe('2027-01-01');
   });
 });
 
 describe('leaderboardQuerySchema', () => {
-  it('defaults to the month', () => {
-    expect(leaderboardQuerySchema.parse({ discipline: 'fosso' })).toEqual({
-      discipline: 'fosso',
-      period: 'month',
-    });
+  const parse = (q: Record<string, string>) => leaderboardQuerySchema.safeParse(q);
+
+  it('takes a club, one of its disciplines and, optionally, a field that has it', () => {
+    expect(parse({ clubId: 'ccm', discipline: 'fosso' }).success).toBe(true);
+    expect(parse({ clubId: 'ccm', discipline: 'fosso', fieldId: '2' }).success).toBe(true);
   });
 
-  it('rejects unknown periods and invalid dates', () => {
-    expect(leaderboardQuerySchema.safeParse({ discipline: 'fosso', period: 'year' }).success).toBe(
-      false,
-    );
+  it('rejects an unknown club, a missing club or a field without the discipline', () => {
+    expect(parse({ clubId: 'nope', discipline: 'fosso' }).error?.issues[0]?.path).toEqual([
+      'clubId',
+    ]);
+    expect(parse({ discipline: 'fosso' }).success).toBe(false);
     expect(
-      leaderboardQuerySchema.safeParse({ discipline: 'fosso', date: '2026-02-30' }).success,
+      parse({ clubId: 'ccm', discipline: 'fosso', fieldId: '3' }).error?.issues[0]?.path,
+    ).toEqual(['fieldId']);
+  });
+});
+
+describe('leaderboardQuerySchema (month only)', () => {
+  it('has no period any more (an old `period` is ignored) and rejects invalid dates', () => {
+    expect(
+      leaderboardQuerySchema.parse({ clubId: 'ccm', discipline: 'fosso', period: 'week' }),
+    ).toEqual({ clubId: 'ccm', discipline: 'fosso' });
+    expect(
+      leaderboardQuerySchema.safeParse({ clubId: 'ccm', discipline: 'fosso', date: '2026-02-30' })
+        .success,
     ).toBe(false);
   });
 });

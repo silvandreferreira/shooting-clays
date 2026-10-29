@@ -170,6 +170,8 @@ Goal: a new **Community** tab that compares results across all users, per discip
 
 ### Periods
 
+**Changed on 2026-10-29 (decision #71):** the Community now ranks one month only, at one club (the home club first), in one of its disciplines and optionally one field. The Day and Week periods below are gone.
+
 - Three periods, all in Europe/Lisbon: **Day** (one calendar day), **Week** (Sunday to Saturday, decision #60) and **Month** (one calendar month).
 - Default: **the current month**. The user can switch to Day or Week, and step back to previous days, weeks or months (never into the future).
 - Only sessions inside the selected period and discipline count.
