@@ -442,7 +442,7 @@ Goal: split results into **official** (recorded by a club, iteration 7) and **un
 
 ## Iteration 9 — Freemium (paid Community)
 
-Goal: the Community becomes the **premium** part of the app. Logging series, the Dashboard and History stay free; ranking against other shooters needs a paid membership (decision #75). Draft written on 2026-10-29 from the owner's description; prices, payment provider and the user flow are to be discussed before it starts.
+Goal: the Community becomes the **premium** part of the app. Logging series, the Dashboard and History stay free; ranking against other shooters needs a paid membership (decision #75). Draft written on 2026-10-29 from the owner's description, to be discussed before it starts. Payment is **by bank transfer only**, confirmed by the admin (decision #76).
 
 ### Prices (aligned, not final)
 
@@ -450,10 +450,34 @@ Goal: the Community becomes the **premium** part of the app. Logging series, the
 
 ### Settings: "Join the Community"
 
-- The Settings switch **Show me in the Community** becomes **Join the Community** (the European Portuguese label chosen by the owner goes in `pt-PT.ts`). The new name already tells that it is something you sign up for, not only a visibility setting.
-- Turning it **on** opens the **payment page** (choose monthly or yearly, then pay). Only when the payment is **valid and verified** by the API (from the payment provider, never from the browser) does the user get the Community: the page, and appearing in the rankings.
+- The Settings switch is called **Join the Community** (done early, before payments exist), with a text on what the Community offers.
+- Turning it **on** opens the **payment page**: choose monthly or yearly; the page then shows how to pay and the user's **payment ID** (see below). The membership is **pending** until the admin confirms the payment; only then does the user get the Community (the page, and appearing in the rankings).
 - Turning it **off** first shows a warning: from that moment the Community is closed, and joining again means **paying again**, even if part of a paid month or year is left. Confirming ends the membership at once (no refund, no remaining time kept).
-- The Settings page has a Community section (with its own anchor, e.g. `/app/settings#community`) showing the state: not a member, member until …, payment pending, payment failed.
+- The Settings page has a Community section (with its own anchor, e.g. `/app/settings#community`) showing the state: not a member; **waiting for payment confirmation** (with the payment ID and the instructions again); member until …; ended.
+
+### Paying by bank transfer
+
+1. The payment page shows the amount (€6 or €60), the **IBAN** and the account holder's name, and a **payment ID** for this membership, e.g. `SC-7K3P9Q` (short, unique, no ambiguous letters such as O/0 or I/1, with a copy button).
+2. The user makes the transfer and **emails the proof of transfer to the owner's address, with the payment ID**. The page has a **Send proof by email** button that opens the user's email app with the address, the subject (the payment ID) and a short text filled in; the proof is attached by the user.
+3. The admin matches the email to the user **by the payment ID** in Admin (below) and taps **Confirm payment**. The membership becomes **active** from that moment until the end of the month or year paid; the user gets a notification ("Your Community membership is active until …").
+
+- The IBAN, the account holder and the owner's email are settings in environment variables (`PAYMENT_IBAN`, `PAYMENT_ACCOUNT_HOLDER`, `PAYMENTS_EMAIL`), never in the repository.
+- **Renewal**: some days before the end (e.g. 7), the member gets a notification and the payment page shows a **new payment ID** for the next period; paying it and being confirmed extends the membership from the end of the current one, so no days are lost. Without a confirmed payment, the membership ends on its last day.
+- No payment provider, no fees, nothing automatic: the admin's confirmation is the proof. (MB WAY through a provider was considered: automatic, from about €0.14 per €6 with Eupago, but the owner chose bank transfer.)
+
+### Admin: Freemium
+
+- **Pending**: besides the accounts waiting for approval, the users **waiting for payment confirmation**, each with their **payment ID** (large and easy to search), plan, amount and since when, and a **Confirm payment** button (with undo, as approving users). The search box also finds a payment ID.
+- **Active** and **All**: Freemium members are shown **differently** (e.g. a premium badge in the Community colour, with "Member until …"); a pending payment shows its own badge.
+- A new filter **Freemium** (next to All · Active · Pending) lists only users with a membership: pending, active or ended, with counts.
+- Admins can also end a membership (e.g. a mistaken confirmation), with the same warning as the user's.
+
+### Admin: payments file for the tax return (IRS)
+
+- Admin → **Payments**: choose **from** and **to** dates and download a **PDF** (and the same data as CSV for an accountant) with every **confirmed** payment in that range. The data comes from the API, admins only.
+- One line per payment: date confirmed; member's name and, when they gave it, NIF; payment ID; plan (month or year) and the period it covers; amount; VAT (0 while exempt); method (bank transfer); invoice or receipt number; refunded (yes/no).
+- First page, a **summary for the period**: number of payments; total received; totals per month and per plan; refunds; and, for the selected calendar year, the total to declare as income from services.
+- Tax notes to confirm with an accountant before charging: selling memberships as a person means being registered as self-employed (Category B, simplified regime) and issuing an **invoice-receipt for every payment** (in Portal das Finanças when confirming the payment; the invoice number can then be typed in Admin); VAT exemption under article 53 of the VAT code while yearly sales stay below its limit. The file is a helper for the return, not a replacement for the invoices.
 
 ### Community icon
 
@@ -463,42 +487,27 @@ Goal: the Community becomes the **premium** part of the app. Logging series, the
 
 ### Rules (draft)
 
-- Membership is per user; a monthly or yearly plan renews automatically until the user leaves.
-- Only members are ranked and see the rankings; leaving removes the user from the rankings at once (as "Show me in the Community" off does today).
-- A failed renewal ends the membership when the paid period ends; the user sees why in Settings and in their notifications.
+- One membership at a time per user; only members are ranked and see the rankings; leaving removes the user from the rankings at once.
+- Only an admin confirms a payment; the user can never activate a membership themselves.
 - Admins and club accounts (iteration 7): to decide (free, or like everyone).
-
-### Payments: MB WAY, confirmed automatically (draft, 2026-10-29)
-
-- The owner wants **MB WAY**. MB WAY is approved by the payer in their MB WAY app; the provider then calls our webhook, so **nobody checks payments by hand**: the API marks the membership active when the provider confirms the payment (and only then).
-- Cheapest option found (published prices, October 2026; VAT added; confirm before signing): **Eupago**, MB WAY **€0.07 + 0.7%**, no monthly fee → about €0.14 on €6 and €0.60 on €60 with VAT. Stripe charges 1.5% + €0.25 for MB WAY (about €0.34 on €6) and does not support recurring MB WAY; Easypay lists 1.5% + €0.25 plus VAT. Eupago has signed webhooks (HMAC) and an API for MB WAY requests.
-- Renewals: an MB WAY payment needs the payer's approval each time, so a monthly plan sends an MB WAY request every month (the member approves it on their phone); automatic renewal without approval needs MB WAY recurring authorisation, which Eupago advertises but has to be confirmed. The yearly plan needs one approval a year.
-- Multibanco reference and card can be added later on the same provider.
-
-### Admin: payments file for the tax return (IRS)
-
-- Admin → **Payments**: choose **from** and **to** dates and download a **PDF** (and the same data as CSV for an accountant) with every payment in that range. The data comes from the API, admins only.
-- One line per payment: date and time paid; member's name and, when they gave it, NIF; plan (month or year) and the period it covers; gross amount; provider fee; net amount; VAT (0 while exempt); method (MB WAY …); provider transaction id; invoice or receipt number; refunded (yes/no).
-- First page, a **summary for the period**: number of payments; total received (gross), total fees, net; totals per month and per plan; refunds; and, for the selected calendar year, the total to declare as income from services.
-- Tax notes to confirm with an accountant before charging: selling memberships as a person means being registered as self-employed (Category B, simplified regime) and issuing an **invoice-receipt for every payment** (Portal das Finanças, or an invoicing service with an API that the app can call after each confirmed payment, so this is automatic too); VAT exemption under article 53 of the VAT code while yearly sales stay below its limit. The file is a helper for the return, not a replacement for the invoices.
 
 ### Data (draft)
 
-- `payments`: `id`, `user_id`, `membership_id`, `paid_at`, `amount_cents`, `fee_cents`, `vat_cents`, `method`, `provider`, `provider_transaction_id` (unique), `invoice_number`, `refunded_at`. Written only by the webhook after the provider confirms.
-- `memberships`: `user_id`, `plan` (`month` / `year`), `status` (`pending` / `active` / `ended`), `provider`, `provider_customer_id`, `provider_subscription_id`, `current_period_end`, `ended_at`, `created_at`. Exactly one non-ended membership per user.
-- Replaces `profiles.show_in_community`: a user is in the Community when they have an `active` membership.
-- A webhook endpoint (`POST /api/payments/webhook`) receives the provider's events, verifies their signature and updates `memberships`; the payment page is the provider's checkout (no card data in the app).
+- `memberships`: `id`, `user_id`, `plan` (`month` / `year`), `status` (`pending` / `active` / `ended`), `starts_at`, `ends_at`, `ended_at`, `created_at`. At most one `pending` and one `active` per user.
+- `payments`: `id`, `membership_id`, `user_id`, `reference` (the payment ID, unique), `plan`, `amount_cents`, `status` (`awaiting` / `confirmed` / `cancelled`), `confirmed_at`, `confirmed_by` (admin), `invoice_number`, `refunded_at`, `created_at`.
+- Replaces `profiles.show_in_community`: a user is in the Community when they have an `active` membership whose `ends_at` has not passed.
+- API (draft): `POST /api/me/membership` (choose a plan → pending membership and payment ID), `DELETE /api/me/membership` (leave); `GET /api/admin/payments?status=awaiting`, `POST /api/admin/payments/:id/confirm`, `GET /api/admin/payments/export?from=&to=&format=pdf|csv`.
 
 ### Open questions (decide when the iteration starts)
 
-- Confirm the provider (Eupago is the cheapest found for MB WAY), whether monthly renewals can run without approving each one, and the invoicing service.
 - Do current users keep the Community for free for a while (launch period), or does it close for everyone on day one?
 - A free trial (e.g. 7 days)?
 - What non-members see on the Community page: nothing, or a preview (e.g. the podium blurred)?
+- How many days before the end the renewal reminder comes, and whether a pending payment expires (e.g. after 14 days).
 - Refunds: the rule above is "leaving ends it at once, no refund"; check that this is allowed and stated in the terms before charging.
-- Terms of sale and privacy policy pages on the public site.
+- Terms of sale and privacy policy pages on the public site; whether to ask for the NIF on the payment page (for the invoice).
 
 ### Tests (draft)
 
-- Integration: the leaderboard answers `403` without an active membership; the webhook ignores events with a bad signature; an active membership puts the user in the rankings and leaving takes them out at once; joining again needs a new payment.
-- E2E (with the provider's test mode or a fake checkout in E2E mode): a non-member taps the premium Community icon → Settings, Community section → **Join the Community** → payment → Community open; leaving shows the warning and closes it.
+- Integration: the leaderboard answers `403` without an active membership; choosing a plan creates one pending membership with a unique payment ID; only admins confirm; confirming activates until the end of the month or year paid and a renewal extends from the current end; leaving ends it at once and joining again needs a new payment; the export lists only confirmed payments between the dates, with the summary totals.
+- E2E: a non-member taps the premium Community icon → Settings, Community section → **Join the Community** → monthly → the payment ID and IBAN are shown → the admin finds the ID under **Pending**, confirms → the user's Community opens and Admin shows the member badge and the Freemium filter; leaving shows the warning and closes it.

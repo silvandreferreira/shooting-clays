@@ -6,7 +6,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ### Roadmap: freemium
 
-- **Added:** iteration 9 (draft): a paid Community. **Join the Community** in Settings leads to the payment (€6 a month or €60 a year); the Community icon shows as premium for non-members and opens Settings; leaving ends the membership at once. Payments by MB WAY confirmed automatically by the provider's webhook; an admin download of the payments between two dates (PDF and CSV, with a summary for the tax return). Decision #75.
+- **Added:** iteration 9 (draft): a paid Community. **Join the Community** in Settings leads to the payment (€6 a month or €60 a year); the Community icon shows as premium for non-members and opens Settings; leaving ends the membership at once. Payment by bank transfer with a payment ID that the user emails with the proof; the admin confirms it under Pending, sees Freemium members marked and filters them; an admin download of the payments between two dates (PDF and CSV, with a summary for the tax return). Decisions #75 and #76.
 
 ### Join the Community
 
