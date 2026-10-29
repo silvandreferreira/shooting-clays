@@ -4,6 +4,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Join the Community
+
+- **Changed:** the Settings switch **Show me in the Community** is now **Join the Community**, with a text on what the Community tab offers (rankings at your club per discipline and field, this month, last month or this year, the podium, the shooter just above you). The FAQ, the home page and the Community note follow. Groundwork for iteration 9 (paid Community). R28.
+
 ### History periods
 
 - **Changed:** History shows **This month** by default, with **Last month** and **All time**, besides the discipline filter (both in the URL). Decision #74. R8, R56.
