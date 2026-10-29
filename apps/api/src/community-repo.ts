@@ -1,8 +1,7 @@
 import {
-  periodBounds,
+  monthBounds,
   rankShooters,
   type AccountStatus,
-  type CommunityPeriod,
   type DisciplineKey,
   type Leaderboard,
   type RankableShooter,
@@ -14,15 +13,16 @@ import { profiles, sessions } from './db/schema';
 export function createCommunityRepo(db: Db) {
   return {
     /**
-     * Ranked shooters for one discipline and period. Only active accounts that did not switch
-     * "Show me in the Community" off take part (docs/roadmap.md → Iteration 4).
+     * Ranked shooters for one club, discipline and month, and optionally one field (decision #71).
+     * Only active accounts that did not switch "Show me in the Community" off take part
+     * (docs/roadmap.md → Iteration 4).
      */
     async leaderboard(
       meId: string,
       meHidden: boolean,
-      query: { discipline: DisciplineKey; period: CommunityPeriod; date: string },
+      query: { clubId: string; discipline: DisciplineKey; fieldId?: string; date: string },
     ): Promise<Leaderboard> {
-      const { from, to } = periodBounds(query.period, query.date);
+      const { from, to } = monthBounds(query.date);
       const rows = await db
         .select({
           userId: sessions.userId,
@@ -39,7 +39,9 @@ export function createCommunityRepo(db: Db) {
         .innerJoin(profiles, eq(profiles.userId, sessions.userId))
         .where(
           and(
+            eq(sessions.clubId, query.clubId),
             eq(sessions.discipline, query.discipline),
+            query.fieldId === undefined ? undefined : eq(sessions.fieldId, query.fieldId),
             gte(sessions.date, from),
             lte(sessions.date, to),
             eq(profiles.status, 'active' satisfies AccountStatus),
@@ -68,8 +70,9 @@ export function createCommunityRepo(db: Db) {
       }
 
       return {
+        clubId: query.clubId,
         discipline: query.discipline,
-        period: query.period,
+        fieldId: query.fieldId ?? null,
         from,
         to,
         entries: rankShooters([...shooters.values()]),

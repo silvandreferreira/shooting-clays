@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { formatDate, formatList, formatPeriod, formatShortDate } from '../lib/format';
+import { formatDate, formatList, formatMonth, formatShortDate } from '../lib/format';
 import { en } from './en';
 import { activateLocale, apiErrorMessage, detectLocale } from './index';
 import { ptPT } from './pt-PT';
@@ -43,7 +43,7 @@ describe('formatting per language', () => {
     expect(formatDate('2026-10-23')).toBe('23 Oct 2026');
     expect(formatShortDate('2026-10-23')).toBe('23 Oct');
     expect(formatList(['A', 'C', 'F'])).toBe('A, C and F');
-    expect(formatPeriod('month', '2026-10-01', '2026-10-31')).toBe('October 2026');
+    expect(formatMonth('2026-10-01')).toBe('October 2026');
     expect(document.documentElement.lang).toBe('en');
   });
 
@@ -52,8 +52,7 @@ describe('formatting per language', () => {
     expect(formatDate('2026-10-23')).toBe('23 out. 2026');
     expect(formatShortDate('2026-10-23')).toBe('23 out.');
     expect(formatList(['A', 'C', 'F'])).toBe('A, C e F');
-    expect(formatPeriod('month', '2026-10-01', '2026-10-31')).toBe('outubro de 2026');
-    expect(formatPeriod('week', '2026-10-19', '2026-10-25')).toBe('19–25 out. 2026');
+    expect(formatMonth('2026-10-01')).toBe('outubro de 2026');
     expect(document.documentElement.lang).toBe('pt-PT');
   });
 });

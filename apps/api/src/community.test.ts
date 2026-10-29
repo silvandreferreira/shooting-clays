@@ -23,8 +23,11 @@ async function addSeries(
   scores: number[],
   date = '2026-10-10',
   discipline = 'fosso',
+  place: { clubId: string | null; fieldId: string | null } = { clubId: 'ccm', fieldId: '1' },
 ) {
-  await db.insert(sessions).values(scores.map((score) => ({ userId, date, discipline, score })));
+  await db
+    .insert(sessions)
+    .values(scores.map((score) => ({ userId, date, discipline, score, ...place })));
 }
 
 const names = (board: Leaderboard) => board.entries.map((e) => [e.rank, e.displayName]);
@@ -39,12 +42,18 @@ describe('community leaderboard', () => {
     await addSeries(db, 'b', [25, 25, 24, 23, 23]);
     await addSeries(db, OTHER.id, [24, 24, 24, 24, 24]);
 
-    const res = await json('GET', '/api/community/leaderboard?discipline=fosso', undefined, OTHER);
+    const res = await json(
+      'GET',
+      '/api/community/leaderboard?clubId=ccm&discipline=fosso',
+      undefined,
+      OTHER,
+    );
     expect(res.status).toBe(200);
     const board = (await res.json()) as Leaderboard;
     expect(board).toMatchObject({
+      clubId: 'ccm',
       discipline: 'fosso',
-      period: 'month',
+      fieldId: null,
       from: '2026-10-01',
       to: '2026-10-31',
       meHidden: false,
@@ -74,39 +83,52 @@ describe('community leaderboard', () => {
     await addSeries(db, OTHER.id, [20, 21, 22]);
 
     const board = (await (
-      await json('GET', '/api/community/leaderboard?discipline=fosso', undefined, OTHER)
+      await json('GET', '/api/community/leaderboard?clubId=ccm&discipline=fosso', undefined, OTHER)
     ).json()) as Leaderboard;
     expect(names(board)).toEqual([[1, OTHER.name]]);
   });
 
-  it('counts only the discipline and the period asked for', async () => {
+  it('counts only the club, discipline and month asked for, and the field when given', async () => {
     const { db, json } = await createTestApp({ empty: true });
     await addShooter(db, 'a');
-    await addSeries(db, 'a', [25], '2026-10-18'); // Sunday, first day of the week of 2026-10-23
-    await addSeries(db, 'a', [25], '2026-10-17'); // Saturday of the week before
+    await addSeries(db, 'a', [25], '2026-10-01'); // Field 1
+    await addSeries(db, 'a', [24], '2026-10-31', 'fosso', { clubId: 'ccm', fieldId: '2' });
+    await addSeries(db, 'a', [23], '2026-10-20', 'fosso', { clubId: 'ccm', fieldId: null });
+    await addSeries(db, 'a', [25], '2026-10-20', 'fosso', { clubId: null, fieldId: null });
     await addSeries(db, 'a', [25], '2026-10-23', 'compak');
-    await addSeries(db, 'a', [10, 11], '2026-10-23');
+    await addSeries(db, 'a', [25], '2026-09-30');
 
     const get = async (query: string) =>
       (await (
-        await json('GET', `/api/community/leaderboard?discipline=fosso&${query}`, undefined, OTHER)
+        await json(
+          'GET',
+          `/api/community/leaderboard?clubId=ccm&discipline=fosso${query}`,
+          undefined,
+          OTHER,
+        )
       ).json()) as Leaderboard;
 
-    expect((await get('period=day')).entries[0]).toMatchObject({ bestScore: 11, series: 2 });
-    const week = await get('period=week');
-    expect(week).toMatchObject({ from: '2026-10-18', to: '2026-10-24' });
-    expect(week.entries[0]).toMatchObject({ bestScore: 25, bestScoreCount: 1, series: 3 });
-    expect((await get('period=month')).entries[0]).toMatchObject({ series: 4 });
-    expect((await get('period=month&date=2026-09-15')).entries).toEqual([]);
+    // Every field of the club, series without a field included; no club: not in the Community.
+    const month = await get('');
+    expect(month).toMatchObject({ from: '2026-10-01', to: '2026-10-31', fieldId: null });
+    expect(month.entries[0]).toMatchObject({ bestScore: 25, bestScoreCount: 1, series: 3 });
+    expect((await get('&fieldId=2')).entries[0]).toMatchObject({ bestScore: 24, series: 1 });
+    expect(await get('&fieldId=2')).toMatchObject({ fieldId: '2' });
+    expect((await get('&date=2026-09-15')).entries[0]).toMatchObject({ series: 1 });
+    expect((await get('&date=2026-08-15')).entries).toEqual([]);
   });
 
   it('validates the query', async () => {
     const { json } = await createTestApp({ empty: true });
     for (const query of [
       '',
-      'discipline=golf',
-      'discipline=fosso&period=year',
-      'discipline=fosso&date=2026-13-01',
+      'clubId=ccm',
+      'discipline=fosso',
+      'clubId=nope&discipline=fosso',
+      'clubId=ccm&discipline=golf',
+      'clubId=ccm&discipline=fosso&fieldId=3',
+      'clubId=ccm&discipline=fosso&fieldId=9',
+      'clubId=ccm&discipline=fosso&date=2026-13-01',
     ]) {
       const res = await json('GET', `/api/community/leaderboard?${query}`, undefined, OTHER);
       expect(res.status).toBe(400);
@@ -118,7 +140,12 @@ describe('community leaderboard', () => {
     await addSeries(db, OTHER.id, [20]);
     const board = async () =>
       (await (
-        await json('GET', '/api/community/leaderboard?discipline=fosso', undefined, OTHER)
+        await json(
+          'GET',
+          '/api/community/leaderboard?clubId=ccm&discipline=fosso',
+          undefined,
+          OTHER,
+        )
       ).json()) as Leaderboard;
 
     expect(
@@ -140,7 +167,7 @@ describe('community leaderboard', () => {
     const res = await json('PUT', '/api/me/profile', { displayName: '  Ace  ' }, OTHER);
     expect(((await res.json()) as Me).displayName).toBe('Ace');
     const board = (await (
-      await json('GET', '/api/community/leaderboard?discipline=fosso', undefined, OTHER)
+      await json('GET', '/api/community/leaderboard?clubId=ccm&discipline=fosso', undefined, OTHER)
     ).json()) as Leaderboard;
     expect(board.entries[0]?.displayName).toBe('Ace');
   });
@@ -155,7 +182,7 @@ describe('community leaderboard', () => {
     await addSeries(db, 'letter', [24]);
 
     const board = (await (
-      await json('GET', '/api/community/leaderboard?discipline=fosso', undefined, OTHER)
+      await json('GET', '/api/community/leaderboard?clubId=ccm&discipline=fosso', undefined, OTHER)
     ).json()) as Leaderboard;
     expect(board.entries.map((e) => e.avatarUrl)).toEqual([image, null]);
   });

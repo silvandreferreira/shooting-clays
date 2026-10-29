@@ -206,17 +206,18 @@ export const ptPT = {
   },
   community: {
     title: 'Comunidade',
+    clubLabel: 'Clube',
     disciplineLabel: 'Disciplina',
-    periodLabel: 'Período',
-    periods: { day: 'Dia', week: 'Semana', month: 'Mês' },
-    previous: 'Período anterior',
-    next: 'Período seguinte',
+    fieldLabel: 'Campo',
+    allFields: 'Todos os campos',
+    previous: 'Mês anterior',
+    next: 'Mês seguinte',
     podium: 'Pódio',
     ranking: 'Classificação',
     place: (rank: number) => `${rank}.º`,
     bestLabel: (score: number) => `Melhor ${score}`,
     you: 'Você',
-    empty: 'Ainda não há resultados neste período.',
+    empty: 'Ainda não há resultados este mês.',
     loading: 'A carregar…',
     loadError: 'Não foi possível carregar a classificação.',
     hidden: 'Está escondido da Comunidade, por isso não aparece nesta classificação.',
@@ -252,9 +253,9 @@ export const ptPT = {
           'Contam-se as séries de cada atirador na disciplina e no período escolhidos. Fica à frente quem tem mais séries de 25; se houver empate, quem tem mais séries de 24, depois de 23, e assim por diante até 0. Só aparece a melhor pontuação, mas todas as séries contam. Quem tiver exatamente as mesmas séries em todas as pontuações partilha o lugar (por exemplo 1.º, 1.º, 3.º) e aparece primeiro quem chegou mais cedo à sua melhor pontuação. Os três primeiros lugares recebem ouro, prata e bronze; um lugar partilhado partilha a medalha.',
       },
       periods: {
-        question: 'O que abrangem o Dia, a Semana e o Mês?',
+        question: 'Que resultados entram na Comunidade?',
         answer:
-          'Dias de calendário em Portugal (hora de Lisboa). A Semana vai de domingo a sábado e o Mês é o mês de calendário. As setas mostram os períodos anteriores.',
+          'Os do mês de calendário em Portugal (hora de Lisboa), no clube e na modalidade que escolher. Por defeito entram todos os campos; escolha um campo para ver só esse. As setas mostram os meses anteriores.',
       },
       community: {
         question: 'Quem aparece na Comunidade?',
@@ -314,7 +315,7 @@ export const ptPT = {
       faq: {
         title: 'Perguntas frequentes | Shooting Clays',
         description:
-          'Como pôr a app no telemóvel, como funciona a classificação da Comunidade, o que abrangem o Dia, a Semana e o Mês e quem aparece na Comunidade.',
+          'Como pôr a app no telemóvel, como funciona a classificação da Comunidade, que resultados entram e quem aparece na Comunidade.',
       },
       contact: {
         title: 'Contactos | Shooting Clays',
@@ -347,7 +348,7 @@ export const ptPT = {
           },
           {
             title: 'Compare-se com a Comunidade',
-            text: 'Veja quem fez melhor hoje, esta semana e este mês em cada modalidade — e defina o seu próximo objetivo.',
+            text: 'Veja quem fez melhor este mês no seu clube em cada modalidade — e defina o seu próximo objetivo.',
           },
         ],
       },
@@ -358,7 +359,7 @@ export const ptPT = {
           'Não é uma competição oficial. Ninguém é avaliado e cada atirador decide se aparece: a Comunidade só mostra o nome, a foto e a melhor pontuação — nunca o email nem mais nada.',
         ],
         points: [
-          'Classificações do dia, da semana e do mês por modalidade',
+          'Classificações do mês por clube, modalidade e campo',
           'Ouro, prata e bronze para os três primeiros',
           'Pode desligar "Mostrar-me na Comunidade" quando quiser',
         ],

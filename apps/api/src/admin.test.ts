@@ -19,7 +19,7 @@ const newSession = {
 const DATA_ENDPOINTS: [string, string, unknown?][] = [
   ['GET', '/api/dashboard'],
   ['GET', '/api/disciplines'],
-  ['GET', '/api/community/leaderboard?discipline=trap'],
+  ['GET', '/api/community/leaderboard?clubId=ccm&discipline=fosso'],
   ['GET', '/api/sessions'],
   ['POST', '/api/sessions', newSession],
   ['PUT', '/api/sessions/00000000-0000-0000-0000-000000000000', newSession],

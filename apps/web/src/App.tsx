@@ -81,7 +81,7 @@ export function App({ user }: { user: CurrentUser }) {
             <Route path="add" element={<AddSessionPage me={me} />} />
             <Route path="history" element={<HistoryPage />} />
             <Route path="history/:id" element={<EditSessionPage />} />
-            <Route path="community" element={<CommunityPage />} />
+            <Route path="community" element={<CommunityPage homeClubId={me.homeClubId} />} />
             <Route path="clubs" element={<ClubsPage me={me} />} />
             <Route path="settings" element={<SettingsPage me={me} />} />
             <Route path="notifications" element={<NotificationsPage />} />

@@ -16,17 +16,18 @@ const CARLA: E2EUser = { id: 'e2e-carla', email: 'carla@example.test', name: 'Ca
 
 const fosso = (date: string, ...scores: number[]) =>
   scores.map((score) => ({ date, discipline: 'fosso', score }));
+const onField2 = (sessions: ReturnType<typeof fosso>) =>
+  sessions.map((s) => ({ ...s, fieldId: '2' }));
 
 /**
- * Fosso in October 2026 (the owner's history has 15, 19 and 18 on the 13th, 17th and 23rd, the
- * former Trap series, decision #68): Other and Ana both have two 25s, Other
- * has a 24 and Ana a 23, so Other wins. The reference date (Friday 2026-10-23) is in the week of
- * 18–24 October (Sunday to Saturday).
+ * Fosso at CCM in October 2026 (the owner's history has 15, 19 and 18 on the 13th, 17th and 23rd
+ * without a field, the former Trap series, decision #68): Other and Ana both have two 25s, Other
+ * has a 24 and Ana a 23, so Other wins. Everyone shot on Field 1 except Bruno, on Field 2.
  */
 test.beforeEach(async ({ request }) => {
   await seedSessions(request, OTHER, fosso('2026-10-21', 25, 25, 24));
   await seedSessions(request, ANA, [...fosso('2026-10-05', 25, 25), ...fosso('2026-10-22', 23)]);
-  await seedSessions(request, BRUNO, fosso('2026-10-23', 25, 10));
+  await seedSessions(request, BRUNO, onField2(fosso('2026-10-23', 25, 10)));
   await seedSessions(request, OWNER, fosso('2026-10-20', 24));
   await seedSessions(request, CARLA, fosso('2026-09-30', 22));
 });
@@ -41,9 +42,8 @@ test('R27: monthly ranking by default: podium for the top three, then the list w
   page,
 }) => {
   await openFosso(page);
-  await expect(page.getByRole('button', { name: 'Month' })).toHaveAttribute('aria-pressed', 'true');
   await expect(page.getByTestId('period-label')).toHaveText('October 2026');
-  await expect(page.getByRole('button', { name: 'Next period' })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Next month' })).toBeDisabled();
 
   await expect(page.getByTestId('podium-1')).toContainText('Other Shooter');
   // Only the best score shows; how many times it was reached only breaks ties.
@@ -74,29 +74,58 @@ test('R27: monthly ranking by default: podium for the top three, then the list w
   await expect(page.getByRole('link', { name: /ranking/i })).toHaveCount(0);
 });
 
-test('R27: switching to week and day, and stepping back to earlier periods', async ({ page }) => {
-  await openFosso(page);
+test('R53: club → discipline → field (every field by default), the month only, stepping back', async ({
+  page,
+}) => {
+  await page.goto('/app');
+  await goTo(page, 'Community');
+  const club = page.getByRole('combobox', { name: 'Club' });
+  const discipline = page.getByRole('combobox', { name: 'Discipline' });
+  const field = page.getByRole('combobox', { name: 'Field' });
+  await expect(club).toHaveValue('ccm');
+  await expect(discipline.getByRole('option')).toHaveText(['Compak Sporting', 'Fosso', 'Helice']);
+  await expect(field.getByRole('option')).toHaveText([
+    'All fields',
+    'Field 1',
+    'Field 2',
+    'Field 3',
+    'Field 4',
+  ]);
+  // No day or week any more.
+  for (const name of ['Day', 'Week', 'Month']) {
+    await expect(page.getByRole('button', { name, exact: true })).toHaveCount(0);
+  }
 
-  await page.getByRole('button', { name: 'Week' }).click();
-  await expect(page.getByTestId('period-label')).toHaveText('18–24 Oct 2026');
-  // Ana's two 25s were on 5 October: this week she only has a 23.
+  await discipline.selectOption({ label: 'Fosso' });
+  await expect(field).toHaveValue('');
+  await expect(field.getByRole('option')).toHaveText(['All fields', 'Field 1', 'Field 2']);
+  await field.selectOption({ label: 'Field 2' });
+  await expect(page.getByTestId('podium-1')).toContainText('Bruno Dias');
+  await expect(page.getByTestId('podium-2')).toHaveCount(0);
+
+  // Field 2 has no Helice: back to every field.
+  await discipline.selectOption({ label: 'Helice' });
+  await expect(field).toHaveValue('');
+  await expect(field.getByRole('option')).toHaveText(['All fields', 'Field 1']);
+
+  await discipline.selectOption({ label: 'Fosso' });
+  await field.selectOption({ label: 'Field 1' });
   await expect(page.getByTestId('podium-1')).toContainText('Other Shooter');
-  await expect(page.getByTestId('podium-2')).toContainText('Bruno Dias');
+  await expect(page.getByTestId('podium-2')).toContainText('Ana Costa');
+  await expect(page.getByTestId('podium-3')).toContainText('Test Owner');
+  await expect(page.getByText('Bruno Dias')).toHaveCount(0);
+
+  // The choices are in the address: a reload keeps them.
+  await page.reload();
+  await expect(field).toHaveValue('1');
   await expect(page.getByTestId('podium-3')).toContainText('Test Owner');
 
-  await page.getByRole('button', { name: 'Day' }).click();
-  await expect(page.getByTestId('period-label')).toHaveText('23 Oct 2026');
-  await expect(page.getByTestId('podium-1')).toContainText('Bruno Dias');
-  await expect(page.getByTestId('podium-2')).toContainText('Test Owner');
-  await expect(page.getByTestId('podium-3')).toHaveCount(0);
-
-  await page.getByRole('button', { name: 'Month' }).click();
-  await page.getByRole('button', { name: 'Previous period' }).click();
+  await page.getByRole('button', { name: 'Previous month' }).click();
   await expect(page.getByTestId('period-label')).toHaveText('September 2026');
   await expect(page.getByTestId('podium-1')).toContainText('Carla Reis');
-  await page.getByRole('button', { name: 'Previous period' }).click();
+  await page.getByRole('button', { name: 'Previous month' }).click();
   await expect(page.getByTestId('period-label')).toHaveText('August 2026');
-  await expect(page.getByText('No results for this period yet.')).toBeVisible();
+  await expect(page.getByText('No results this month yet.')).toBeVisible();
 });
 
 test('R28: "Show me in the Community" off hides me from the ranking; the display name can change', async ({

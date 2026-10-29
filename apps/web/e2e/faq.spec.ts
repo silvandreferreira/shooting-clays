@@ -6,8 +6,8 @@ test('R36: the FAQ opens from the menu; each question expands to its answer', as
   await accountItem(page, 'FAQ').click();
   await expect(page.getByRole('heading', { name: 'Frequently asked questions' })).toBeVisible();
 
-  const question = page.getByText('What do Day, Week and Month cover?');
-  const answer = page.getByText('Week runs from Sunday to Saturday');
+  const question = page.getByText('Which results count in the Community?');
+  const answer = page.getByText('All fields count by default');
   await expect(answer).toBeHidden();
   await question.click();
   await expect(answer).toBeVisible();

@@ -4,6 +4,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Community per club and field
+
+- **Changed:** the Community ranks one month at a club (the home club first), in one of the club's disciplines and, optionally, on one field (**All fields** by default; only the fields with that discipline). Day and Week are gone; the arrows step by month. Series without a club are not ranked. `GET /api/community/leaderboard` takes `clubId` and `fieldId` instead of `period`. FAQ and home page texts follow. Decision #71. R26, R27, R36, R53.
+
 ### Dashboard per club and field
 
 - **Added:** **Club** on the Dashboard (the home club by default, or All clubs) and **Consider fields**, which shows a card and a bar per field and marks each field with its own shape in the scores chart; both kept on the device. `GET /api/dashboard` returns the club and field of each point (the device cache is renewed: `CACHE_BUSTER` v4). Decision #70. R52.

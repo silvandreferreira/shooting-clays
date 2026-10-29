@@ -1,4 +1,4 @@
-import type { CommunityPeriod, Locale, Period, SiteDisciplineKey } from '@shooting-clays/shared';
+import type { Locale, Period, SiteDisciplineKey } from '@shooting-clays/shared';
 
 /**
  * All UI strings, in English (the source). `pt-PT.ts` holds the same keys in European Portuguese;
@@ -205,18 +205,19 @@ export const en = {
   },
   community: {
     title: 'Community',
+    clubLabel: 'Club',
     disciplineLabel: 'Discipline',
-    periodLabel: 'Period',
-    periods: { day: 'Day', week: 'Week', month: 'Month' } satisfies Record<CommunityPeriod, string>,
-    previous: 'Previous period',
-    next: 'Next period',
+    fieldLabel: 'Field',
+    allFields: 'All fields',
+    previous: 'Previous month',
+    next: 'Next month',
     podium: 'Podium',
     ranking: 'Ranking',
     place: (rank: number) =>
       `${rank}${rank === 1 ? 'st' : rank === 2 ? 'nd' : rank === 3 ? 'rd' : 'th'}`,
     bestLabel: (score: number) => `Best ${score}`,
     you: 'You',
-    empty: 'No results for this period yet.',
+    empty: 'No results this month yet.',
     loading: 'Loading…',
     loadError: 'Could not load the ranking.',
     hidden: 'You are hidden from the Community, so you are not in this ranking.',
@@ -252,9 +253,9 @@ export const en = {
           "Each shooter's series in the chosen discipline and period are counted by score. Whoever has more series at 25 comes first; if that is equal, more series at 24, then at 23, and so on down to 0. Only the best score is shown, but every series counts. Shooters with exactly the same series at every score share the place (for example 1st, 1st, 3rd), and the one who reached their best score first is listed first. The first three places get gold, silver and bronze; a shared place shares the medal.",
       },
       periods: {
-        question: 'What do Day, Week and Month cover?',
+        question: 'Which results count in the Community?',
         answer:
-          'Calendar days in Portugal (Lisbon time). Week runs from Sunday to Saturday and Month is the calendar month. The arrows go back to earlier periods.',
+          'Those of the calendar month in Portugal (Lisbon time), at the club and in the discipline you choose. All fields count by default; choose a field to see only that one. The arrows go back to earlier months.',
       },
       community: {
         question: 'Who appears in the Community?',
@@ -315,7 +316,7 @@ export const en = {
       faq: {
         title: 'Frequently asked questions | Shooting Clays',
         description:
-          'How to put the app on your phone, how the Community ranking works, what Day, Week and Month cover and who appears in the Community.',
+          'How to put the app on your phone, how the Community ranking works, which results count and who appears in the Community.',
       },
       contact: {
         title: 'Contact | Shooting Clays',
@@ -348,7 +349,7 @@ export const en = {
           },
           {
             title: 'Compare with the Community',
-            text: 'See who shot best today, this week and this month in each discipline — and set yourself the next target.',
+            text: 'See who shot best this month at your club in each discipline — and set yourself the next target.',
           },
         ],
       },
@@ -359,7 +360,7 @@ export const en = {
           'It is not an official competition. Nobody is judged and each shooter decides whether to appear: the Community only shows the display name, the photo and the best score — never an email or anything else.',
         ],
         points: [
-          'Day, week and month rankings per discipline',
+          'Monthly rankings per club, discipline and field',
           'Gold, silver and bronze for the top three',
           'Switch off "Show me in the Community" at any time',
         ],

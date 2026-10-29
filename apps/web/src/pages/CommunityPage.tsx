@@ -1,22 +1,21 @@
 import {
-  COMMUNITY_PERIODS,
-  DISCIPLINE_KEYS,
-  disciplineSchema,
+  clubDisciplines,
+  CLUBS,
+  disciplineFields,
+  findClub,
+  homeClub,
   isoDateSchema,
-  periodBounds,
-  shiftPeriod,
+  monthBounds,
+  shiftMonth,
   todayInLisbon,
-  type CommunityPeriod,
+  type DisciplineKey,
   type LeaderboardEntry,
 } from '@shooting-clays/shared';
 import { Link, useSearchParams } from 'react-router';
 import { Avatar } from '../components/Avatar';
 import { useT } from '../i18n';
-import { formatPeriod } from '../lib/format';
+import { formatMonth } from '../lib/format';
 import { useLeaderboard } from '../lib/queries';
-
-const isPeriod = (value: string | null): value is CommunityPeriod =>
-  COMMUNITY_PERIODS.includes(value as CommunityPeriod);
 
 /** Olympic colours for the first three places; ties share the medal (two golds, then bronze). */
 const MEDAL: Record<number, { fill: string; ring: string }> = {
@@ -125,86 +124,111 @@ function Row({ entry }: { entry: LeaderboardEntry }) {
   );
 }
 
-export function CommunityPage() {
+const selectClass = 'min-h-11 w-full rounded-lg border-2 border-line bg-card px-3 font-semibold';
+
+/**
+ * One club, discipline and month; the field is optional (decision #71). The choices live in the
+ * URL: `club`, `discipline`, `field` (absent: every field) and `date` (any day of the month).
+ */
+export function CommunityPage({ homeClubId }: { homeClubId: string | null }) {
   const t = useT();
   const [params, setParams] = useSearchParams();
   const today = todayInLisbon(new Date());
-  const discipline =
-    disciplineSchema.safeParse(params.get('discipline')).data ?? DISCIPLINE_KEYS[0];
-  const period = isPeriod(params.get('period'))
-    ? (params.get('period') as CommunityPeriod)
-    : 'month';
+  const club = findClub(params.get('club'))?.id ?? homeClub(homeClubId).id;
+  const disciplines = clubDisciplines(club);
+  const discipline = disciplines.find((d) => d === params.get('discipline')) ?? disciplines[0]!;
+  const fields = disciplineFields(club, discipline);
+  const fieldId = fields.find((f) => f.id === params.get('field'))?.id;
   const requested = isoDateSchema.safeParse(params.get('date')).data;
   const date = requested && requested <= today ? requested : today;
-  const { from, to } = periodBounds(period, date);
+  const { from, to } = monthBounds(date);
   const isCurrent = to >= today;
 
-  const { data, isPending, isError } = useLeaderboard({ discipline, period, date });
+  const { data, isPending, isError } = useLeaderboard({ clubId: club, discipline, fieldId, date });
 
-  const update = (changes: Record<string, string>) =>
+  const update = (changes: Record<string, string | null>) =>
     setParams((p) => {
       const next = new URLSearchParams(p);
-      for (const [key, value] of Object.entries(changes)) next.set(key, value);
+      for (const [key, value] of Object.entries(changes)) {
+        if (value === null) next.delete(key);
+        else next.set(key, value);
+      }
       return next;
+    });
+  const chooseClub = (id: string) =>
+    update({
+      club: id,
+      discipline: clubDisciplines(id).includes(discipline) ? discipline : null,
+      field: null,
+    });
+  // A field that does not have the new discipline goes back to every field.
+  const chooseDiscipline = (d: DisciplineKey) =>
+    update({
+      discipline: d,
+      field: disciplineFields(club, d).some((f) => f.id === fieldId) ? (fieldId ?? null) : null,
     });
 
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold">{t.community.title}</h1>
 
-      <label className="block">
-        <span className="sr-only">{t.community.disciplineLabel}</span>
+      <div className="grid gap-2 sm:grid-cols-3">
+        <select
+          aria-label={t.community.clubLabel}
+          value={club}
+          onChange={(e) => chooseClub(e.target.value)}
+          className={selectClass}
+        >
+          {CLUBS.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
         <select
           aria-label={t.community.disciplineLabel}
           value={discipline}
-          onChange={(e) => update({ discipline: e.target.value })}
-          className="min-h-11 w-full rounded-lg border-2 border-line bg-card px-3 font-semibold"
+          onChange={(e) => chooseDiscipline(e.target.value as DisciplineKey)}
+          className={selectClass}
         >
-          {DISCIPLINE_KEYS.map((k) => (
+          {disciplines.map((k) => (
             <option key={k} value={k}>
               {t.disciplines[k]}
             </option>
           ))}
         </select>
-      </label>
-
-      <div
-        role="group"
-        aria-label={t.community.periodLabel}
-        className="grid grid-cols-3 gap-1 rounded-xl border border-line bg-card p-1"
-      >
-        {COMMUNITY_PERIODS.map((p) => (
-          <button
-            key={p}
-            type="button"
-            aria-pressed={period === p}
-            onClick={() => update({ period: p, date: today })}
-            className={`min-h-11 rounded-lg px-2 text-sm font-semibold ${
-              period === p ? 'bg-accent text-accent-ink' : 'text-ink-muted'
-            }`}
-          >
-            {t.community.periods[p]}
-          </button>
-        ))}
+        <select
+          aria-label={t.community.fieldLabel}
+          value={fieldId ?? ''}
+          onChange={(e) => update({ field: e.target.value || null })}
+          className={selectClass}
+        >
+          <option value="">{t.community.allFields}</option>
+          {fields.map((f) => (
+            <option key={f.id} value={f.id}>
+              {t.clubs.field(f.id)}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="flex items-center justify-between gap-2">
         <button
           type="button"
           aria-label={t.community.previous}
-          onClick={() => update({ date: shiftPeriod(period, date, -1) })}
+          onClick={() => update({ date: shiftMonth(date, -1) })}
           className="flex size-11 items-center justify-center rounded-lg border-2 border-line text-xl font-bold"
         >
           ‹
         </button>
         <p className="text-center font-semibold" data-testid="period-label" aria-live="polite">
-          {formatPeriod(period, from, to)}
+          {formatMonth(from)}
         </p>
         <button
           type="button"
           aria-label={t.community.next}
           disabled={isCurrent}
-          onClick={() => update({ date: shiftPeriod(period, date, 1) })}
+          onClick={() => update({ date: shiftMonth(date, 1) })}
           className="flex size-11 items-center justify-center rounded-lg border-2 border-line text-xl font-bold disabled:opacity-30"
         >
           ›
