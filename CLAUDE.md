@@ -4,7 +4,7 @@ This file is loaded automatically at the start of every Claude Code session. It 
 
 ## 1. Project in one paragraph
 
-A mobile-first web app (PWA) to log clay shooting results (date, discipline, score out of 25, hardest targets, notes) and see a dashboard per discipline for **all time**, **last month** and **this month**. React front end and a separate REST API (Hono) on Vercel, Postgres on Neon. Roadmap: iteration 1 = core app, iteration 2 = Google sign-in, iteration 3 = admin approval and user management, iteration 4 = community leaderboard, iteration 5 = interactive scores chart, iteration 6 = translations English / European Portuguese, iteration 7 = clubs, iteration 8 = official (club) and unofficial (self-recorded) results (see `docs/roadmap.md`).
+A mobile-first web app (PWA) to log clay shooting results (date, discipline, score out of 25, hardest targets, notes) and see a dashboard per discipline for **all time**, **last month** and **this month**. React front end and a separate REST API (Hono) on Vercel, Postgres on Neon. Roadmap: iteration 1 = core app, iteration 2 = Google sign-in, iteration 3 = admin approval and user management, iteration 4 = community leaderboard, iteration 5 = interactive scores chart, iteration 6 = translations English / European Portuguese, iteration 7 = clubs, iteration 8 = official (club) and unofficial (self-recorded) results, iteration 9 = freemium (paid Community, draft) (see `docs/roadmap.md`).
 
 ## 2. Language rules (strict)
 

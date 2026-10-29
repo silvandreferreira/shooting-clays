@@ -10,6 +10,7 @@
 | 6         | Translations (English / Portuguese)  | Done (2026-10-26) |
 | 7         | Clubs (proposal)                     | Planned           |
 | 8         | Official and unofficial results      | Planned           |
+| 9         | Freemium (paid Community)            | Planned (draft)   |
 
 When an iteration starts, mark it "In progress"; when it ships, mark it "Done" with the date and update `changelog.md`.
 
@@ -436,3 +437,53 @@ Goal: split results into **official** (recorded by a club, iteration 7) and **un
 - Unit: filters and statistics per source.
 - Integration: a shooter cannot edit or delete an official session; a manager can only record for their own club's members; `source` filter on dashboard, history and leaderboard; default is unofficial.
 - E2E: manager records an official result; the shooter sees it under Official and All but not under the default Unofficial; leaderboard switches between the three.
+
+---
+
+## Iteration 9 — Freemium (paid Community)
+
+Goal: the Community becomes the **premium** part of the app. Logging series, the Dashboard and History stay free; ranking against other shooters needs a paid membership (decision #75). Draft written on 2026-10-29 from the owner's description; prices, payment provider and the user flow are to be discussed before it starts.
+
+### Prices (aligned, not final)
+
+- **€6 per month** or **€60 per year** (two months free).
+
+### Settings: "Join the Community"
+
+- The Settings switch **Show me in the Community** becomes **Join the Community** (the European Portuguese label chosen by the owner goes in `pt-PT.ts`). The new name already tells that it is something you sign up for, not only a visibility setting.
+- Turning it **on** opens the **payment page** (choose monthly or yearly, then pay). Only when the payment is **valid and verified** by the API (from the payment provider, never from the browser) does the user get the Community: the page, and appearing in the rankings.
+- Turning it **off** first shows a warning: from that moment the Community is closed, and joining again means **paying again**, even if part of a paid month or year is left. Confirming ends the membership at once (no refund, no remaining time kept).
+- The Settings page has a Community section (with its own anchor, e.g. `/app/settings#community`) showing the state: not a member, member until …, payment pending, payment failed.
+
+### Community icon
+
+- The **Community** item stays in the navigation (bottom bar and menu) for everyone, but for non-members it is shown in a **premium** style: muted, with a small lock or star in the premium colour, so it reads as unavailable and paid rather than broken.
+- Tapping it as a non-member opens **Settings** scrolled to the Community section, instead of the Community page.
+- The Community page and `GET /api/community/leaderboard` check the membership in the API (`403 COMMUNITY_MEMBERSHIP_REQUIRED` for non-members); the UI never decides alone.
+
+### Rules (draft)
+
+- Membership is per user; a monthly or yearly plan renews automatically until the user leaves.
+- Only members are ranked and see the rankings; leaving removes the user from the rankings at once (as "Show me in the Community" off does today).
+- A failed renewal ends the membership when the paid period ends; the user sees why in Settings and in their notifications.
+- Admins and club accounts (iteration 7): to decide (free, or like everyone).
+
+### Data (draft)
+
+- `memberships`: `user_id`, `plan` (`month` / `year`), `status` (`pending` / `active` / `ended`), `provider`, `provider_customer_id`, `provider_subscription_id`, `current_period_end`, `ended_at`, `created_at`. Exactly one non-ended membership per user.
+- Replaces `profiles.show_in_community`: a user is in the Community when they have an `active` membership.
+- A webhook endpoint (`POST /api/payments/webhook`) receives the provider's events, verifies their signature and updates `memberships`; the payment page is the provider's checkout (no card data in the app).
+
+### Open questions (decide when the iteration starts)
+
+- Payment provider (Stripe is the usual choice for subscriptions; MB WAY and Multibanco matter in Portugal), invoices and VAT.
+- Do current users keep the Community for free for a while (launch period), or does it close for everyone on day one?
+- A free trial (e.g. 7 days)?
+- What non-members see on the Community page: nothing, or a preview (e.g. the podium blurred)?
+- Refunds: the rule above is "leaving ends it at once, no refund"; check that this is allowed and stated in the terms before charging.
+- Terms of sale and privacy policy pages on the public site.
+
+### Tests (draft)
+
+- Integration: the leaderboard answers `403` without an active membership; the webhook ignores events with a bad signature; an active membership puts the user in the rankings and leaving takes them out at once; joining again needs a new payment.
+- E2E (with the provider's test mode or a fake checkout in E2E mode): a non-member taps the premium Community icon → Settings, Community section → **Join the Community** → payment → Community open; leaving shows the warning and closes it.
