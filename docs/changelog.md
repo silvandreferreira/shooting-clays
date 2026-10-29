@@ -4,6 +4,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Roadmap: freemium
+
+- **Added:** iteration 9 (draft): a paid Community. **Join the Community** in Settings leads to the payment (€6 a month or €60 a year); the Community icon shows as premium for non-members and opens Settings; leaving ends the membership at once. Payment by bank transfer with a payment ID that the user emails with the proof; the admin confirms it under Pending, sees Freemium members marked and filters them; an admin download of the payments between two dates (PDF and CSV, with a summary for the tax return). Decisions #75 and #76.
+
 ### Join the Community
 
 - **Changed:** the Settings switch **Show me in the Community** is now **Join the Community**, with a text on what the Community tab offers (rankings at your club per discipline and field, this month, last month or this year, the podium, the shooter just above you). The FAQ, the home page and the Community note follow. Groundwork for iteration 9 (paid Community). R28.
