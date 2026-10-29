@@ -7,15 +7,19 @@ import { SampleBadge } from './SampleBadge';
 
 interface Props {
   discipline: DisciplineKey;
+  /** With fields considered: the card's field ("Field 2", "No field"). */
+  fieldLabel?: string;
   stats: PeriodStats;
   points: SeriesPoint[];
   /** Sample data (pending account): labelled as such. */
   sample?: boolean;
 }
 
-export function DisciplineCard({ discipline, stats, points, sample = false }: Props) {
+export function DisciplineCard({ discipline, fieldLabel, stats, points, sample = false }: Props) {
   const t = useT();
-  const name = t.disciplines[discipline];
+  const name = fieldLabel
+    ? `${t.disciplines[discipline]} · ${fieldLabel}`
+    : t.disciplines[discipline];
   return (
     <article
       aria-label={name}

@@ -17,12 +17,15 @@ export interface PeriodStats {
 export interface SeriesPoint {
   date: string;
   score: number;
+  /** Where it was shot; null for series logged without a club or field. */
+  clubId: string | null;
+  fieldId: string | null;
 }
 
 export interface Dashboard {
   referenceDate: string;
   periods: Record<Period, Record<DisciplineKey, PeriodStats>>;
-  /** Every score per discipline, oldest first (ties keep creation order). */
+  /** Every score per discipline, oldest first (ties keep the order given: creation, then id). */
   series: Record<DisciplineKey, SeriesPoint[]>;
 }
 
@@ -30,6 +33,8 @@ export interface ScoredSession {
   date: string;
   discipline: DisciplineKey;
   score: number;
+  clubId?: string | null;
+  fieldId?: string | null;
 }
 
 /** Today's date (YYYY-MM-DD) in Europe/Lisbon. */
@@ -89,7 +94,12 @@ export function computeDashboard(sessions: ScoredSession[], referenceDate: strin
     for (const period of periodsForDate(s.date, referenceDate)) {
       scores[period][s.discipline].push(s.score);
     }
-    series[s.discipline].push({ date: s.date, score: s.score });
+    series[s.discipline].push({
+      date: s.date,
+      score: s.score,
+      clubId: s.clubId ?? null,
+      fieldId: s.fieldId ?? null,
+    });
   }
 
   const periods = Object.fromEntries(
@@ -102,25 +112,13 @@ export function computeDashboard(sessions: ScoredSession[], referenceDate: strin
   return { referenceDate, periods, series };
 }
 
-/** Time ranges of the "Scores over time" chart (docs/roadmap.md → Iteration 5). */
-export const CHART_RANGES = ['3m', '6m', '1y', 'all'] as const;
-
-export type ChartRange = (typeof CHART_RANGES)[number];
-
-export const DEFAULT_CHART_RANGE: ChartRange = '3m';
-
-const RANGE_MONTHS: Record<Exclude<ChartRange, 'all'>, number> = { '3m': 3, '6m': 6, '1y': 12 };
-
 /**
- * First day (inclusive) of a rolling range ending on the reference date, or null for all time.
- * 2026-10-23 − 3 months = 2026-07-23; when that month is shorter, its last day (05-31 → 02-28).
+ * The same dashboard over only the series that pass `keep` (a club, a field): the Dashboard
+ * narrows in the browser, from the one response of `GET /api/dashboard` (decision #70).
  */
-export function chartRangeStart(range: ChartRange, referenceDate: string): string | null {
-  if (range === 'all') return null;
-  const [year, month, day] = referenceDate.split('-').map(Number) as [number, number, number];
-  const total = year * 12 + (month - 1) - RANGE_MONTHS[range];
-  const y = Math.floor(total / 12);
-  const m = (total % 12) + 1;
-  const lastDay = new Date(Date.UTC(y, m, 0)).getUTCDate();
-  return `${y}-${String(m).padStart(2, '0')}-${String(Math.min(day, lastDay)).padStart(2, '0')}`;
+export function filterDashboard(dashboard: Dashboard, keep: (p: SeriesPoint) => boolean) {
+  const sessions = DISCIPLINE_KEYS.flatMap((discipline) =>
+    dashboard.series[discipline].filter(keep).map((p) => ({ ...p, discipline })),
+  );
+  return computeDashboard(sessions, dashboard.referenceDate);
 }

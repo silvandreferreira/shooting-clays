@@ -1,11 +1,4 @@
-import {
-  CHART_RANGES,
-  chartRangeStart,
-  DEFAULT_CHART_RANGE,
-  type ChartRange,
-  type DisciplineKey,
-  type SeriesPoint,
-} from '@shooting-clays/shared';
+import type { DisciplineKey, SeriesPoint } from '@shooting-clays/shared';
 import { useState } from 'react';
 import {
   Bar,
@@ -53,33 +46,45 @@ function ChartCard({
   );
 }
 
+type ScorePoint = Pick<SeriesPoint, 'date' | 'score'> & { fieldId?: string | null };
+
+export interface ScoreRow {
+  key: string;
+  date: string;
+  /** The field of each discipline's series in this row (null: not recorded). */
+  fields: Partial<Record<DisciplineKey, string | null>>;
+  [discipline: string]: unknown;
+}
+
 /**
  * One row per series, never an average (scores are whole numbers): a day with two series of a
  * discipline gives two rows, so two points on that date. Disciplines shot the same day share
  * rows; `key` (date#n) keeps the rows apart on the X axis. Lines skip missing days.
  */
-export function toScoreRows(series: Partial<Record<DisciplineKey, SeriesPoint[]>>) {
-  const byDate = new Map<string, Partial<Record<DisciplineKey, number[]>>>();
-  for (const [discipline, points] of Object.entries(series) as [DisciplineKey, SeriesPoint[]][]) {
-    for (const { date, score } of points) {
-      const row = byDate.get(date) ?? {};
-      (row[discipline] ??= []).push(score);
-      byDate.set(date, row);
+export function toScoreRows(series: Partial<Record<DisciplineKey, ScorePoint[]>>): ScoreRow[] {
+  const byDate = new Map<string, Partial<Record<DisciplineKey, ScorePoint[]>>>();
+  for (const [discipline, points] of Object.entries(series) as [DisciplineKey, ScorePoint[]][]) {
+    for (const point of points) {
+      const row = byDate.get(point.date) ?? {};
+      (row[discipline] ??= []).push(point);
+      byDate.set(point.date, row);
     }
   }
   return [...byDate.entries()]
     .sort(([a], [b]) => a.localeCompare(b))
     .flatMap(([date, row]) => {
-      const rows = Math.max(...Object.values(row).map((scores) => scores.length));
-      return Array.from({ length: rows }, (_, i) => ({
-        key: `${date}#${i}`,
-        date,
-        ...Object.fromEntries(
-          Object.entries(row)
-            .filter(([, scores]) => i < scores.length)
-            .map(([k, scores]) => [k, scores[i]]),
-        ),
-      }));
+      const rows = Math.max(...Object.values(row).map((points) => points.length));
+      return Array.from({ length: rows }, (_, i) => {
+        const here = (Object.entries(row) as [DisciplineKey, ScorePoint[]][]).filter(
+          ([, points]) => i < points.length,
+        );
+        return {
+          key: `${date}#${i}`,
+          date,
+          fields: Object.fromEntries(here.map(([k, points]) => [k, points[i]!.fieldId ?? null])),
+          ...Object.fromEntries(here.map(([k, points]) => [k, points[i]!.score])),
+        };
+      });
     });
 }
 
@@ -130,64 +135,119 @@ function DisciplineToggles({
   );
 }
 
-/** The chart's own time range (3 months by default), independent of the Dashboard period. */
-function RangeSwitcher({
-  value,
-  onChange,
+const FIELD_SHAPES = ['circle', 'square', 'triangle', 'diamond'] as const;
+type FieldShape = (typeof FIELD_SHAPES)[number] | 'ring';
+
+/** With fields considered, each field of the club has its own marker; no field is a ring. */
+function fieldShape(fieldIds: readonly string[], fieldId: string | null): FieldShape {
+  const index = fieldId === null ? -1 : fieldIds.indexOf(fieldId);
+  return index < 0 ? 'ring' : FIELD_SHAPES[index % FIELD_SHAPES.length]!;
+}
+
+function ShapeMark({
+  shape,
+  cx,
+  cy,
+  r,
+  fill,
 }: {
-  value: ChartRange;
-  onChange: (range: ChartRange) => void;
+  shape: FieldShape;
+  cx: number;
+  cy: number;
+  r: number;
+  fill: string;
+}) {
+  const stroke = { stroke: 'var(--color-card)', strokeWidth: 1.5 };
+  switch (shape) {
+    case 'square':
+      return <rect x={cx - r} y={cy - r} width={r * 2} height={r * 2} fill={fill} {...stroke} />;
+    case 'triangle':
+      return (
+        <path
+          d={`M${cx} ${cy - r * 1.2}L${cx + r * 1.15} ${cy + r * 0.85}H${cx - r * 1.15}Z`}
+          fill={fill}
+          {...stroke}
+        />
+      );
+    case 'diamond':
+      return (
+        <path
+          d={`M${cx} ${cy - r * 1.3}L${cx + r * 1.3} ${cy}L${cx} ${cy + r * 1.3}L${cx - r * 1.3} ${cy}Z`}
+          fill={fill}
+          {...stroke}
+        />
+      );
+    case 'ring':
+      return (
+        <circle
+          cx={cx}
+          cy={cy}
+          r={r - 0.5}
+          fill="var(--color-card)"
+          stroke={fill}
+          strokeWidth={2}
+        />
+      );
+    default:
+      return <circle cx={cx} cy={cy} r={r} fill={fill} {...stroke} />;
+  }
+}
+
+/** Which marker is which field (only the fields in the chart). */
+function ShapeLegend({
+  fieldIds,
+  shown,
+}: {
+  fieldIds: readonly string[];
+  shown: (string | null)[];
 }) {
   const t = useT();
   return (
-    <div
-      role="group"
-      aria-label={t.dashboard.rangeLabel}
-      className="mb-3 grid grid-cols-4 gap-1 rounded-xl border border-line bg-surface p-1"
-    >
-      {CHART_RANGES.map((r) => (
-        <button
-          key={r}
-          type="button"
-          aria-pressed={value === r}
-          onClick={() => onChange(r)}
-          className={`min-h-11 rounded-lg px-1 text-sm font-semibold ${
-            value === r ? 'bg-accent text-accent-ink' : 'text-ink-muted'
-          }`}
-        >
-          {t.dashboard.ranges[r]}
-        </button>
+    <ul aria-label={t.dashboard.shapesLabel} className="mt-1 flex flex-wrap gap-x-4 gap-y-1 px-3">
+      {shown.map((fieldId) => (
+        <li key={fieldId ?? 'none'} className="flex items-center gap-1.5 text-sm text-ink-muted">
+          <svg aria-hidden viewBox="0 0 16 16" className="size-4">
+            <ShapeMark
+              shape={fieldShape(fieldIds, fieldId)}
+              cx={8}
+              cy={8}
+              r={5}
+              fill="var(--color-ink-muted)"
+            />
+          </svg>
+          {fieldId === null ? t.clubs.noField : t.clubs.field(fieldId)}
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }
 
 /**
- * Every score per discipline over the selected range (rolling, counted back from the reference
- * date). Range and hidden disciplines are per visit.
+ * Every score per discipline in the Dashboard period (the series come filtered by period, club
+ * and field). With `fieldIds` (fields considered), each point's marker tells its field. Hidden
+ * disciplines are per visit.
  */
 export function ScoresChart({
-  series: allSeries,
-  referenceDate,
+  series,
+  fieldIds = null,
   sample = false,
 }: {
-  series: Partial<Record<DisciplineKey, SeriesPoint[]>>;
-  referenceDate: string;
+  series: Partial<Record<DisciplineKey, ScorePoint[]>>;
+  fieldIds?: readonly string[] | null;
   sample?: boolean;
 }) {
   const t = useT();
-  const [range, setRange] = useState<ChartRange>(DEFAULT_CHART_RANGE);
   const [hidden, setHidden] = useState<ReadonlySet<DisciplineKey>>(new Set());
-  const start = chartRangeStart(range, referenceDate);
-  const series = Object.fromEntries(
-    Object.entries(allSeries).map(([k, points]) => [
-      k,
-      start ? points.filter((p) => p.date >= start) : points,
-    ]),
-  ) as Partial<Record<DisciplineKey, SeriesPoint[]>>;
   const disciplines = (Object.keys(series) as DisciplineKey[]).filter((k) => series[k]?.length);
   const visible = disciplines.filter((d) => !hidden.has(d));
   const rows = toScoreRows(series);
+  const shownFields = fieldIds
+    ? [...fieldIds, null].filter((f) =>
+        visible.some((d) => series[d]?.some((p) => (p.fieldId ?? null) === f)),
+      )
+    : [];
+  const fieldName = (fieldId: string | null | undefined) =>
+    fieldId ? t.clubs.field(fieldId) : t.clubs.noField;
   const toggle = (d: DisciplineKey) =>
     setHidden((current) => {
       const next = new Set(current);
@@ -196,7 +256,6 @@ export function ScoresChart({
     });
   return (
     <ChartCard title={t.dashboard.scoresChart} sample={sample}>
-      <RangeSwitcher value={range} onChange={setRange} />
       {rows.length === 0 ? (
         <p className="text-ink-muted">{t.dashboard.noChartData}</p>
       ) : (
@@ -226,7 +285,16 @@ export function ScoresChart({
                   <Tooltip
                     contentStyle={tooltipStyle}
                     labelFormatter={(key) => dateOfKey(String(key))}
-                    formatter={(value, name) => [value, t.disciplines[name as DisciplineKey]]}
+                    formatter={(value, name, item) => {
+                      const discipline = name as DisciplineKey;
+                      const row = item.payload as ScoreRow | undefined;
+                      return [
+                        fieldIds
+                          ? `${String(value)} · ${fieldName(row?.fields[discipline])}`
+                          : value,
+                        t.disciplines[discipline],
+                      ];
+                    }}
                   />
                   {/* Hidden lines are left out; colours follow the discipline, the Y axis stays 0–25. */}
                   {visible.map((d) => (
@@ -236,12 +304,33 @@ export function ScoresChart({
                       dataKey={d}
                       stroke={disciplineColor(d)}
                       strokeWidth={2}
-                      dot={{
-                        r: 4,
-                        strokeWidth: 2,
-                        stroke: 'var(--color-card)',
-                        fill: disciplineColor(d),
-                      }}
+                      dot={
+                        fieldIds
+                          ? (props: {
+                              cx?: number;
+                              cy?: number;
+                              index?: number;
+                              payload?: ScoreRow;
+                            }) =>
+                              props.cx == null || props.cy == null || props.payload?.[d] == null ? (
+                                <g key={`${d}-${props.index}`} />
+                              ) : (
+                                <ShapeMark
+                                  key={`${d}-${props.index}`}
+                                  shape={fieldShape(fieldIds, props.payload.fields[d] ?? null)}
+                                  cx={props.cx}
+                                  cy={props.cy}
+                                  r={4.5}
+                                  fill={disciplineColor(d)}
+                                />
+                              )
+                          : {
+                              r: 4,
+                              strokeWidth: 2,
+                              stroke: 'var(--color-card)',
+                              fill: disciplineColor(d),
+                            }
+                      }
                       activeDot={{ r: 6 }}
                       connectNulls
                       isAnimationActive={false}
@@ -254,6 +343,9 @@ export function ScoresChart({
           {disciplines.length > 1 && (
             <DisciplineToggles disciplines={disciplines} hidden={hidden} onToggle={toggle} />
           )}
+          {fieldIds && shownFields.length > 0 && (
+            <ShapeLegend fieldIds={fieldIds} shown={shownFields} />
+          )}
         </>
       )}
     </ChartCard>
@@ -262,10 +354,20 @@ export function ScoresChart({
 
 export interface AverageBar {
   discipline: DisciplineKey;
+  /** With fields considered: the bar's field (null: not recorded). Absent: every field. */
+  fieldId?: string | null;
   avg: number;
   min: number;
   max: number;
 }
+
+type AverageRow = AverageBar & {
+  key: string;
+  /** Under the bar: the discipline, or the short field name when fields are considered. */
+  name: string;
+  /** In the tooltip: the discipline, and the field when considered. */
+  title: string;
+};
 
 interface BarLabelProps {
   x?: number | string;
@@ -280,7 +382,7 @@ interface BarLabelProps {
  * "min–max" underneath. Bar height is the average, so the whisker ends are placed with the same
  * scale (pixels per point = bar height / average).
  */
-function rangeLabel(rows: AverageBar[], t: Strings) {
+function rangeLabel(rows: AverageRow[], t: Strings) {
   function RangeLabel(props: BarLabelProps) {
     const row = rows[props.index ?? -1];
     if (!row) return null;
@@ -297,7 +399,7 @@ function rangeLabel(rows: AverageBar[], t: Strings) {
     const cx = x + width / 2;
     const cap = Math.min(10, width / 2);
     return (
-      <g data-testid={`range-${row.discipline}`}>
+      <g data-testid={`range-${row.key}`}>
         {row.max > row.min && (
           <g stroke="var(--color-ink)" strokeWidth={1.5} strokeLinecap="round">
             <line x1={cx} x2={cx} y1={top} y2={bottom} />
@@ -315,9 +417,12 @@ function rangeLabel(rows: AverageBar[], t: Strings) {
         >
           {row.avg}
         </text>
-        <text x={cx} y={top - 6} textAnchor="middle" fill="var(--color-ink-muted)" fontSize={11}>
-          {t.dashboard.range(row.min, row.max)}
-        </text>
+        {/* Many narrow bars (fields considered): the whisker and the tooltip show the range. */}
+        {rows.length <= 5 && (
+          <text x={cx} y={top - 6} textAnchor="middle" fill="var(--color-ink-muted)" fontSize={11}>
+            {t.dashboard.range(row.min, row.max)}
+          </text>
+        )}
       </g>
     );
   }
@@ -329,14 +434,14 @@ function AverageTooltip({
   payload,
 }: {
   active?: boolean;
-  payload?: readonly { payload?: AverageBar & { name: string } }[];
+  payload?: readonly { payload?: AverageRow }[];
 }) {
   const t = useT();
   const row = payload?.[0]?.payload;
   if (!active || !row) return null;
   return (
     <div style={tooltipStyle} className="px-3 py-2 text-sm">
-      <p className="font-semibold">{row.name}</p>
+      <p className="font-semibold">{row.title}</p>
       <p>
         <strong>{row.avg}</strong> {t.dashboard.average.toLowerCase()}
       </p>
@@ -355,7 +460,21 @@ export function AveragesChart({
   sample?: boolean;
 }) {
   const t = useT();
-  const rows = averages.map((a) => ({ ...a, name: t.disciplines[a.discipline] }));
+  const byField = averages.some((a) => a.fieldId !== undefined);
+  const rows: AverageRow[] = averages.map((a) => {
+    const discipline = t.disciplines[a.discipline];
+    if (a.fieldId === undefined)
+      return { ...a, key: a.discipline, name: discipline, title: discipline };
+    const field = a.fieldId === null ? t.clubs.noField : t.clubs.field(a.fieldId);
+    return {
+      ...a,
+      key: `${a.discipline}-${a.fieldId ?? 'none'}`,
+      name: a.fieldId === null ? t.dashboard.noFieldShort : t.dashboard.fieldShort(a.fieldId),
+      title: `${discipline} · ${field}`,
+    };
+  });
+  const names = new Map(rows.map((r) => [r.key, r.name]));
+  const disciplines = [...new Set(rows.map((r) => r.discipline))];
   return (
     <ChartCard title={t.dashboard.averagesChart} sample={sample}>
       {rows.length === 0 ? (
@@ -371,7 +490,13 @@ export function AveragesChart({
                 barCategoryGap="30%"
               >
                 <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
-                <XAxis dataKey="name" tick={axisTick} stroke="var(--color-line)" interval={0} />
+                <XAxis
+                  dataKey="key"
+                  tickFormatter={(key) => names.get(String(key)) ?? ''}
+                  tick={axisTick}
+                  stroke="var(--color-line)"
+                  interval={0}
+                />
                 <YAxis
                   domain={[0, 25]}
                   ticks={[0, 5, 10, 15, 20, 25]}
@@ -381,14 +506,31 @@ export function AveragesChart({
                 <Tooltip cursor={{ fill: 'var(--chart-grid)' }} content={<AverageTooltip />} />
                 <Bar dataKey="avg" radius={[4, 4, 0, 0]} isAnimationActive={false}>
                   {rows.map((r) => (
-                    <Cell key={r.discipline} fill={disciplineColor(r.discipline)} />
+                    <Cell key={r.key} fill={disciplineColor(r.discipline)} />
                   ))}
                   <LabelList dataKey="avg" content={rangeLabel(rows, t)} />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <p className="mt-2 text-xs text-ink-muted">{t.dashboard.averagesKey}</p>
+          {byField && (
+            <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+              {disciplines.map((d) => (
+                <li key={d} className="flex items-center gap-1.5">
+                  <span
+                    aria-hidden
+                    className="size-3 rounded-sm"
+                    style={{ background: disciplineColor(d) }}
+                  />
+                  {t.disciplines[d]}
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="mt-2 text-xs text-ink-muted">
+            {t.dashboard.averagesKey}
+            {byField && ` ${t.dashboard.fieldsKey}`}
+          </p>
         </>
       )}
     </ChartCard>

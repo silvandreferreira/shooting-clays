@@ -83,48 +83,73 @@ test('R25: each bar of "Average by discipline" shows the average and the lowest�
   await expect(range('helice')).toHaveCount(0);
 });
 
-test('R29: the scores chart has its own time range, 3 months by default', async ({ page }) => {
+test('R29: the scores chart follows the Dashboard period, with no range of its own', async ({
+  page,
+}) => {
   await page.goto('/app');
   await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
-  const ranges = page.getByRole('group', { name: 'Time range of the chart' });
+  await expect(page.getByRole('button', { name: '3 months' })).toHaveCount(0);
   const dots = page.getByRole('img', { name: 'Scores over time' }).locator('.recharts-line-dot');
-  const dotsFor = async (range: string) => {
-    await ranges.getByRole('button', { name: range }).click();
-    await expect(ranges.getByRole('button', { name: range })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
-    return dots.count();
-  };
+  // One point per series: as many as the cards count in each period.
+  for (const period of ['All time', 'Last month', 'This month'] as const) {
+    await selectPeriod(page, period);
+    let series = 0;
+    for (const count of await page.getByRole('article').getByTestId('count').allTextContents()) {
+      series += Number(count);
+    }
+    expect(series).toBeGreaterThan(0);
+    await expect(dots).toHaveCount(series);
+  }
+});
 
-  await expect(ranges.getByRole('button', { name: '3 months' })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
-  const threeMonths = await dots.count();
-  expect(threeMonths).toBeGreaterThan(0);
-  const sixMonths = await dotsFor('6 months');
-  // The first series (2026-04-12) is before 2026-04-23: only from 1 year.
-  const oneYear = await dotsFor('1 year');
-  const allTime = await dotsFor('All time');
-  expect(sixMonths).toBeGreaterThan(threeMonths);
-  expect(oneYear).toBeGreaterThan(sixMonths);
-  expect(allTime).toBe(oneYear);
+test('R52: the Dashboard is for a club (the home club first); "Consider fields" splits it per field', async ({
+  page,
+}) => {
+  await page.goto('/app');
+  const club = page.getByLabel('Club');
+  const byField = page.getByRole('switch', { name: 'Consider fields' });
+  await expect(club).toHaveValue('ccm');
+  await expect(club.getByRole('option')).toHaveText(['CCM', 'All clubs']);
+  await expect(byField).toHaveAttribute('aria-checked', 'false');
+  await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
 
-  // The Dashboard period still drives the cards, not the chart.
-  await selectPeriod(page, 'This month');
-  await expect(ranges.getByRole('button', { name: 'All time' })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
-  expect(await dots.count()).toBe(allTime);
+  // Two new series on Fields 2 and 3; the imported history has no field.
+  for (const [field, score] of [
+    ['Field 2', '25'],
+    ['Field 3', '21'],
+  ] as const) {
+    await page.goto('/app/add');
+    await page.getByText(field, { exact: true }).click();
+    await page.getByLabel('Score (out of 25)').fill(score);
+    await page.getByRole('button', { name: 'Save' }).click();
+    await expect(page).toHaveURL('/app');
+  }
 
-  // Per visit: back to 3 months after a reload.
+  await byField.click();
+  await expect(byField).toHaveAttribute('aria-checked', 'true');
+  await expect(card(page, 'Compak Sporting')).toHaveCount(0);
+  await expectCard(page, 'Compak Sporting · Field 2', '25 / 25 / 25');
+  await expectCard(page, 'Compak Sporting · Field 3', '21 / 21 / 21');
+  await expectCard(page, 'Compak Sporting · No field', '16 / 8 / 23');
+  await expectCard(page, 'Fosso · No field', '12 / 5 / 19');
+  await expect(page.getByRole('list', { name: 'Fields' }).getByRole('listitem')).toHaveText([
+    'Field 2',
+    'Field 3',
+    'No field',
+  ]);
+  await expect(page.getByTestId('range-compak-2')).toContainText('25');
+  await expect(page.getByTestId('range-compak-none')).toContainText('16');
+
+  // Kept on this device.
   await page.reload();
-  await expect(ranges.getByRole('button', { name: '3 months' })).toHaveAttribute(
-    'aria-pressed',
-    'true',
-  );
+  await expect(byField).toHaveAttribute('aria-checked', 'true');
+  await expectCard(page, 'Compak Sporting · Field 2', '25 / 25 / 25');
+
+  // Every club: one card per discipline again, no switch.
+  await club.selectOption('All clubs');
+  await expect(byField).toHaveCount(0);
+  await expect(card(page, 'Compak Sporting')).toBeVisible();
+  await expect(card(page, 'Compak Sporting · Field 2')).toHaveCount(0);
 });
 
 test('R39: the Dashboard shows the scores chart first, then the averages, then the cards', async ({

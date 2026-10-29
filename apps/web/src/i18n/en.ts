@@ -1,10 +1,4 @@
-import type {
-  ChartRange,
-  CommunityPeriod,
-  Locale,
-  Period,
-  SiteDisciplineKey,
-} from '@shooting-clays/shared';
+import type { CommunityPeriod, Locale, Period, SiteDisciplineKey } from '@shooting-clays/shared';
 
 /**
  * All UI strings, in English (the source). `pt-PT.ts` holds the same keys in European Portuguese;
@@ -58,13 +52,13 @@ export const en = {
     averagesKey: 'Bar: average. Line and small numbers: lowest–highest score.',
     noChartData: 'No series in this period.',
     legendLabel: 'Disciplines shown in the chart',
-    rangeLabel: 'Time range of the chart',
-    ranges: {
-      '3m': '3 months',
-      '6m': '6 months',
-      '1y': '1 year',
-      all: 'All time',
-    } satisfies Record<ChartRange, string>,
+    club: 'Club',
+    allClubs: 'All clubs',
+    byField: 'Consider fields',
+    fieldShort: (id: string) => `F${id}`,
+    noFieldShort: '–',
+    fieldsKey: 'F1, F2…: field. –: no field recorded.',
+    shapesLabel: 'Fields',
     allHidden: 'All disciplines are hidden. Tap one below to show it.',
   },
   form: {
