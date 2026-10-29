@@ -4,6 +4,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### History periods
+
+- **Changed:** History shows **This month** by default, with **Last month** and **All time**, besides the discipline filter (both in the URL). Decision #74. R8, R56.
+
 ### Community periods
 
 - **Changed:** the Community has **This month**, **Last month** and **This year** instead of the month arrows. `GET /api/community/leaderboard` takes `period=month|year`. Decision #73. R55.
