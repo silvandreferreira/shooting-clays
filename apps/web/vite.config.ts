@@ -58,6 +58,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
+      // A new version takes over at once; the app then reloads (src/lib/app-update.ts, decision #78).
       registerType: 'autoUpdate',
       // The app registers it (src/main.tsx); the public pages do not.
       injectRegister: false,

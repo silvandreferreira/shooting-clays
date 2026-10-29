@@ -4,6 +4,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### App updates
+
+- **Changed:** an installed app left open no longer keeps running an old version: it checks for a new version when it comes back to the screen and reloads by itself (the FAQ answer follows). Decision #78. R59.
+
 ### Dashboard periods
 
 - **Changed:** the Dashboard has **This month** (default), **Last month** and **This year**, like the Community; All time is gone from it. Decision #77. R1, R58.

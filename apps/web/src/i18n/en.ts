@@ -281,7 +281,7 @@ export const en = {
       updates: {
         question: 'Do I need to update the app?',
         answer:
-          'No. You install it once and it updates itself: when there is a new version, the app downloads it in the background the next time you open it with a connection. If a change does not show yet, close the app and open it again.',
+          'No. You install it once and it updates itself: when there is a new version, the app finds it as soon as you open it or come back to it with a connection, and reloads by itself with the new version.',
       },
       language: {
         question: 'How do I change the language?',

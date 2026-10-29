@@ -277,7 +277,7 @@ export const ptPT = {
       updates: {
         question: 'Preciso de atualizar a app?',
         answer:
-          'Não. Instala-a uma vez e ela atualiza-se sozinha: quando há uma versão nova, a app descarrega-a em segundo plano da próxima vez que a abrir com rede. Se uma mudança ainda não aparecer, feche a app e volte a abri-la.',
+          'Não. Instala-a uma vez e ela atualiza-se sozinha: quando há uma versão nova, a app encontra-a assim que a abre ou volta a ela com rede, e recarrega sozinha com a versão nova.',
       },
       language: {
         question: 'Como mudo o idioma?',
