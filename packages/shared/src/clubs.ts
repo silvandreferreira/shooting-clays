@@ -57,28 +57,24 @@ export function disciplineFields(
 }
 
 export interface Place {
-  clubId: string | null;
-  fieldId: string | null;
+  clubId: string;
+  fieldId: string;
   discipline: DisciplineKey;
 }
 
 /**
- * Why a club, field and discipline do not go together, or null when they do. No club and no
- * field is valid (series logged before clubs existed); a club without a field too.
+ * Why a club, field and discipline do not go together, or null when they do. Every series has a
+ * club and a field (decision #72).
  */
 export function placeIssue(
   place: Place,
 ): { path: 'clubId' | 'fieldId' | 'discipline'; message: string } | null {
-  if (place.clubId === null) {
-    return place.fieldId === null ? null : { path: 'fieldId', message: 'fieldId needs a clubId' };
-  }
   const club = findClub(place.clubId);
   if (!club)
     return {
       path: 'clubId',
       message: `clubId must be one of: ${CLUBS.map((c) => c.id).join(', ')}`,
     };
-  if (place.fieldId === null) return null;
   const field = club.fields.find((f) => f.id === place.fieldId);
   if (!field) {
     return {

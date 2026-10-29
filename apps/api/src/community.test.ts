@@ -23,7 +23,7 @@ async function addSeries(
   scores: number[],
   date = '2026-10-10',
   discipline = 'fosso',
-  place: { clubId: string | null; fieldId: string | null } = { clubId: 'ccm', fieldId: '1' },
+  place: { clubId: string; fieldId: string } = { clubId: 'ccm', fieldId: '1' },
 ) {
   await db
     .insert(sessions)
@@ -93,8 +93,8 @@ describe('community leaderboard', () => {
     await addShooter(db, 'a');
     await addSeries(db, 'a', [25], '2026-10-01'); // Field 1
     await addSeries(db, 'a', [24], '2026-10-31', 'fosso', { clubId: 'ccm', fieldId: '2' });
-    await addSeries(db, 'a', [23], '2026-10-20', 'fosso', { clubId: 'ccm', fieldId: null });
-    await addSeries(db, 'a', [25], '2026-10-20', 'fosso', { clubId: null, fieldId: null });
+    await addSeries(db, 'a', [23], '2026-10-20', 'fosso', { clubId: 'ccm', fieldId: '2' });
+    await addSeries(db, 'a', [25], '2026-10-20', 'fosso', { clubId: 'other', fieldId: '1' });
     await addSeries(db, 'a', [25], '2026-10-23', 'compak');
     await addSeries(db, 'a', [25], '2026-09-30');
 
@@ -108,11 +108,11 @@ describe('community leaderboard', () => {
         )
       ).json()) as Leaderboard;
 
-    // Every field of the club, series without a field included; no club: not in the Community.
+    // Every field of the club; another club's series do not count.
     const month = await get('');
     expect(month).toMatchObject({ from: '2026-10-01', to: '2026-10-31', fieldId: null });
     expect(month.entries[0]).toMatchObject({ bestScore: 25, bestScoreCount: 1, series: 3 });
-    expect((await get('&fieldId=2')).entries[0]).toMatchObject({ bestScore: 24, series: 1 });
+    expect((await get('&fieldId=2')).entries[0]).toMatchObject({ bestScore: 24, series: 2 });
     expect(await get('&fieldId=2')).toMatchObject({ fieldId: '2' });
     expect((await get('&date=2026-09-15')).entries[0]).toMatchObject({ series: 1 });
     expect((await get('&date=2026-08-15')).entries).toEqual([]);

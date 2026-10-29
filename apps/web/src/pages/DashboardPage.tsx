@@ -104,8 +104,8 @@ function initialClub(homeClubId: string | null) {
 
 interface CardData {
   discipline: DisciplineKey;
-  /** Only with fields considered; null: series without a field. */
-  fieldId?: string | null;
+  /** Only with fields considered. */
+  fieldId?: string;
   stats: PeriodStats;
   points: SeriesPoint[];
 }
@@ -144,7 +144,7 @@ function DashboardView({
         },
       ];
     }
-    return [...fieldIds, null].flatMap((fieldId) => {
+    return fieldIds.flatMap((fieldId) => {
       const field = filterDashboard(clubData, (p) => p.fieldId === fieldId);
       if (field.periods.allTime[discipline].count === 0) return [];
       return [
@@ -166,8 +166,8 @@ function DashboardView({
   const series = Object.fromEntries(
     disciplines.map((k) => [k, clubData.series[k].filter(inPeriod)]),
   ) as Partial<Record<DisciplineKey, SeriesPoint[]>>;
-  const fieldLabel = (fieldId: string | null | undefined) =>
-    fieldId === undefined ? undefined : fieldId === null ? t.clubs.noField : t.clubs.field(fieldId);
+  const fieldLabel = (fieldId: string | undefined) =>
+    fieldId === undefined ? undefined : t.clubs.field(fieldId);
 
   const hasSeries = DISCIPLINE_KEYS.some((k) => data.periods.allTime[k].count > 0);
 

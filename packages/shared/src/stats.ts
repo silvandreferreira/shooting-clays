@@ -17,9 +17,9 @@ export interface PeriodStats {
 export interface SeriesPoint {
   date: string;
   score: number;
-  /** Where it was shot; null for series logged without a club or field. */
-  clubId: string | null;
-  fieldId: string | null;
+  /** Where it was shot (decision #72). */
+  clubId: string;
+  fieldId: string;
 }
 
 export interface Dashboard {
@@ -33,8 +33,8 @@ export interface ScoredSession {
   date: string;
   discipline: DisciplineKey;
   score: number;
-  clubId?: string | null;
-  fieldId?: string | null;
+  clubId: string;
+  fieldId: string;
 }
 
 /** Today's date (YYYY-MM-DD) in Europe/Lisbon. */
@@ -97,8 +97,8 @@ export function computeDashboard(sessions: ScoredSession[], referenceDate: strin
     series[s.discipline].push({
       date: s.date,
       score: s.score,
-      clubId: s.clubId ?? null,
-      fieldId: s.fieldId ?? null,
+      clubId: s.clubId,
+      fieldId: s.fieldId,
     });
   }
 

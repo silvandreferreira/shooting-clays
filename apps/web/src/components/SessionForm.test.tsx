@@ -16,17 +16,13 @@ const defaults = {
 
 function setup(
   onSubmit = vi.fn().mockResolvedValue(undefined),
-  {
-    values = {},
-    allowNoPlace = false,
-  }: { values?: Partial<SessionInput>; allowNoPlace?: boolean } = {},
+  { values = {} }: { values?: Partial<SessionInput> } = {},
 ) {
   render(
     <SessionForm
       title="Add session"
       defaultValues={{ ...defaults, ...values }}
       onSubmit={onSubmit}
-      allowNoPlace={allowNoPlace}
     />,
   );
   return { onSubmit, user: userEvent.setup() };
@@ -77,28 +73,26 @@ describe('SessionForm', () => {
     expect(screen.getByRole('radio', { name: 'Field 1' })).toBeChecked();
   });
 
-  it('a new session needs a field', async () => {
+  // R54: no "No club" or "No field" any more (decision #72).
+  it('a session needs a field; there is no "No club" or "No field" to choose', async () => {
     const { onSubmit, user } = setup();
     await user.click(screen.getByRole('button', { name: 'Save' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('Choose the field.');
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
-  it('when editing, "No field" and "No club" can be chosen', async () => {
-    const { onSubmit, user } = setup(undefined, {
-      values: { discipline: 'helice', fieldId: '' },
-      allowNoPlace: true,
-    });
-    // An older series at CCM, field not recorded.
-    expect(fieldNames()).toEqual(['No field', 'Field 1']);
-    expect(screen.getByRole('radio', { name: 'No field' })).toBeChecked();
-
-    await user.selectOptions(screen.getByLabelText('Club'), 'No club');
-    expect(screen.queryByRole('group', { name: 'Field' })).toBeNull();
-    expect(disciplineNames()).toEqual(['Compak Sporting', 'Fosso', 'Helice']);
+  it("editing keeps the series' field and offers only real fields and clubs", async () => {
+    const { onSubmit, user } = setup(undefined, { values: { discipline: 'fosso', fieldId: '2' } });
+    expect(fieldNames()).toEqual(['Field 1', 'Field 2']);
+    expect(screen.getByRole('radio', { name: 'Field 2' })).toBeChecked();
+    expect(
+      within(screen.getByLabelText('Club'))
+        .getAllByRole('option')
+        .map((o) => o.textContent),
+    ).toEqual(['CCM']);
     await user.click(screen.getByRole('button', { name: 'Save' }));
     expect(onSubmit).toHaveBeenCalledWith(
-      expect.objectContaining({ clubId: null, fieldId: null, discipline: 'helice' }),
+      expect.objectContaining({ clubId: 'ccm', fieldId: '2', discipline: 'fosso' }),
     );
   });
 

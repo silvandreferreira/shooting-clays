@@ -60,18 +60,18 @@ describe('ScoresChart with fields considered', () => {
   const withFields = {
     compak: [
       { date: '2026-10-01', score: 16, fieldId: '3' },
-      { date: '2026-10-03', score: 14, fieldId: null },
+      { date: '2026-10-03', score: 14, fieldId: '4' },
     ],
     fosso: [{ date: '2026-10-02', score: 10, fieldId: '1' }],
   };
 
-  it('lists the shape of each field in the chart, in field order, no field last', () => {
+  it('lists the shape of each field in the chart, in field order', () => {
     render(<ScoresChart series={withFields} fieldIds={['1', '2', '3', '4']} />);
     const legend = screen.getByRole('list', { name: 'Fields' });
     expect(Array.from(legend.querySelectorAll('li')).map((li) => li.textContent)).toEqual([
       'Field 1',
       'Field 3',
-      'No field',
+      'Field 4',
     ]);
   });
 
@@ -83,7 +83,7 @@ describe('ScoresChart with fields considered', () => {
       Array.from(screen.getByRole('list', { name: 'Fields' }).querySelectorAll('li')).map(
         (li) => li.textContent,
       ),
-    ).toEqual(['Field 3', 'No field']);
+    ).toEqual(['Field 3', 'Field 4']);
   });
 
   it('has no shapes legend without fields', () => {

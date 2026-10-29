@@ -4,6 +4,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Every series has a club and a field
+
+- **Changed:** club and field are required on every series, also when editing: **No club** and **No field** are gone, and so is the "No field" group on the Dashboard. Migration 0008 puts the series without them at CCM, Compak Sporting on Field 4 and Fosso on Field 2; the CSV import does the same. Decision #72. R49, R52, R53, R54.
+
 ### Community per club and field
 
 - **Changed:** the Community ranks one month at a club (the home club first), in one of the club's disciplines and, optionally, on one field (**All fields** by default; only the fields with that discipline). Day and Week are gone; the arrows step by month. Series without a club are not ranked. `GET /api/community/leaderboard` takes `clubId` and `fieldId` instead of `period`. FAQ and home page texts follow. Decision #71. R26, R27, R36, R53.

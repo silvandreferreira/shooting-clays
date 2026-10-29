@@ -113,7 +113,7 @@ test('R52: the Dashboard is for a club (the home club first); "Consider fields" 
   await expect(byField).toHaveAttribute('aria-checked', 'false');
   await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
 
-  // Two new series on Fields 2 and 3; the imported history has no field.
+  // Two new series on Fields 2 and 3; the imported history is on Fields 4 (Compak) and 2 (Fosso).
   for (const [field, score] of [
     ['Field 2', '25'],
     ['Field 3', '21'],
@@ -130,15 +130,17 @@ test('R52: the Dashboard is for a club (the home club first); "Consider fields" 
   await expect(card(page, 'Compak Sporting')).toHaveCount(0);
   await expectCard(page, 'Compak Sporting · Field 2', '25 / 25 / 25');
   await expectCard(page, 'Compak Sporting · Field 3', '21 / 21 / 21');
-  await expectCard(page, 'Compak Sporting · No field', '16 / 8 / 23');
-  await expectCard(page, 'Fosso · No field', '12 / 5 / 19');
+  // The imported history: Compak Sporting on Field 4, Fosso on Field 2.
+  await expectCard(page, 'Compak Sporting · Field 4', '16 / 8 / 23');
+  await expectCard(page, 'Fosso · Field 2', '12 / 5 / 19');
   await expect(page.getByRole('list', { name: 'Fields' }).getByRole('listitem')).toHaveText([
+    'Field 1',
     'Field 2',
     'Field 3',
-    'No field',
+    'Field 4',
   ]);
   await expect(page.getByTestId('range-compak-2')).toContainText('25');
-  await expect(page.getByTestId('range-compak-none')).toContainText('16');
+  await expect(page.getByTestId('range-compak-4')).toContainText('16');
 
   // Kept on this device.
   await page.reload();

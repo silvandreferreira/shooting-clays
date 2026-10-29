@@ -39,13 +39,15 @@ describe('periods', () => {
   });
 });
 
+const CCM_1 = { clubId: 'ccm', fieldId: '1' };
+
 describe('computeDashboard', () => {
   const dashboard = computeDashboard(
     [
-      { date: '2026-10-02', discipline: 'compak', score: 18 },
-      { date: '2026-09-15', discipline: 'compak', score: 14 },
-      { date: '2026-10-20', discipline: 'compak', score: 13 },
-      { date: '2026-08-01', discipline: 'fosso', score: 19 },
+      { date: '2026-10-02', discipline: 'compak', score: 18, ...CCM_1 },
+      { date: '2026-09-15', discipline: 'compak', score: 14, ...CCM_1 },
+      { date: '2026-10-20', discipline: 'compak', score: 13, ...CCM_1 },
+      { date: '2026-08-01', discipline: 'fosso', score: 19, ...CCM_1 },
     ],
     '2026-10-23',
   );
@@ -81,15 +83,15 @@ describe('filterDashboard', () => {
     [
       { date: '2026-10-02', discipline: 'compak', score: 18, clubId: 'ccm', fieldId: '1' },
       { date: '2026-10-05', discipline: 'compak', score: 12, clubId: 'ccm', fieldId: '2' },
-      { date: '2026-10-06', discipline: 'compak', score: 10, clubId: 'ccm', fieldId: null },
-      { date: '2026-10-07', discipline: 'fosso', score: 20 },
+      { date: '2026-10-06', discipline: 'compak', score: 10, clubId: 'ccm', fieldId: '4' },
+      { date: '2026-10-07', discipline: 'fosso', score: 20, clubId: 'other', fieldId: '1' },
     ],
     '2026-10-23',
   );
 
-  it('keeps club and field on each point (null when not recorded)', () => {
+  it('keeps club and field on each point', () => {
     expect(dashboard.series.fosso).toEqual([
-      { date: '2026-10-07', score: 20, clubId: null, fieldId: null },
+      { date: '2026-10-07', score: 20, clubId: 'other', fieldId: '1' },
     ]);
   });
 

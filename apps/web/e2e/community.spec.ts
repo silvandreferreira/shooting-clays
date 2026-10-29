@@ -22,7 +22,8 @@ const onField2 = (sessions: ReturnType<typeof fosso>) =>
 /**
  * Fosso at CCM in October 2026 (the owner's history has 15, 19 and 18 on the 13th, 17th and 23rd
  * without a field, the former Trap series, decision #68): Other and Ana both have two 25s, Other
- * has a 24 and Ana a 23, so Other wins. Everyone shot on Field 1 except Bruno, on Field 2.
+ * has a 24 and Ana a 23, so Other wins. Everyone shot on Field 1 except Bruno, on Field 2 (where
+ * the owner's history is too).
  */
 test.beforeEach(async ({ request }) => {
   await seedSessions(request, OTHER, fosso('2026-10-21', 25, 25, 24));
@@ -100,8 +101,10 @@ test('R53: club → discipline → field (every field by default), the month onl
   await expect(field).toHaveValue('');
   await expect(field.getByRole('option')).toHaveText(['All fields', 'Field 1', 'Field 2']);
   await field.selectOption({ label: 'Field 2' });
+  // Bruno, and the owner's imported Fosso (on Field 2, decision #72).
   await expect(page.getByTestId('podium-1')).toContainText('Bruno Dias');
-  await expect(page.getByTestId('podium-2')).toHaveCount(0);
+  await expect(page.getByTestId('podium-2')).toContainText('Test Owner');
+  await expect(page.getByTestId('podium-3')).toHaveCount(0);
 
   // Field 2 has no Helice: back to every field.
   await discipline.selectOption({ label: 'Helice' });

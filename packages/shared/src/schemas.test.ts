@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { sessionInputSchema } from './schemas';
 
-const valid = { date: '2026-10-23', discipline: 'compak', score: 16 };
+const valid = { date: '2026-10-23', discipline: 'compak', score: 16, clubId: 'ccm', fieldId: '4' };
 
 describe('sessionInputSchema', () => {
   it('accepts a minimal session and applies defaults', () => {
@@ -9,9 +9,21 @@ describe('sessionInputSchema', () => {
       ...valid,
       hardestTargets: [],
       notes: null,
-      clubId: null,
-      fieldId: null,
     });
+  });
+
+  // R54: every series has a club and a field (decision #72).
+  it.each(['clubId', 'fieldId'] as const)('requires %s (missing, empty or null)', (key) => {
+    for (const value of [undefined, '', null]) {
+      const result = sessionInputSchema.safeParse({ ...valid, [key]: value });
+      expect(result.error?.issues.map((i) => i.path.join('.'))).toContain(key);
+    }
+  });
+
+  it("the field must be one of the club's that has the discipline", () => {
+    expect(sessionInputSchema.safeParse({ ...valid, discipline: 'helice' }).success).toBe(false);
+    expect(sessionInputSchema.safeParse({ ...valid, fieldId: '9' }).success).toBe(false);
+    expect(sessionInputSchema.safeParse({ ...valid, clubId: 'nope' }).success).toBe(false);
   });
 
   it.each([-1, 26, 12.5])('rejects score %s', (score) => {

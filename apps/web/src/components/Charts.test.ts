@@ -15,15 +15,15 @@ describe('toScoreRows', () => {
         ],
       }),
     ).toEqual([
-      { key: '2026-10-17#0', date: '2026-10-17', fields: { fosso: null }, fosso: 19 },
+      { key: '2026-10-17#0', date: '2026-10-17', fields: {}, fosso: 19 },
       {
         key: '2026-10-23#0',
         date: '2026-10-23',
-        fields: { compak: '2', fosso: null },
+        fields: { compak: '2' },
         compak: 13,
         fosso: 18,
       },
-      { key: '2026-10-23#1', date: '2026-10-23', fields: { compak: null }, compak: 16 },
+      { key: '2026-10-23#1', date: '2026-10-23', fields: {}, compak: 16 },
     ]);
   });
 });

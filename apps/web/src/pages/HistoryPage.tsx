@@ -5,13 +5,12 @@ import { disciplineColor } from '../lib/colors';
 import { formatDate, formatList } from '../lib/format';
 import { useDeleteSession, useSessions } from '../lib/queries';
 
-/** "CCM · Field 2", "CCM" without a field, nothing without a club. */
+/** "CCM · Field 2". */
 export function usePlaceLabel() {
   const t = useT();
   return (session: Pick<Session, 'clubId' | 'fieldId'>) => {
     const club = findClub(session.clubId);
-    if (!club) return null;
-    return session.fieldId ? `${club.name} · ${t.clubs.field(session.fieldId)}` : club.name;
+    return club ? `${club.name} · ${t.clubs.field(session.fieldId)}` : null;
   };
 }
 

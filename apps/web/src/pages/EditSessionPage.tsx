@@ -21,9 +21,9 @@ export function EditSessionPage() {
       title={t.form.editTitle}
       defaultValues={{
         date: session.date,
-        clubId: session.clubId ?? '',
+        clubId: session.clubId,
         discipline: session.discipline,
-        fieldId: session.fieldId ?? '',
+        fieldId: session.fieldId,
         score: session.score,
         // Only Compak Sporting keeps them (decision #67).
         hardestTargets: hasTargetLetters(session.discipline) ? session.hardestTargets : [],
@@ -34,7 +34,6 @@ export function EditSessionPage() {
         await navigate(back);
       }}
       onCancel={() => void navigate(back)}
-      allowNoPlace
     />
   );
 }

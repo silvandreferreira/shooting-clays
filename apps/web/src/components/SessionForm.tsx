@@ -7,7 +7,6 @@ import {
   clubDisciplines,
   disciplineFields,
   hasTargetLetters,
-  newSessionInputSchema,
   sessionInputSchema,
   type DisciplineKey,
   type SessionData,
@@ -23,11 +22,6 @@ interface Props {
   defaultValues: SessionInput;
   onSubmit: (data: SessionData) => Promise<unknown>;
   onCancel?: () => void;
-  /**
-   * Editing a series: "No club" and "No field" can be chosen (series logged before clubs
-   * existed). A new series needs a field.
-   */
-  allowNoPlace?: boolean;
 }
 
 const fieldLabel = 'mb-2 block text-sm font-semibold';
@@ -36,8 +30,11 @@ const errorText = 'mt-1 text-sm font-medium text-danger';
 const choice =
   'flex min-h-14 cursor-pointer items-center justify-center rounded-xl border-2 border-line bg-card px-2 text-center font-semibold has-checked:border-accent has-checked:bg-accent has-checked:text-accent-ink has-focus-visible:outline-2 has-focus-visible:outline-accent';
 
-/** Club → discipline → field (decision #66): each choice narrows the next one. */
-export function SessionForm({ title, defaultValues, onSubmit, onCancel, allowNoPlace }: Props) {
+/**
+ * Club → discipline → field (decision #66): each choice narrows the next one. Every series has a
+ * club and a field, when adding and when editing (decision #72).
+ */
+export function SessionForm({ title, defaultValues, onSubmit, onCancel }: Props) {
   const t = useT();
   // The failure, not its text: the message follows the active language.
   const [saveError, setSaveError] = useState<{ code?: string } | null>(null);
@@ -49,7 +46,7 @@ export function SessionForm({ title, defaultValues, onSubmit, onCancel, allowNoP
     control,
     formState: { errors, isSubmitting },
   } = useForm<SessionInput, unknown, SessionData>({
-    resolver: zodResolver(allowNoPlace ? sessionInputSchema : newSessionInputSchema),
+    resolver: zodResolver(sessionInputSchema),
     defaultValues,
   });
   const clubId = useWatch({ control, name: 'clubId' }) ?? '';
@@ -133,7 +130,6 @@ export function SessionForm({ title, defaultValues, onSubmit, onCancel, allowNoP
           {...clubField}
           className="min-h-12 w-full rounded-xl border border-line bg-card px-3 text-lg"
         >
-          {allowNoPlace && <option value="">{t.clubs.noClub}</option>}
           {CLUBS.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name}
@@ -157,14 +153,8 @@ export function SessionForm({ title, defaultValues, onSubmit, onCancel, allowNoP
       {clubId && (
         <fieldset aria-describedby={errors.fieldId ? 'field-error' : undefined}>
           <legend className={fieldLabel}>{t.form.field}</legend>
-          {fields.length === 0 && !allowNoPlace ? null : (
+          {fields.length > 0 && (
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {allowNoPlace && (
-                <label className={choice}>
-                  <input type="radio" value="" {...register('fieldId')} className="sr-only" />
-                  {t.clubs.noField}
-                </label>
-              )}
               {fields.map((f) => (
                 <label key={f.id} className={choice}>
                   <input type="radio" value={f.id} {...register('fieldId')} className="sr-only" />
