@@ -207,14 +207,14 @@ export const ptPT = {
     disciplineLabel: 'Disciplina',
     fieldLabel: 'Campo',
     allFields: 'Todos os campos',
-    previous: 'Mês anterior',
-    next: 'Mês seguinte',
+    periodLabel: 'Período',
+    periods: { thisMonth: 'Este mês', lastMonth: 'Mês passado', thisYear: 'Este ano' },
     podium: 'Pódio',
     ranking: 'Classificação',
     place: (rank: number) => `${rank}.º`,
     bestLabel: (score: number) => `Melhor ${score}`,
     you: 'Você',
-    empty: 'Ainda não há resultados este mês.',
+    empty: 'Ainda não há resultados neste período.',
     loading: 'A carregar…',
     loadError: 'Não foi possível carregar a classificação.',
     hidden: 'Está escondido da Comunidade, por isso não aparece nesta classificação.',
@@ -252,7 +252,7 @@ export const ptPT = {
       periods: {
         question: 'Que resultados entram na Comunidade?',
         answer:
-          'Os do mês de calendário em Portugal (hora de Lisboa), no clube e na modalidade que escolher. Por defeito entram todos os campos; escolha um campo para ver só esse. As setas mostram os meses anteriores.',
+          'Os deste mês (por defeito), do mês passado ou deste ano, em dias de calendário em Portugal (hora de Lisboa), no clube e na modalidade que escolher. Por defeito entram todos os campos; escolha um campo para ver só esse.',
       },
       community: {
         question: 'Quem aparece na Comunidade?',
@@ -356,7 +356,7 @@ export const ptPT = {
           'Não é uma competição oficial. Ninguém é avaliado e cada atirador decide se aparece: a Comunidade só mostra o nome, a foto e a melhor pontuação — nunca o email nem mais nada.',
         ],
         points: [
-          'Classificações do mês por clube, modalidade e campo',
+          'Classificações do mês e do ano por clube, modalidade e campo',
           'Ouro, prata e bronze para os três primeiros',
           'Pode desligar "Mostrar-me na Comunidade" quando quiser',
         ],

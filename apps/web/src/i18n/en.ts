@@ -1,4 +1,4 @@
-import type { Locale, Period, SiteDisciplineKey } from '@shooting-clays/shared';
+import type { CommunityPeriod, Locale, Period, SiteDisciplineKey } from '@shooting-clays/shared';
 
 /**
  * All UI strings, in English (the source). `pt-PT.ts` holds the same keys in European Portuguese;
@@ -206,15 +206,19 @@ export const en = {
     disciplineLabel: 'Discipline',
     fieldLabel: 'Field',
     allFields: 'All fields',
-    previous: 'Previous month',
-    next: 'Next month',
+    periodLabel: 'Period',
+    periods: {
+      thisMonth: 'This month',
+      lastMonth: 'Last month',
+      thisYear: 'This year',
+    } satisfies Record<CommunityPeriod, string>,
     podium: 'Podium',
     ranking: 'Ranking',
     place: (rank: number) =>
       `${rank}${rank === 1 ? 'st' : rank === 2 ? 'nd' : rank === 3 ? 'rd' : 'th'}`,
     bestLabel: (score: number) => `Best ${score}`,
     you: 'You',
-    empty: 'No results this month yet.',
+    empty: 'No results in this period yet.',
     loading: 'Loading…',
     loadError: 'Could not load the ranking.',
     hidden: 'You are hidden from the Community, so you are not in this ranking.',
@@ -252,7 +256,7 @@ export const en = {
       periods: {
         question: 'Which results count in the Community?',
         answer:
-          'Those of the calendar month in Portugal (Lisbon time), at the club and in the discipline you choose. All fields count by default; choose a field to see only that one. The arrows go back to earlier months.',
+          'Those of this month (by default), last month or this year, in calendar days in Portugal (Lisbon time), at the club and in the discipline you choose. All fields count by default; choose a field to see only that one.',
       },
       community: {
         question: 'Who appears in the Community?',
@@ -357,7 +361,7 @@ export const en = {
           'It is not an official competition. Nobody is judged and each shooter decides whether to appear: the Community only shows the display name, the photo and the best score — never an email or anything else.',
         ],
         points: [
-          'Monthly rankings per club, discipline and field',
+          'Rankings for the month and the year per club, discipline and field',
           'Gold, silver and bronze for the top three',
           'Switch off "Show me in the Community" at any time',
         ],

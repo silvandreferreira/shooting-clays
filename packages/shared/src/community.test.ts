@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  communityPeriodQuery,
   leaderboardQuerySchema,
   monthBounds,
+  periodBounds,
   rankShooters,
   shiftMonth,
   type RankableShooter,
@@ -120,22 +122,48 @@ describe('leaderboardQuerySchema', () => {
     expect(parse({ clubId: 'ccm', discipline: 'fosso', fieldId: '2' }).success).toBe(true);
   });
 
-  it('rejects an unknown club, a missing club or a field without the discipline', () => {
+  it('rejects an unknown club or a field without the discipline', () => {
     expect(parse({ clubId: 'nope', discipline: 'fosso' }).error?.issues[0]?.path).toEqual([
       'clubId',
     ]);
-    expect(parse({ discipline: 'fosso' }).success).toBe(false);
+    // Without a club the API takes the home club (old installed apps).
+    expect(parse({ discipline: 'fosso' }).success).toBe(true);
     expect(
       parse({ clubId: 'ccm', discipline: 'fosso', fieldId: '3' }).error?.issues[0]?.path,
     ).toEqual(['fieldId']);
   });
 });
 
-describe('leaderboardQuerySchema (month only)', () => {
-  it('has no period any more (an old `period` is ignored) and rejects invalid dates', () => {
+describe('periodBounds and communityPeriodQuery', () => {
+  it('a month or a calendar year', () => {
+    expect(periodBounds('month', '2026-10-29')).toEqual({ from: '2026-10-01', to: '2026-10-31' });
+    expect(periodBounds('year', '2026-10-29')).toEqual({ from: '2026-01-01', to: '2026-12-31' });
+  });
+
+  it('this month, last month (across years) and this year', () => {
+    expect(communityPeriodQuery('thisMonth', '2026-10-29')).toEqual({
+      period: 'month',
+      date: '2026-10-29',
+    });
+    expect(communityPeriodQuery('lastMonth', '2027-01-10')).toEqual({
+      period: 'month',
+      date: '2026-12-31',
+    });
+    expect(communityPeriodQuery('thisYear', '2026-10-29')).toEqual({
+      period: 'year',
+      date: '2026-10-29',
+    });
+  });
+});
+
+describe('leaderboardQuerySchema periods', () => {
+  it('month or year; an old day or week is a month; rejects invalid dates', () => {
     expect(
       leaderboardQuerySchema.parse({ clubId: 'ccm', discipline: 'fosso', period: 'week' }),
-    ).toEqual({ clubId: 'ccm', discipline: 'fosso' });
+    ).toEqual({ clubId: 'ccm', discipline: 'fosso', period: 'month' });
+    expect(
+      leaderboardQuerySchema.parse({ clubId: 'ccm', discipline: 'fosso', period: 'year' }).period,
+    ).toBe('year');
     expect(
       leaderboardQuerySchema.safeParse({ clubId: 'ccm', discipline: 'fosso', date: '2026-02-30' })
         .success,

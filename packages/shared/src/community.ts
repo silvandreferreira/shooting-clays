@@ -4,20 +4,34 @@ import { disciplineSchema, isoDateSchema } from './schemas';
 import { clubDisciplines, CLUBS, disciplineFields, findClub } from './clubs';
 import type { DisciplineKey } from './disciplines';
 
+/** A leaderboard covers a calendar month or a calendar year (decision #73). */
+export const LEADERBOARD_PERIODS = ['month', 'year'] as const;
+export type LeaderboardPeriod = (typeof LEADERBOARD_PERIODS)[number];
+
+/** The Community's choices: this month (default), last month, this year (decision #73). */
+export const COMMUNITY_PERIODS = ['thisMonth', 'lastMonth', 'thisYear'] as const;
+export type CommunityPeriod = (typeof COMMUNITY_PERIODS)[number];
+
 /**
- * One club, discipline and month (decision #71); the field is optional (every field by default,
- * series without a field included). The discipline must be one of the club's, the field one that
- * has it.
+ * One club, discipline and period (decisions #71 and #73); the field is optional (every field by
+ * default). The discipline must be one of the club's, the field one that has it. Without `clubId`
+ * the API uses the user's home club, and any `period` other than `year` is a month: installed
+ * apps from before keep working until they update (they sent `day`, `week` or `month`).
  */
 export const leaderboardQuerySchema = z
   .object({
-    clubId: z.string({ error: 'clubId is required' }),
+    clubId: z.string().optional(),
     discipline: disciplineSchema,
     fieldId: z.string().optional(),
-    /** Any day inside the month; the API uses today (Europe/Lisbon) when it is missing. */
+    period: z
+      .string()
+      .optional()
+      .transform((p): LeaderboardPeriod => (p === 'year' ? 'year' : 'month')),
+    /** Any day inside the period; the API uses today (Europe/Lisbon) when it is missing. */
     date: isoDateSchema.optional(),
   })
   .superRefine((q, ctx) => {
+    if (q.clubId === undefined) return;
     if (!findClub(q.clubId)) {
       ctx.addIssue({
         code: 'custom',
@@ -63,7 +77,8 @@ export interface Leaderboard {
   discipline: DisciplineKey;
   /** null: every field. */
   fieldId: string | null;
-  /** First and last day of the month (YYYY-MM-DD, inclusive). */
+  period: LeaderboardPeriod;
+  /** First and last day of the period (YYYY-MM-DD, inclusive). */
   from: string;
   to: string;
   entries: LeaderboardEntry[];
@@ -86,6 +101,25 @@ export function monthBounds(date: string): { from: string; to: string } {
   const next = toDate(from);
   next.setUTCMonth(next.getUTCMonth() + 1);
   return { from, to: addDays(toIso(next), -1) };
+}
+
+/** First and last day of the month or year containing `date`. */
+export function periodBounds(
+  period: LeaderboardPeriod,
+  date: string,
+): { from: string; to: string } {
+  if (period === 'year')
+    return { from: `${date.slice(0, 4)}-01-01`, to: `${date.slice(0, 4)}-12-31` };
+  return monthBounds(date);
+}
+
+/** What the API is asked for each Community choice, relative to today. */
+export function communityPeriodQuery(
+  choice: CommunityPeriod,
+  today: string,
+): { period: LeaderboardPeriod; date: string } {
+  if (choice === 'thisYear') return { period: 'year', date: today };
+  return { period: 'month', date: choice === 'lastMonth' ? shiftMonth(today, -1) : today };
 }
 
 /** A day inside the month just before (`step` -1) or after (+1) the one containing `date`. */

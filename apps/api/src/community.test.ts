@@ -118,12 +118,49 @@ describe('community leaderboard', () => {
     expect((await get('&date=2026-08-15')).entries).toEqual([]);
   });
 
+  it('a calendar year with period=year', async () => {
+    const { db, json } = await createTestApp({ empty: true });
+    await addShooter(db, 'a');
+    await addSeries(db, 'a', [20], '2026-01-01');
+    await addSeries(db, 'a', [21], '2026-12-31');
+    await addSeries(db, 'a', [25], '2025-12-31');
+    const board = (await (
+      await json(
+        'GET',
+        '/api/community/leaderboard?clubId=ccm&discipline=fosso&period=year&date=2026-10-29',
+        undefined,
+        OTHER,
+      )
+    ).json()) as Leaderboard;
+    expect(board).toMatchObject({ period: 'year', from: '2026-01-01', to: '2026-12-31' });
+    expect(board.entries[0]).toMatchObject({ bestScore: 21, series: 2 });
+  });
+
+  // Installed apps from before decision #71 asked without a club (and with day/week/month):
+  // they got 400 and an empty Community until they updated.
+  it('without a club uses the home club, and an old period is the month', async () => {
+    const { db, json } = await createTestApp({ empty: true });
+    await addShooter(db, 'a');
+    await addSeries(db, 'a', [22], '2026-10-05');
+    for (const period of ['day', 'week', 'month']) {
+      const res = await json(
+        'GET',
+        `/api/community/leaderboard?discipline=fosso&period=${period}`,
+        undefined,
+        OTHER,
+      );
+      expect(res.status).toBe(200);
+      const board = (await res.json()) as Leaderboard;
+      expect(board).toMatchObject({ clubId: 'ccm', period: 'month', from: '2026-10-01' });
+      expect(board.entries[0]).toMatchObject({ bestScore: 22 });
+    }
+  });
+
   it('validates the query', async () => {
     const { json } = await createTestApp({ empty: true });
     for (const query of [
       '',
       'clubId=ccm',
-      'discipline=fosso',
       'clubId=nope&discipline=fosso',
       'clubId=ccm&discipline=golf',
       'clubId=ccm&discipline=fosso&fieldId=3',

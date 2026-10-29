@@ -10,6 +10,7 @@ import {
   sessionInputSchema,
   sessionsQuerySchema,
   todayInLisbon,
+  homeClub,
 } from '@shooting-clays/shared';
 import { sql } from 'drizzle-orm';
 import { Hono, type Context } from 'hono';
@@ -346,6 +347,8 @@ export function createApp(deps: AppDeps) {
       return c.json(
         await communityRepo.leaderboard(profile.userId, !profile.showInCommunity, {
           ...query,
+          // Installed apps from before decision #71 send no club: the user's home club.
+          clubId: query.clubId ?? homeClub(profile.homeClubId).id,
           date: query.date ?? todayInLisbon(now()),
         }),
       );

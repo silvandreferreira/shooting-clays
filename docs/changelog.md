@@ -4,6 +4,11 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Community periods
+
+- **Changed:** the Community has **This month**, **Last month** and **This year** instead of the month arrows. `GET /api/community/leaderboard` takes `period=month|year`. Decision #73. R55.
+- **Fixed:** installed apps still on the version before the club choice got an empty Community (the API answered 400 without `clubId`); the API now uses the user's home club. R26.
+
 ### Every series has a club and a field
 
 - **Changed:** club and field are required on every series, also when editing: **No club** and **No field** are gone, and so is the "No field" group on the Dashboard. Migration 0008 puts the series without them at CCM, Compak Sporting on Field 4 and Fosso on Field 2; the CSV import does the same. Decision #72. R49, R52, R53, R54.
