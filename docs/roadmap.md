@@ -252,6 +252,8 @@ Goal: make the "Scores over time" chart on the Dashboard easier to read by choos
 
 ### Show/hide disciplines
 
+**Changed on 2026-10-29 (decision #70):** the chart no longer has its own range; it follows the Dashboard period again.
+
 **Done early (2026-10-24, decision #51)**, as specified below: toggle buttons under the chart, tests R24 (E2E) and `ScoresChart.test.tsx`. The time range above was done on 2026-10-25 (decision #55, tests R29 and `ScoresChart.test.tsx`).
 
 - The chart legend becomes a row of **toggle buttons**, one per discipline in the chart, each with the discipline's colour swatch and name.

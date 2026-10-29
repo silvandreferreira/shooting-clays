@@ -129,11 +129,13 @@ curl -X POST http://localhost:3000/api/sessions \
     "lastMonth": { "compak": { "avg": 18, "min": 14, "max": 23, "count": 8 } },
     "thisMonth": { "compak": { "avg": 16, "min": 13, "max": 18, "count": 7 } }
   },
-  "series": { "compak": [{ "date": "2026-04-12", "score": 8 }] }
+  "series": {
+    "compak": [{ "date": "2026-04-12", "score": 8, "clubId": "ccm", "fieldId": null }]
+  }
 }
 ```
 
-Every discipline in `packages/shared/src/disciplines.ts` is present in every period, also when it has no sessions. `series` holds every score per discipline, oldest first; the front end filters it by period. Types: `Dashboard` in `packages/shared/src/stats.ts`.
+Every discipline in `packages/shared/src/disciplines.ts` is present in every period, also when it has no sessions. `series` holds every score per discipline with its club and field (`null` when not recorded), oldest first (same day: creation order, then id); the front end filters it by period, club and field and recomputes the figures with the same `computeDashboard` (`filterDashboard`, decision #70). `periods` covers every club. Types: `Dashboard` in `packages/shared/src/stats.ts`.
 
 When a discipline has no sessions in a period, `avg`, `min` and `max` are `null` and `count` is `0`; the UI shows "—".
 

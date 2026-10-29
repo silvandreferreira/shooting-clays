@@ -69,10 +69,17 @@ export function createSessionsRepo(db: Db) {
 
     async dashboard(userId: string, referenceDate: string) {
       const rows = await db
-        .select({ date: sessions.date, discipline: sessions.discipline, score: sessions.score })
+        .select({
+          date: sessions.date,
+          discipline: sessions.discipline,
+          score: sessions.score,
+          clubId: sessions.clubId,
+          fieldId: sessions.fieldId,
+        })
         .from(sessions)
         .where(eq(sessions.userId, userId))
-        .orderBy(asc(sessions.date), asc(sessions.createdAt));
+        // Imported series share created_at: the id keeps their order stable between requests.
+        .orderBy(asc(sessions.date), asc(sessions.createdAt), asc(sessions.id));
       return computeDashboard(
         rows.map((r) => ({ ...r, discipline: r.discipline as DisciplineKey })),
         referenceDate,

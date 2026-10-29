@@ -5,6 +5,7 @@ import { createTestAuth } from './auth';
 import { loadConfig } from './config';
 import { createMemoryDb } from './db/memory';
 import { importHistory } from './import/history-csv';
+import { sessions } from './db/schema';
 import { createProfilesRepo } from './profiles-repo';
 import { createTestApp, historyRows, NEWCOMER, OTHER, OWNER } from './test-utils';
 
@@ -145,6 +146,31 @@ describe('GET /api/dashboard', () => {
       max: null,
       count: 0,
     });
+  });
+
+  it('keeps same-day series in a stable order: creation, then id (decision #70)', async () => {
+    const { db, json } = await createTestApp();
+    // Imported series share created_at; the table order is not the id order (here, reversed).
+    const createdAt = new Date('2026-10-01T10:00:00Z');
+    for (const [id, score] of [
+      ['ffffffff-0000-4000-8000-000000000000', 21],
+      ['00000000-0000-4000-8000-000000000000', 11],
+    ] as const) {
+      await db.insert(sessions).values({
+        id,
+        userId: OWNER.id,
+        date: '2026-10-24',
+        discipline: 'helice',
+        score,
+        clubId: 'ccm',
+        createdAt,
+      });
+    }
+    const dashboard = (await (await json('GET', '/api/dashboard')).json()) as Dashboard;
+    expect(dashboard.series.helice.filter((p) => p.date === '2026-10-24')).toEqual([
+      { date: '2026-10-24', score: 11, clubId: 'ccm', fieldId: null },
+      { date: '2026-10-24', score: 21, clubId: 'ccm', fieldId: null },
+    ]);
   });
 });
 

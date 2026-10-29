@@ -4,6 +4,12 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Dashboard per club and field
+
+- **Added:** **Club** on the Dashboard (the home club by default, or All clubs) and **Consider fields**, which shows a card and a bar per field and marks each field with its own shape in the scores chart; both kept on the device. `GET /api/dashboard` returns the club and field of each point (the device cache is renewed: `CACHE_BUSTER` v4). Decision #70. R52.
+- **Changed:** the scores chart follows the Dashboard period; its own range (3 months, 6 months, 1 year, All time) is gone (supersedes #55). R29.
+- **Fixed:** same-day series kept changing order in the chart (imported series share their creation time); they are now ordered by creation, then id.
+
 ### Add button and logo
 
 - **Added:** a round **+** button at the bottom right of Dashboard, History and Community that opens Add, and the app logo before "Welcome" as a link to the Dashboard. Decision #69. R51.

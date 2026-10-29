@@ -26,6 +26,14 @@ const SAMPLE: [number, DisciplineKey, number][] = [
   [2, 'compak', 18],
 ];
 
+const SAMPLE_CLUB = 'ccm';
+
+const SAMPLE_FIELDS: Record<DisciplineKey, string[]> = {
+  compak: ['1', '2', '3', '4'],
+  fosso: ['1', '2'],
+  helice: ['1'],
+};
+
 function daysBefore(date: string, days: number) {
   const d = new Date(`${date}T12:00:00Z`);
   d.setUTCDate(d.getUTCDate() - days);
@@ -38,10 +46,13 @@ function daysBefore(date: string, days: number) {
  */
 export function sampleDashboard(now = new Date()): Dashboard {
   const today = todayInLisbon(now);
-  const sessions: ScoredSession[] = SAMPLE.map(([days, discipline, score]) => ({
+  const sessions: ScoredSession[] = SAMPLE.map(([days, discipline, score], i) => ({
     date: daysBefore(today, days),
     discipline,
     score,
+    clubId: SAMPLE_CLUB,
+    // Spread over the fields that have the discipline, so "Consider fields" has something to show.
+    fieldId: SAMPLE_FIELDS[discipline][i % SAMPLE_FIELDS[discipline].length]!,
   }));
   return computeDashboard(sessions, today);
 }

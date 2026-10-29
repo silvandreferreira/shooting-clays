@@ -77,7 +77,7 @@ export function App({ user }: { user: CurrentUser }) {
           </>
         ) : (
           <>
-            <Route index element={<DashboardPage />} />
+            <Route index element={<DashboardPage homeClubId={me.homeClubId} />} />
             <Route path="add" element={<AddSessionPage me={me} />} />
             <Route path="history" element={<HistoryPage />} />
             <Route path="history/:id" element={<EditSessionPage />} />

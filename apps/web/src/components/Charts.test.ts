@@ -6,7 +6,7 @@ describe('toScoreRows', () => {
     expect(
       toScoreRows({
         compak: [
-          { date: '2026-10-23', score: 13 },
+          { date: '2026-10-23', score: 13, fieldId: '2' },
           { date: '2026-10-23', score: 16 },
         ],
         fosso: [
@@ -15,9 +15,15 @@ describe('toScoreRows', () => {
         ],
       }),
     ).toEqual([
-      { key: '2026-10-17#0', date: '2026-10-17', fosso: 19 },
-      { key: '2026-10-23#0', date: '2026-10-23', compak: 13, fosso: 18 },
-      { key: '2026-10-23#1', date: '2026-10-23', compak: 16 },
+      { key: '2026-10-17#0', date: '2026-10-17', fields: { fosso: null }, fosso: 19 },
+      {
+        key: '2026-10-23#0',
+        date: '2026-10-23',
+        fields: { compak: '2', fosso: null },
+        compak: 13,
+        fosso: 18,
+      },
+      { key: '2026-10-23#1', date: '2026-10-23', fields: { compak: null }, compak: 16 },
     ]);
   });
 });
