@@ -1,4 +1,4 @@
-import { card, expect, expectCard, goTo, test } from './fixtures';
+import { card, expect, expectCard, goTo, selectPeriod, test } from './fixtures';
 
 test('R8: editing and deleting in History updates the dashboard', async ({ page }) => {
   await page.goto('/app/history');
@@ -18,6 +18,7 @@ test('R8: editing and deleting in History updates the dashboard', async ({ page 
   await expect(items).toContainText('10/25');
 
   await goTo(page, 'Dashboard');
+  await selectPeriod(page, 'Last month');
   await expectCard(page, 'Helice', '10 / 10 / 10');
 
   await goTo(page, 'History');
@@ -29,7 +30,7 @@ test('R8: editing and deleting in History updates the dashboard', async ({ page 
   await expect(page.getByText('No sessions found.')).toBeVisible();
 
   await goTo(page, 'Dashboard');
-  await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
+  await expectCard(page, 'Compak Sporting', '16 / 13 / 18');
   await expect(card(page, 'Helice')).toHaveCount(0);
 });
 

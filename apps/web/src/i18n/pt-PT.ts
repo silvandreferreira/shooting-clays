@@ -33,6 +33,7 @@ export const ptPT = {
     allTime: 'Desde sempre',
     lastMonth: 'Mês passado',
     thisMonth: 'Este mês',
+    thisYear: 'Este ano',
   },
   noData: '—',
   dashboard: {

@@ -7,7 +7,7 @@ for (const colorScheme of ['light', 'dark'] as const) {
   }) => {
     await page.emulateMedia({ colorScheme });
     await page.goto('/app');
-    await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
+    await expectCard(page, 'Compak Sporting', '16 / 13 / 18');
     expect(await seriousA11yViolations(page)).toEqual([]);
 
     await page.goto('/app/add');
@@ -45,7 +45,7 @@ test.describe('in Portuguese', () => {
 
   test('R10: no serious accessibility violations (pt-PT)', async ({ page }) => {
     await page.goto('/app');
-    await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
+    await expectCard(page, 'Compak Sporting', '16 / 13 / 18');
     await expect(page.locator('html')).toHaveAttribute('lang', 'pt-PT');
     expect(await seriousA11yViolations(page)).toEqual([]);
 

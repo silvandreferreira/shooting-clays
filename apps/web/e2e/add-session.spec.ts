@@ -12,7 +12,7 @@ import {
 
 test('R4: adding a session updates the dashboard without a reload', async ({ page }) => {
   await page.goto('/app');
-  await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
+  await expectCard(page, 'Compak Sporting', '16 / 13 / 18');
   await goTo(page, 'Add');
 
   await expect(page.getByLabel('Date')).toHaveValue('2026-10-23');
@@ -208,7 +208,7 @@ test('R51: a round "+" on Dashboard, History and Community opens Add; the logo g
 
   await page.getByRole('link', { name: 'Shooting Clays, go to the Dashboard' }).click();
   await expect(page).toHaveURL('/app');
-  await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
+  await expectCard(page, 'Compak Sporting', '16 / 13 / 18');
 });
 
 // Bug: after scrolling down the Dashboard, the "+" opened Add halfway down the page.
@@ -216,7 +216,7 @@ test('R57: a new page opens at the top, even after scrolling down the page befor
   page,
 }) => {
   await page.goto('/app');
-  await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
+  await expectCard(page, 'Compak Sporting', '16 / 13 / 18');
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(200);
   await page.getByRole('link', { name: 'Add session' }).click();

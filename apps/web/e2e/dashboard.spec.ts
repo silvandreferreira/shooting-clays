@@ -1,26 +1,35 @@
 import { expect, expectCard, selectPeriod, test, card } from './fixtures';
 
 // R1: reference values from docs/testing.md.
+// The whole reference history is from 2026: This year has the all-time values.
 const REFERENCE = {
-  'All time': {
-    'Compak Sporting': '16 / 8 / 23',
-    Fosso: '12 / 5 / 19',
-    Helice: '4 / 4 / 4',
+  'This month': {
+    'Compak Sporting': '16 / 13 / 18',
+    Fosso: '17 / 15 / 19',
+    Helice: '—',
   },
   'Last month': {
     'Compak Sporting': '18 / 14 / 23',
     Fosso: '10 / 5 / 16',
     Helice: '4 / 4 / 4',
   },
-  'This month': {
-    'Compak Sporting': '16 / 13 / 18',
-    Fosso: '17 / 15 / 19',
-    Helice: '—',
+  'This year': {
+    'Compak Sporting': '16 / 8 / 23',
+    Fosso: '12 / 5 / 19',
+    Helice: '4 / 4 / 4',
   },
 } as const;
 
 test('R1: dashboard shows the reference values for all three periods', async ({ page }) => {
   await page.goto('/app');
+  // R58: This month · Last month · This year, This month by default.
+  const periods = page.getByRole('group', { name: 'Period' });
+  await expect(periods.getByRole('button')).toHaveText(['This month', 'Last month', 'This year']);
+  await expect(periods.getByRole('button', { name: 'This month' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await expectCard(page, 'Compak Sporting', '16 / 13 / 18');
   for (const [period, cards] of Object.entries(REFERENCE)) {
     await selectPeriod(page, period as keyof typeof REFERENCE);
     for (const [name, values] of Object.entries(cards)) {
@@ -43,6 +52,7 @@ test('R24: tapping a discipline in the scores chart legend hides its line; tappi
   page,
 }) => {
   await page.goto('/app');
+  await selectPeriod(page, 'This year');
   await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
   const chart = page.getByRole('img', { name: 'Scores over time' });
   const legend = page.getByRole('group', { name: 'Disciplines shown in the chart' });
@@ -65,6 +75,7 @@ test('R24: tapping a discipline in the scores chart legend hides its line; tappi
 
   // Per visit: everything is shown again after a reload.
   await page.reload();
+  await selectPeriod(page, 'This year');
   await expect(lines).toHaveCount(3);
 });
 
@@ -72,6 +83,7 @@ test('R25: each bar of "Average by discipline" shows the average and the lowest�
   page,
 }) => {
   await page.goto('/app');
+  await selectPeriod(page, 'This year');
   const range = (d: string) => page.getByTestId(`range-${d}`);
   await expect(range('compak')).toHaveText('168–23');
   await expect(range('fosso')).toHaveText('125–19');
@@ -87,11 +99,11 @@ test('R29: the scores chart follows the Dashboard period, with no range of its o
   page,
 }) => {
   await page.goto('/app');
-  await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
+  await expectCard(page, 'Compak Sporting', '16 / 13 / 18');
   await expect(page.getByRole('button', { name: '3 months' })).toHaveCount(0);
   const dots = page.getByRole('img', { name: 'Scores over time' }).locator('.recharts-line-dot');
   // One point per series: as many as the cards count in each period.
-  for (const period of ['All time', 'Last month', 'This month'] as const) {
+  for (const period of ['This month', 'Last month', 'This year'] as const) {
     await selectPeriod(page, period);
     let series = 0;
     for (const count of await page.getByRole('article').getByTestId('count').allTextContents()) {
@@ -111,7 +123,7 @@ test('R52: the Dashboard is for a club (the home club first); "Consider fields" 
   await expect(club).toHaveValue('ccm');
   await expect(club.getByRole('option')).toHaveText(['CCM', 'All clubs']);
   await expect(byField).toHaveAttribute('aria-checked', 'false');
-  await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
+  await expectCard(page, 'Compak Sporting', '16 / 13 / 18');
 
   // Two new series on Fields 2 and 3; the imported history is on Fields 4 (Compak) and 2 (Fosso).
   for (const [field, score] of [
@@ -127,6 +139,7 @@ test('R52: the Dashboard is for a club (the home club first); "Consider fields" 
 
   await byField.click();
   await expect(byField).toHaveAttribute('aria-checked', 'true');
+  await selectPeriod(page, 'This year');
   await expect(card(page, 'Compak Sporting')).toHaveCount(0);
   await expectCard(page, 'Compak Sporting · Field 2', '25 / 25 / 25');
   await expectCard(page, 'Compak Sporting · Field 3', '21 / 21 / 21');
@@ -146,6 +159,7 @@ test('R52: the Dashboard is for a club (the home club first); "Consider fields" 
   await page.reload();
   await expect(byField).toHaveAttribute('aria-checked', 'true');
   await expectCard(page, 'Compak Sporting · Field 2', '25 / 25 / 25');
+  await selectPeriod(page, 'This year');
 
   // Every club: one card per discipline again, no switch.
   await club.selectOption('All clubs');
@@ -158,7 +172,7 @@ test('R39: the Dashboard shows the scores chart first, then the averages, then t
   page,
 }) => {
   await page.goto('/app');
-  await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
+  await expectCard(page, 'Compak Sporting', '16 / 13 / 18');
   const top = async (locator: import('@playwright/test').Locator) =>
     (await locator.boundingBox())!.y;
   const scores = await top(page.getByRole('heading', { name: /Scores over time/ }));
