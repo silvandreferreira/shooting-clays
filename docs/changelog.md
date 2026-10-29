@@ -4,6 +4,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Scroll position
+
+- **Fixed:** after scrolling down a page (e.g. the Dashboard), the round **+** opened Add halfway down; a new page now opens at the top (back and forward keep their position). R57.
+
 ### Roadmap: freemium
 
 - **Added:** iteration 9 (draft): a paid Community. **Join the Community** in Settings leads to the payment (€6 a month or €60 a year); the Community icon shows as premium for non-members and opens Settings; leaving ends the membership at once. Payment by bank transfer with a payment ID that the user emails with the proof; the admin confirms it under Pending, sees Freemium members marked and filters them; an admin download of the payments between two dates (PDF and CSV, with a summary for the tax return). Decisions #75 and #76.

@@ -1,6 +1,6 @@
 import type { Me } from '@shooting-clays/shared';
 import { useEffect, useState } from 'react';
-import { Link, NavLink, Outlet, useLocation } from 'react-router';
+import { Link, NavLink, Outlet, useLocation, useNavigationType } from 'react-router';
 import { useT } from '../i18n';
 import { useAdminUsers, useNotifications } from '../lib/queries';
 import { Avatar } from './Avatar';
@@ -343,7 +343,14 @@ export function Layout({ user, me }: { user: CurrentUser; me: Me }) {
   const { data: users } = useAdminUsers(isAdmin);
   const pendingCount = users?.filter((u) => u.status === 'pending').length ?? 0;
   const [notice, setNotice] = useState<string | null>(null);
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
+  const navigationType = useNavigationType();
+
+  // A new page opens at the top (the router keeps the scroll of the page before); back and
+  // forward, and links to a section (#…), are left alone.
+  useEffect(() => {
+    if (navigationType !== 'POP' && !hash) window.scrollTo(0, 0);
+  }, [pathname, hash, navigationType]);
 
   useEffect(() => {
     if (!notice) return;
