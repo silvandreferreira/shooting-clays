@@ -1,6 +1,6 @@
 import type { Me } from '@shooting-clays/shared';
 import { useEffect, useState } from 'react';
-import { Link, NavLink, Outlet } from 'react-router';
+import { Link, NavLink, Outlet, useLocation } from 'react-router';
 import { useT } from '../i18n';
 import { useAdminUsers, useNotifications } from '../lib/queries';
 import { Avatar } from './Avatar';
@@ -300,6 +300,40 @@ function NotificationsBell() {
   );
 }
 
+/** Logging a series is the heart of the app: a round "+" on these pages leads to Add. */
+const ADD_BUTTON_PATHS = ['/', '/history', '/community'];
+
+const addButtonClass =
+  'fixed right-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-10 flex size-14 items-center justify-center rounded-full bg-accent text-accent-ink shadow-lg lg:bottom-[calc(5.5rem+env(safe-area-inset-bottom))]';
+
+function AddButton({ pending, onAddDisabled }: { pending: boolean; onAddDisabled: () => void }) {
+  const t = useT();
+  const icon = (
+    <svg viewBox="0 0 24 24" className="size-8" fill="none" stroke="currentColor" strokeWidth={2.5}>
+      <path d={ICONS.add} strokeLinecap="round" />
+    </svg>
+  );
+  if (pending) {
+    // As in the menus: visible, but a tap explains why it is unavailable.
+    return (
+      <button
+        type="button"
+        aria-label={t.nav.addSession}
+        aria-disabled="true"
+        onClick={onAddDisabled}
+        className={`${addButtonClass} opacity-50`}
+      >
+        {icon}
+      </button>
+    );
+  }
+  return (
+    <Link to="/add" aria-label={t.nav.addSession} className={addButtonClass}>
+      {icon}
+    </Link>
+  );
+}
+
 const NOTICE_MS = 4000;
 
 export function Layout({ user, me }: { user: CurrentUser; me: Me }) {
@@ -309,6 +343,7 @@ export function Layout({ user, me }: { user: CurrentUser; me: Me }) {
   const { data: users } = useAdminUsers(isAdmin);
   const pendingCount = users?.filter((u) => u.status === 'pending').length ?? 0;
   const [notice, setNotice] = useState<string | null>(null);
+  const { pathname } = useLocation();
 
   useEffect(() => {
     if (!notice) return;
@@ -319,7 +354,14 @@ export function Layout({ user, me }: { user: CurrentUser; me: Me }) {
   return (
     <div className="mx-auto flex min-h-dvh max-w-3xl flex-col">
       <header className="flex items-center justify-between gap-3 px-4 pt-[max(1rem,env(safe-area-inset-top))]">
-        <p className="truncate text-lg font-semibold" data-testid="welcome">
+        <Link
+          to="/"
+          aria-label={t.nav.home}
+          className="flex size-11 shrink-0 items-center justify-center"
+        >
+          <img src="/favicon.svg" alt="" width={36} height={36} className="size-9 rounded-lg" />
+        </Link>
+        <p className="min-w-0 truncate text-lg font-semibold" data-testid="welcome">
           {t.auth.welcome(firstName(me.displayName || user.name))}
         </p>
         <div className="ml-auto flex items-center gap-3">
@@ -342,15 +384,18 @@ export function Layout({ user, me }: { user: CurrentUser; me: Me }) {
           {t.account.pendingBanner}
         </p>
       )}
-      <main className="flex-1 px-4 pt-4 pb-8 lg:pb-28">
+      <main className="flex-1 px-4 pt-4 pb-24 lg:pb-44">
         <Outlet />
       </main>
+      {ADD_BUTTON_PATHS.includes(pathname) && (
+        <AddButton pending={pending} onAddDisabled={() => setNotice(t.account.addDisabled)} />
+      )}
       <p
         role="status"
         aria-live="polite"
         className={
           notice
-            ? 'fixed inset-x-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] mx-auto lg:bottom-[calc(5rem+env(safe-area-inset-bottom))] max-w-md rounded-xl bg-ink p-3 text-center text-sm font-medium text-surface shadow-lg'
+            ? 'fixed inset-x-4 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] mx-auto lg:bottom-[calc(10rem+env(safe-area-inset-bottom))] max-w-md rounded-xl bg-ink p-3 text-center text-sm font-medium text-surface shadow-lg'
             : 'sr-only'
         }
       >

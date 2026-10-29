@@ -25,6 +25,8 @@ export const en = {
     closeMenu: 'Close menu',
     notifications: 'Notifications',
     unreadBadge: (n: number) => (n === 1 ? '1 unread' : `${n} unread`),
+    home: 'Shooting Clays, go to the Dashboard',
+    addSession: 'Add session',
   },
   disciplines: {
     compak: 'Compak Sporting',
