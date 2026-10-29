@@ -1,4 +1,5 @@
 import {
+  seriousA11yViolations,
   accountItem,
   card,
   expect,
@@ -164,4 +165,45 @@ test('R50: Clubs lists the fields and their disciplines; my club is in Settings'
   const myClub = page.getByLabel('My club');
   await expect(myClub).toHaveValue('ccm');
   await expect(myClub.getByRole('option')).toHaveText(['CCM']);
+});
+
+test('R51: a round "+" on Dashboard, History and Community opens Add; the logo goes to the Dashboard', async ({
+  page,
+}) => {
+  const addButton = page.getByRole('link', { name: 'Add session' });
+  await page.goto('/app');
+  await expect(addButton).toBeVisible();
+  // Clear of the bottom bar on desktop and inside the screen everywhere.
+  const box = (await addButton.boundingBox())!;
+  const viewport = page.viewportSize()!;
+  expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
+  expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
+  const bottomBar = page.getByRole('navigation', { name: 'Main' });
+  if (await bottomBar.isVisible()) {
+    expect(box.y + box.height).toBeLessThanOrEqual((await bottomBar.boundingBox())!.y);
+  }
+  expect(await seriousA11yViolations(page)).toEqual([]);
+
+  await addButton.click();
+  await expect(page).toHaveURL('/app/add');
+  await expect(page.getByRole('heading', { name: 'Add session' })).toBeVisible();
+  await expect(addButton).toHaveCount(0);
+
+  for (const [path, heading] of [
+    ['/app/history', 'History'],
+    ['/app/community', 'Community'],
+  ]) {
+    await page.goto(path!);
+    await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
+    await expect(addButton).toBeVisible();
+  }
+  // Not while editing a series.
+  await page.goto('/app/history');
+  await page.getByRole('link', { name: 'Edit' }).first().click();
+  await expect(page.getByRole('heading', { name: 'Edit session' })).toBeVisible();
+  await expect(addButton).toHaveCount(0);
+
+  await page.getByRole('link', { name: 'Shooting Clays, go to the Dashboard' }).click();
+  await expect(page).toHaveURL('/app');
+  await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
 });

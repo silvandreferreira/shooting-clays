@@ -19,6 +19,8 @@ export const ptPT = {
     closeMenu: 'Fechar menu',
     notifications: 'Notificações',
     unreadBadge: (n: number) => `${n} por ler`,
+    home: 'Shooting Clays, ir para o Painel',
+    addSession: 'Adicionar sessão',
   },
   disciplines: {
     compak: 'Compak Sporting',

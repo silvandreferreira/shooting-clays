@@ -4,6 +4,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Add button and logo
+
+- **Added:** a round **+** button at the bottom right of Dashboard, History and Community that opens Add, and the app logo before "Welcome" as a link to the Dashboard. Decision #69. R51.
+
 ### Disciplines
 
 - **Changed:** the app records only Compak Sporting, Fosso and Helice. The 3 Trap series become Fosso (also in the CSV import); series in any other discipline are deleted (migration 0007). The public site still describes all five. R1, R2, R24, R25, R27.

@@ -44,6 +44,12 @@ test.describe('pending account', () => {
     // aria-disabled: Playwright treats it as disabled, but a tap still explains why.
     await add.click({ force: true });
     await expect(page.getByText('once the administrator approves your account')).toBeVisible();
+    // The round "+" too (R51).
+    await page.reload();
+    const addButton = page.getByRole('button', { name: 'Add session' });
+    await expect(addButton).toHaveAttribute('aria-disabled', 'true');
+    await addButton.click({ force: true });
+    await expect(page.getByText('once the administrator approves your account')).toBeVisible();
 
     // Data routes are not reachable.
     await page.goto('/app/history');
