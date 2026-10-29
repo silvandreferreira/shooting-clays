@@ -38,6 +38,23 @@ function Icon({ path }: { path: string }) {
   );
 }
 
+const STAR = 'M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 20.9l1.6-7L2 9.2l7.1-.6z';
+
+/**
+ * The Community icon in gold with a small star: it will be the paid part of the app (iteration 9,
+ * decision #75). The label keeps the normal text colour for contrast.
+ */
+function CommunityIcon() {
+  return (
+    <span className="relative text-gold" data-testid="community-premium">
+      <Icon path={ICONS.community} />
+      <svg aria-hidden viewBox="0 0 24 24" className="absolute -top-1.5 -right-2 size-3.5">
+        <path d={STAR} fill="currentColor" stroke="var(--color-card)" strokeWidth={2} />
+      </svg>
+    </span>
+  );
+}
+
 function AccountMenu({ user, showSettings }: { user: CurrentUser; showSettings: boolean }) {
   const t = useT();
   const [open, setOpen] = useState(false);
@@ -207,7 +224,7 @@ function MobileMenu({
                     {t.nav.history}
                   </NavLink>
                   <NavLink to="/community" onClick={close} className={menuItem}>
-                    <Icon path={ICONS.community} />
+                    <CommunityIcon />
                     {t.nav.community}
                   </NavLink>
                 </>
@@ -439,7 +456,7 @@ export function Layout({ user, me }: { user: CurrentUser; me: Me }) {
                 {t.nav.history}
               </NavLink>
               <NavLink to="/community" className={navItem}>
-                <Icon path={ICONS.community} />
+                <CommunityIcon />
                 {t.nav.community}
               </NavLink>
             </>

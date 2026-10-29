@@ -100,7 +100,7 @@ Every signed-in screen has a header with the app logo (a link to the Dashboard) 
 - **Desktop (1024 px and wider):** a bottom bar with the pages (Dashboard, Add, History, Community, Admin) and, in the header, an account button (Google photo, or the name's initial) that opens a menu with the email, **Settings**, **Clubs**, **FAQ** and **Sign out**.
 - **Phones and tablets (narrower than 1024 px):** no bottom bar and no account button; a **Menu** button in the header opens a panel with the photo, name and email, every page, then **Settings**, **Clubs**, **FAQ** and **Sign out**. It closes when a page is chosen, on a tap outside it or with Esc.
 
-Admins also get **Admin** with a badge counting the accounts waiting for approval (on phones and tablets the badge is also on the Menu button). Everywhere a person is shown (header, menu, Community, Admin) the circle has their Google photo, read from Neon Auth, and only shows the name's initial when there is no photo.
+The **Community** item has a gold icon with a small star: it will be the paid part of the app (iteration 9); for now it opens for everyone. Admins also get **Admin** with a badge counting the accounts waiting for approval (on phones and tablets the badge is also on the Menu button). Everywhere a person is shown (header, menu, Community, Admin) the circle has their Google photo, read from Neon Auth, and only shows the name's initial when there is no photo.
 
 UI requirements: touch targets ≥ 44 px, readable in sunlight (high contrast), one-handed use, dark mode, installable as a PWA.
 

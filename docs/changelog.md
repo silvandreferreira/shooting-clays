@@ -4,6 +4,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Premium Community icon
+
+- **Changed:** the Community icon in the bottom bar and the menu is gold with a small star, announcing the paid Community of iteration 9 (decision #75); it still opens the Community for everyone. R34, R35.
+
 ### Scroll position
 
 - **Fixed:** after scrolling down a page (e.g. the Dashboard), the round **+** opened Add halfway down; a new page now opens at the top (back and forward keep their position). R57.
