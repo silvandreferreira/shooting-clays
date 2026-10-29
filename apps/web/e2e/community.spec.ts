@@ -43,8 +43,11 @@ test('R27: monthly ranking by default: podium for the top three, then the list w
   page,
 }) => {
   await openFosso(page);
+  await expect(page.getByRole('button', { name: 'This month' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
   await expect(page.getByTestId('period-label')).toHaveText('October 2026');
-  await expect(page.getByRole('button', { name: 'Next month' })).toBeDisabled();
 
   await expect(page.getByTestId('podium-1')).toContainText('Other Shooter');
   // Only the best score shows; how many times it was reached only breaks ties.
@@ -75,7 +78,7 @@ test('R27: monthly ranking by default: podium for the top three, then the list w
   await expect(page.getByRole('link', { name: /ranking/i })).toHaveCount(0);
 });
 
-test('R53: club → discipline → field (every field by default), the month only, stepping back', async ({
+test('R53, R55: club → discipline → field (every field by default); this month, last month, this year', async ({
   page,
 }) => {
   await page.goto('/app');
@@ -93,7 +96,7 @@ test('R53: club → discipline → field (every field by default), the month onl
     'Field 4',
   ]);
   // No day or week any more.
-  for (const name of ['Day', 'Week', 'Month']) {
+  for (const name of ['Day', 'Week']) {
     await expect(page.getByRole('button', { name, exact: true })).toHaveCount(0);
   }
 
@@ -123,12 +126,24 @@ test('R53: club → discipline → field (every field by default), the month onl
   await expect(field).toHaveValue('1');
   await expect(page.getByTestId('podium-3')).toContainText('Test Owner');
 
-  await page.getByRole('button', { name: 'Previous month' }).click();
+  // R55: this month (default), last month, this year; the choice is in the address too.
+  await page.getByRole('button', { name: 'Last month' }).click();
   await expect(page.getByTestId('period-label')).toHaveText('September 2026');
   await expect(page.getByTestId('podium-1')).toContainText('Carla Reis');
-  await page.getByRole('button', { name: 'Previous month' }).click();
-  await expect(page.getByTestId('period-label')).toHaveText('August 2026');
-  await expect(page.getByText('No results this month yet.')).toBeVisible();
+  await expect(page.getByText('Other Shooter')).toHaveCount(0);
+  await page.getByRole('button', { name: 'This year' }).click();
+  await expect(page.getByTestId('period-label')).toHaveText('2026');
+  await expect(page.getByTestId('podium-1')).toContainText('Other Shooter');
+  await expect(page.getByText('Carla Reis')).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'This year' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await page.getByRole('button', { name: 'This month' }).click();
+  await expect(page.getByTestId('period-label')).toHaveText('October 2026');
+  await discipline.selectOption({ label: 'Helice' });
+  await expect(page.getByText('No results in this period yet.')).toBeVisible();
 });
 
 test('R28: "Show me in the Community" off hides me from the ranking; the display name can change', async ({

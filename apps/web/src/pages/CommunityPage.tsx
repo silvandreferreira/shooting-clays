@@ -4,9 +4,9 @@ import {
   disciplineFields,
   findClub,
   homeClub,
-  isoDateSchema,
-  monthBounds,
-  shiftMonth,
+  communityPeriodQuery,
+  COMMUNITY_PERIODS,
+  periodBounds,
   todayInLisbon,
   type DisciplineKey,
   type LeaderboardEntry,
@@ -127,8 +127,9 @@ function Row({ entry }: { entry: LeaderboardEntry }) {
 const selectClass = 'min-h-11 w-full rounded-lg border-2 border-line bg-card px-3 font-semibold';
 
 /**
- * One club, discipline and month; the field is optional (decision #71). The choices live in the
- * URL: `club`, `discipline`, `field` (absent: every field) and `date` (any day of the month).
+ * One club, discipline and period; the field is optional (decisions #71 and #73). The choices
+ * live in the URL: `club`, `discipline`, `field` (absent: every field) and `period` (this month
+ * by default, last month or this year).
  */
 export function CommunityPage({ homeClubId }: { homeClubId: string | null }) {
   const t = useT();
@@ -139,12 +140,17 @@ export function CommunityPage({ homeClubId }: { homeClubId: string | null }) {
   const discipline = disciplines.find((d) => d === params.get('discipline')) ?? disciplines[0]!;
   const fields = disciplineFields(club, discipline);
   const fieldId = fields.find((f) => f.id === params.get('field'))?.id;
-  const requested = isoDateSchema.safeParse(params.get('date')).data;
-  const date = requested && requested <= today ? requested : today;
-  const { from, to } = monthBounds(date);
-  const isCurrent = to >= today;
+  const choice = COMMUNITY_PERIODS.find((p) => p === params.get('period')) ?? COMMUNITY_PERIODS[0];
+  const { period, date } = communityPeriodQuery(choice, today);
+  const { from } = periodBounds(period, date);
 
-  const { data, isPending, isError } = useLeaderboard({ clubId: club, discipline, fieldId, date });
+  const { data, isPending, isError } = useLeaderboard({
+    clubId: club,
+    discipline,
+    fieldId,
+    period,
+    date,
+  });
 
   const update = (changes: Record<string, string | null>) =>
     setParams((p) => {
@@ -212,28 +218,28 @@ export function CommunityPage({ homeClubId }: { homeClubId: string | null }) {
         </select>
       </div>
 
-      <div className="flex items-center justify-between gap-2">
-        <button
-          type="button"
-          aria-label={t.community.previous}
-          onClick={() => update({ date: shiftMonth(date, -1) })}
-          className="flex size-11 items-center justify-center rounded-lg border-2 border-line text-xl font-bold"
-        >
-          ‹
-        </button>
-        <p className="text-center font-semibold" data-testid="period-label" aria-live="polite">
-          {formatMonth(from)}
-        </p>
-        <button
-          type="button"
-          aria-label={t.community.next}
-          disabled={isCurrent}
-          onClick={() => update({ date: shiftMonth(date, 1) })}
-          className="flex size-11 items-center justify-center rounded-lg border-2 border-line text-xl font-bold disabled:opacity-30"
-        >
-          ›
-        </button>
+      <div
+        role="group"
+        aria-label={t.community.periodLabel}
+        className="grid grid-cols-3 gap-1 rounded-xl border border-line bg-card p-1"
+      >
+        {COMMUNITY_PERIODS.map((p) => (
+          <button
+            key={p}
+            type="button"
+            aria-pressed={choice === p}
+            onClick={() => update({ period: p === COMMUNITY_PERIODS[0] ? null : p })}
+            className={`min-h-11 rounded-lg px-2 text-sm font-semibold ${
+              choice === p ? 'bg-accent text-accent-ink' : 'text-ink-muted'
+            }`}
+          >
+            {t.community.periods[p]}
+          </button>
+        ))}
       </div>
+      <p className="text-center font-semibold" data-testid="period-label" aria-live="polite">
+        {period === 'year' ? from.slice(0, 4) : formatMonth(from)}
+      </p>
 
       {data?.meHidden && (
         <p role="status" className="rounded-xl border border-line bg-card p-3 text-sm">

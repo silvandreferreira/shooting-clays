@@ -1,6 +1,7 @@
 import {
-  monthBounds,
+  periodBounds,
   rankShooters,
+  type LeaderboardPeriod,
   type AccountStatus,
   type DisciplineKey,
   type Leaderboard,
@@ -13,16 +14,23 @@ import { profiles, sessions } from './db/schema';
 export function createCommunityRepo(db: Db) {
   return {
     /**
-     * Ranked shooters for one club, discipline and month, and optionally one field (decision #71).
+     * Ranked shooters for one club, discipline and month or year, and optionally one field
+     * (decisions #71 and #73).
      * Only active accounts that did not switch "Show me in the Community" off take part
      * (docs/roadmap.md → Iteration 4).
      */
     async leaderboard(
       meId: string,
       meHidden: boolean,
-      query: { clubId: string; discipline: DisciplineKey; fieldId?: string; date: string },
+      query: {
+        clubId: string;
+        discipline: DisciplineKey;
+        fieldId?: string;
+        period: LeaderboardPeriod;
+        date: string;
+      },
     ): Promise<Leaderboard> {
-      const { from, to } = monthBounds(query.date);
+      const { from, to } = periodBounds(query.period, query.date);
       const rows = await db
         .select({
           userId: sessions.userId,
@@ -73,6 +81,7 @@ export function createCommunityRepo(db: Db) {
         clubId: query.clubId,
         discipline: query.discipline,
         fieldId: query.fieldId ?? null,
+        period: query.period,
         from,
         to,
         entries: rankShooters([...shooters.values()]),
