@@ -172,7 +172,7 @@ describe('community leaderboard', () => {
     }
   });
 
-  it('"Show me in the Community" off removes the user and says so; on brings them back', async () => {
+  it('"Join the Community" off removes the user and says so; on brings them back', async () => {
     const { db, json } = await createTestApp({ empty: true });
     await addSeries(db, OTHER.id, [20]);
     const board = async () =>

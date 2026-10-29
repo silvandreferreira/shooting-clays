@@ -221,7 +221,7 @@ export const en = {
     empty: 'No results in this period yet.',
     loading: 'Loading…',
     loadError: 'Could not load the ranking.',
-    hidden: 'You are hidden from the Community, so you are not in this ranking.',
+    hidden: 'You have not joined the Community, so you are not in this ranking.',
     hiddenLink: 'Change in Settings',
   },
   settings: {
@@ -232,9 +232,9 @@ export const en = {
     saving: 'Saving…',
     saved: 'Saved.',
     saveError: 'Could not save. Try again.',
-    showInCommunity: 'Show me in the Community',
+    showInCommunity: 'Join the Community',
     showInCommunityHelp:
-      'Your results appear on the Community rankings. Switch off to hide them; your own dashboard does not change.',
+      'The Community tab ranks the shooters of your club in each discipline and field, for this month, last month or this year, with gold, silver and bronze for the top three. See where you stand, find the shooter just above you and set your next target: one more target than last time is already a win. Only your display name, photo and scores are shown, never your email. Switched off, you leave the rankings; your Dashboard and History do not change.',
     language: 'Language',
     homeClub: 'My club',
     homeClubHelp: 'Chosen first when you add a series, and the club shown first on the Dashboard.',
@@ -261,7 +261,7 @@ export const en = {
       community: {
         question: 'Who appears in the Community?',
         answer:
-          'Approved accounts with "Show me in the Community" on (it is on by default). Only the display name, photo and scores are shown, never the email. To hide, switch it off in Settings; your own Dashboard does not change.',
+          'Approved accounts with "Join the Community" on in Settings (it is on by default). Only the display name, photo and scores are shown, never the email. Switch it off to leave the rankings; your own Dashboard does not change.',
       },
       pending: {
         question: 'Why is my new account waiting for approval?',
@@ -363,7 +363,7 @@ export const en = {
         points: [
           'Rankings for the month and the year per club, discipline and field',
           'Gold, silver and bronze for the top three',
-          'Switch off "Show me in the Community" at any time',
+          'Leave the Community at any time in Settings',
         ],
       },
       disciplines: {

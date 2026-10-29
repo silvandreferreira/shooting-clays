@@ -146,7 +146,7 @@ test('R53, R55: club → discipline → field (every field by default); this mon
   await expect(page.getByText('No results in this period yet.')).toBeVisible();
 });
 
-test('R28: "Show me in the Community" off hides me from the ranking; the display name can change', async ({
+test('R28: "Join the Community" off hides me from the ranking; the display name can change', async ({
   page,
 }) => {
   await page.goto('/app');
@@ -160,8 +160,10 @@ test('R28: "Show me in the Community" off hides me from the ranking; the display
   await expect(page.getByText('Saved.')).toBeVisible();
   await expect(page.getByTestId('welcome')).toHaveText('Welcome, Ace');
 
-  const toggle = page.getByRole('switch', { name: 'Show me in the Community' });
+  const toggle = page.getByRole('switch', { name: 'Join the Community' });
   await expect(toggle).toHaveAttribute('aria-checked', 'true');
+  // What the Community tab offers, next to the switch.
+  await expect(page.getByText('find the shooter just above you')).toBeVisible();
   await toggle.click();
   await expect(toggle).toHaveAttribute('aria-checked', 'false');
 
@@ -170,10 +172,10 @@ test('R28: "Show me in the Community" off hides me from the ranking; the display
   await expect(page.getByTestId('podium-1')).toContainText('Other Shooter');
   await expect(page.getByText('Ace Owner')).toHaveCount(0);
   await expect(page.getByTestId('ranking-row')).toHaveCount(0);
-  await expect(page.getByText('You are hidden from the Community')).toBeVisible();
+  await expect(page.getByText('You have not joined the Community')).toBeVisible();
 
   await page.getByRole('link', { name: 'Change in Settings' }).click();
-  await page.getByRole('switch', { name: 'Show me in the Community' }).click();
+  await page.getByRole('switch', { name: 'Join the Community' }).click();
   await goTo(page, 'Community');
   await page.getByRole('combobox', { name: 'Discipline' }).selectOption({ label: 'Fosso' });
   await expect(page.getByTestId('ranking-row').first()).toContainText('Ace Owner');

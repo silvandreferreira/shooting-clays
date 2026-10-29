@@ -217,7 +217,7 @@ export const ptPT = {
     empty: 'Ainda não há resultados neste período.',
     loading: 'A carregar…',
     loadError: 'Não foi possível carregar a classificação.',
-    hidden: 'Está escondido da Comunidade, por isso não aparece nesta classificação.',
+    hidden: 'Não pertence à Comunidade, por isso não aparece nesta classificação.',
     hiddenLink: 'Alterar nas Definições',
   },
   settings: {
@@ -228,9 +228,9 @@ export const ptPT = {
     saving: 'A guardar…',
     saved: 'Guardado.',
     saveError: 'Não foi possível guardar. Tente novamente.',
-    showInCommunity: 'Mostrar-me na Comunidade',
+    showInCommunity: 'Pertencer à Comunidade',
     showInCommunityHelp:
-      'Os seus resultados aparecem nas classificações da Comunidade. Desligue para os esconder; o seu painel não muda.',
+      'Na Comunidade vê a classificação dos atiradores do seu clube em cada modalidade e campo, deste mês, do mês passado ou deste ano, com ouro, prata e bronze para os três primeiros. Saiba onde está, descubra quem está logo acima de si e defina o próximo objetivo: acertar mais um prato do que da última vez já é uma vitória. Só aparecem o seu nome, a foto e as pontuações, nunca o email. Se desligar, sai das classificações; o seu Painel e o Histórico não mudam.',
     language: 'Idioma',
     homeClub: 'O meu clube',
     homeClubHelp:
@@ -257,7 +257,7 @@ export const ptPT = {
       community: {
         question: 'Quem aparece na Comunidade?',
         answer:
-          'As contas aprovadas com "Mostrar-me na Comunidade" ligado (vem ligado por defeito). Só aparecem o nome, a foto e as pontuações, nunca o email. Para se esconder, desligue a opção nas Definições; o seu painel não muda.',
+          'As contas aprovadas com "Pertencer à Comunidade" ligado nas Definições (vem ligado por defeito). Só aparecem o nome, a foto e as pontuações, nunca o email. Desligue para sair das classificações; o seu Painel não muda.',
       },
       pending: {
         question: 'Porque é que a minha conta nova está à espera de aprovação?',
@@ -358,7 +358,7 @@ export const ptPT = {
         points: [
           'Classificações do mês e do ano por clube, modalidade e campo',
           'Ouro, prata e bronze para os três primeiros',
-          'Pode desligar "Mostrar-me na Comunidade" quando quiser',
+          'Pode sair da Comunidade quando quiser, nas Definições',
         ],
       },
       disciplines: {

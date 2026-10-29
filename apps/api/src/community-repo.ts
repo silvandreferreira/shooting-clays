@@ -16,7 +16,7 @@ export function createCommunityRepo(db: Db) {
     /**
      * Ranked shooters for one club, discipline and month or year, and optionally one field
      * (decisions #71 and #73).
-     * Only active accounts that did not switch "Show me in the Community" off take part
+     * Only active accounts that did not switch "Join the Community" off take part
      * (docs/roadmap.md → Iteration 4).
      */
     async leaderboard(
