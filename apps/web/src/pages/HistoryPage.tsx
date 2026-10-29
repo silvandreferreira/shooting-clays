@@ -1,4 +1,13 @@
-import { DISCIPLINE_KEYS, findClub, type Session } from '@shooting-clays/shared';
+import {
+  DISCIPLINE_KEYS,
+  findClub,
+  monthBounds,
+  shiftMonth,
+  todayInLisbon,
+  type Period,
+  type Session,
+  type SessionsQuery,
+} from '@shooting-clays/shared';
 import { Link, useLocation, useSearchParams } from 'react-router';
 import { useT } from '../i18n';
 import { disciplineColor } from '../lib/colors';
@@ -90,13 +99,35 @@ function SessionItem({ session }: { session: Session }) {
   );
 }
 
+/** This month first, as on the other pages (decision #74). */
+const HISTORY_PERIODS = ['thisMonth', 'lastMonth', 'allTime'] as const satisfies readonly Period[];
+
+function periodRange(period: Period, today: string): Pick<SessionsQuery, 'from' | 'to'> {
+  if (period === 'allTime') return {};
+  return monthBounds(period === 'lastMonth' ? shiftMonth(today, -1) : today);
+}
+
 export function HistoryPage() {
   const t = useT();
-  // The filter lives in the URL so it survives editing a session and coming back.
+  // The filters live in the URL so they survive editing a session and coming back.
   const [searchParams, setSearchParams] = useSearchParams();
   const param = searchParams.get('discipline');
   const discipline = DISCIPLINE_KEYS.find((k) => k === param) ?? '';
-  const { data, isPending, isError } = useSessions(discipline ? { discipline } : {});
+  const period = HISTORY_PERIODS.find((p) => p === searchParams.get('period')) ?? 'thisMonth';
+  const { data, isPending, isError } = useSessions({
+    ...(discipline && { discipline }),
+    ...periodRange(period, todayInLisbon(new Date())),
+  });
+  const update = (key: 'discipline' | 'period', value: string | null) =>
+    setSearchParams(
+      (p) => {
+        const next = new URLSearchParams(p);
+        if (value) next.set(key, value);
+        else next.delete(key);
+        return next;
+      },
+      { replace: true },
+    );
 
   return (
     <div className="space-y-4">
@@ -108,9 +139,7 @@ export function HistoryPage() {
         <select
           id="discipline-filter"
           value={discipline}
-          onChange={(e) =>
-            setSearchParams(e.target.value ? { discipline: e.target.value } : {}, { replace: true })
-          }
+          onChange={(e) => update('discipline', e.target.value || null)}
           className="min-h-12 w-full rounded-xl border border-line bg-card px-3 text-base"
         >
           <option value="">{t.history.allDisciplines}</option>
@@ -120,6 +149,25 @@ export function HistoryPage() {
             </option>
           ))}
         </select>
+      </div>
+      <div
+        role="group"
+        aria-label={t.dashboard.periodLabel}
+        className="grid grid-cols-3 gap-1 rounded-xl border border-line bg-card p-1"
+      >
+        {HISTORY_PERIODS.map((p) => (
+          <button
+            key={p}
+            type="button"
+            aria-pressed={period === p}
+            onClick={() => update('period', p === 'thisMonth' ? null : p)}
+            className={`min-h-11 rounded-lg px-2 text-sm font-semibold ${
+              period === p ? 'bg-accent text-accent-ink' : 'text-ink-muted'
+            }`}
+          >
+            {t.periods[p]}
+          </button>
+        ))}
       </div>
       {isPending ? (
         <p className="py-8 text-center text-ink-muted">{t.history.loading}</p>
