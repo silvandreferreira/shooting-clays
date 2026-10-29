@@ -36,7 +36,7 @@ test.describe('signed out', () => {
 
     await page.getByRole('button', { name: 'Sign in with Google' }).click();
     await expect(page.getByTestId('welcome')).toHaveText('Welcome, Test');
-    await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
+    await expectCard(page, 'Compak Sporting', '16 / 13 / 18');
   });
 });
 
@@ -45,7 +45,7 @@ test('R15: the header greets the user by first name and signing out clears the c
 }) => {
   await page.goto('/app');
   await expect(page.getByTestId('welcome')).toHaveText('Welcome, Test');
-  await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
+  await expectCard(page, 'Compak Sporting', '16 / 13 / 18');
   await expect.poll(() => hasPersistedCache(page)).toBe(true);
 
   await openAccountMenu(page);
@@ -64,7 +64,7 @@ test("R16: switching account never shows the previous user's cached data", async
   auth,
 }) => {
   await page.goto('/app');
-  await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
+  await expectCard(page, 'Compak Sporting', '16 / 13 / 18');
   await expect.poll(() => hasPersistedCache(page)).toBe(true);
 
   // Another (approved) user signs in on the same device, without the owner signing out first.

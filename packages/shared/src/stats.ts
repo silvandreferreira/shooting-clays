@@ -2,7 +2,14 @@ import { DISCIPLINE_KEYS, type DisciplineKey } from './disciplines';
 
 export const TIME_ZONE = 'Europe/Lisbon';
 
-export const PERIODS = ['allTime', 'lastMonth', 'thisMonth'] as const;
+export const PERIODS = ['allTime', 'lastMonth', 'thisMonth', 'thisYear'] as const;
+
+/** The Dashboard's choices, in this order; this month by default (decision #77). */
+export const DASHBOARD_PERIODS = [
+  'thisMonth',
+  'lastMonth',
+  'thisYear',
+] as const satisfies readonly Period[];
 
 export type Period = (typeof PERIODS)[number];
 
@@ -61,6 +68,7 @@ export function periodsForDate(date: string, referenceDate: string): Period[] {
   const periods: Period[] = ['allTime'];
   if (month === thisMonth) periods.push('thisMonth');
   if (month === previousMonth(thisMonth)) periods.push('lastMonth');
+  if (date.slice(0, 4) === referenceDate.slice(0, 4)) periods.push('thisYear');
   return periods;
 }
 

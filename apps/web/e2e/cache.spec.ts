@@ -4,7 +4,7 @@ test('R3: offline (API and auth down), the dashboard opens from the persisted ca
   page,
 }) => {
   await page.goto('/app');
-  await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
+  await expectCard(page, 'Compak Sporting', '16 / 13 / 18');
   // Wait until the persister has written the cache to IndexedDB (it is throttled).
   await expect
     .poll(() =>
@@ -31,6 +31,6 @@ test('R3: offline (API and auth down), the dashboard opens from the persisted ca
   await page.route('**/api/**', (route) => route.abort('connectionrefused'));
   await page.route('**/auth/**', (route) => route.abort('connectionrefused'));
   await page.reload();
-  await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
+  await expectCard(page, 'Compak Sporting', '16 / 13 / 18');
   await expect(page.getByText('Loading…')).toHaveCount(0);
 });

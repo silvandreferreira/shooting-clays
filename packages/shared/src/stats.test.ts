@@ -25,11 +25,21 @@ describe('periods', () => {
     expect(previousMonth('2026-10')).toBe('2026-09');
   });
 
-  it('assigns dates to calendar months of the reference date', () => {
-    expect(periodsForDate('2026-10-01', '2026-10-23')).toEqual(['allTime', 'thisMonth']);
-    expect(periodsForDate('2026-09-30', '2026-10-23')).toEqual(['allTime', 'lastMonth']);
-    expect(periodsForDate('2026-08-31', '2026-10-23')).toEqual(['allTime']);
+  it('assigns dates to calendar months and the calendar year of the reference date', () => {
+    expect(periodsForDate('2026-10-01', '2026-10-23')).toEqual([
+      'allTime',
+      'thisMonth',
+      'thisYear',
+    ]);
+    expect(periodsForDate('2026-09-30', '2026-10-23')).toEqual([
+      'allTime',
+      'lastMonth',
+      'thisYear',
+    ]);
+    expect(periodsForDate('2026-08-31', '2026-10-23')).toEqual(['allTime', 'thisYear']);
+    // Last month can be in the year before: then it is not this year.
     expect(periodsForDate('2025-12-31', '2026-01-05')).toEqual(['allTime', 'lastMonth']);
+    expect(periodsForDate('2025-06-01', '2026-10-23')).toEqual(['allTime']);
   });
 
   it('uses the Europe/Lisbon calendar day', () => {
@@ -57,6 +67,7 @@ describe('computeDashboard', () => {
     expect(dashboard.periods.thisMonth.compak).toEqual({ avg: 16, min: 13, max: 18, count: 2 });
     expect(dashboard.periods.lastMonth.compak).toEqual({ avg: 14, min: 14, max: 14, count: 1 });
     expect(dashboard.periods.thisMonth.fosso.count).toBe(0);
+    expect(dashboard.periods.thisYear.compak).toEqual({ avg: 15, min: 13, max: 18, count: 3 });
   });
 
   it('includes every discipline, even without sessions', () => {

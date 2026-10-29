@@ -162,7 +162,7 @@ export async function expectCard(page: Page, name: string, values: string) {
   await expect(c.getByTestId('max')).toHaveText(max!);
 }
 
-export async function selectPeriod(page: Page, period: 'All time' | 'Last month' | 'This month') {
+export async function selectPeriod(page: Page, period: 'This month' | 'Last month' | 'This year') {
   const button = page.getByRole('group', { name: 'Period' }).getByRole('button', { name: period });
   await button.click();
   await expect(button).toHaveAttribute('aria-pressed', 'true');

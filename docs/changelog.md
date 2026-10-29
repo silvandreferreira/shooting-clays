@@ -4,6 +4,10 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Every 
 
 ## Unreleased
 
+### Dashboard periods
+
+- **Changed:** the Dashboard has **This month** (default), **Last month** and **This year**, like the Community; All time is gone from it. Decision #77. R1, R58.
+
 ### Premium Community icon
 
 - **Changed:** the Community icon in the bottom bar and the menu is gold with a small star, announcing the paid Community of iteration 9 (decision #75); it still opens the Community for everyone. R34, R35.

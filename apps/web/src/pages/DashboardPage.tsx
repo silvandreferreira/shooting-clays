@@ -4,7 +4,7 @@ import {
   filterDashboard,
   findClub,
   homeClub,
-  PERIODS,
+  DASHBOARD_PERIODS,
   periodsForDate,
   type Dashboard,
   type DisciplineKey,
@@ -29,7 +29,7 @@ function PeriodSwitcher({ value, onChange }: { value: Period; onChange: (p: Peri
       aria-label={t.dashboard.periodLabel}
       className="grid grid-cols-3 gap-1 rounded-xl border border-line bg-card p-1"
     >
-      {PERIODS.map((p) => (
+      {DASHBOARD_PERIODS.map((p) => (
         <button
           key={p}
           type="button"
@@ -120,7 +120,8 @@ function DashboardView({
   sample?: boolean;
 }) {
   const t = useT();
-  const [period, setPeriod] = useState<Period>('allTime');
+  // This month first (decision #77), as in the Community and History.
+  const [period, setPeriod] = useState<Period>('thisMonth');
   const [club, setClub] = useState(() => initialClub(homeClubId));
   const [byField, setByField] = useState(() => stored(BY_FIELD_STORAGE_KEY) === '1');
 

@@ -13,7 +13,7 @@ test('R30: switching to Português in Settings translates the app at once, witho
   page,
 }) => {
   await page.goto('/app');
-  await expectCard(page, 'Compak Sporting', '16 / 8 / 23');
+  await expectCard(page, 'Compak Sporting', '16 / 13 / 18');
   let reloaded = false;
   page.on('load', () => (reloaded = true));
 
@@ -33,7 +33,7 @@ test('R30: switching to Português in Settings translates the app at once, witho
 
   await goTo(page, 'Painel');
   await expect(page.getByRole('heading', { name: 'Painel' })).toBeVisible();
-  await expect(page.getByRole('group', { name: 'Período' })).toContainText('Desde sempre');
+  await expect(page.getByRole('group', { name: 'Período' })).toContainText('Este ano');
   await expect(page.getByRole('heading', { name: /Resultados ao longo do tempo/ })).toBeVisible();
 
   await goTo(page, 'Adicionar');

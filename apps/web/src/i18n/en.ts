@@ -33,6 +33,7 @@ export const en = {
     allTime: 'All time',
     lastMonth: 'Last month',
     thisMonth: 'This month',
+    thisYear: 'This year',
   } satisfies Record<Period, string>,
   noData: '—',
   dashboard: {
