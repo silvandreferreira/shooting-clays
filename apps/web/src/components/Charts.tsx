@@ -46,13 +46,13 @@ function ChartCard({
   );
 }
 
-type ScorePoint = Pick<SeriesPoint, 'date' | 'score'> & { fieldId?: string | null };
+type ScorePoint = Pick<SeriesPoint, 'date' | 'score'> & { fieldId?: string };
 
 export interface ScoreRow {
   key: string;
   date: string;
-  /** The field of each discipline's series in this row (null: not recorded). */
-  fields: Partial<Record<DisciplineKey, string | null>>;
+  /** The field of each discipline's series in this row. */
+  fields: Partial<Record<DisciplineKey, string>>;
   [discipline: string]: unknown;
 }
 
@@ -81,7 +81,9 @@ export function toScoreRows(series: Partial<Record<DisciplineKey, ScorePoint[]>>
         return {
           key: `${date}#${i}`,
           date,
-          fields: Object.fromEntries(here.map(([k, points]) => [k, points[i]!.fieldId ?? null])),
+          fields: Object.fromEntries(
+            here.flatMap(([k, points]) => (points[i]!.fieldId ? [[k, points[i]!.fieldId]] : [])),
+          ),
           ...Object.fromEntries(here.map(([k, points]) => [k, points[i]!.score])),
         };
       });
@@ -136,12 +138,12 @@ function DisciplineToggles({
 }
 
 const FIELD_SHAPES = ['circle', 'square', 'triangle', 'diamond'] as const;
-type FieldShape = (typeof FIELD_SHAPES)[number] | 'ring';
+type FieldShape = (typeof FIELD_SHAPES)[number];
 
-/** With fields considered, each field of the club has its own marker; no field is a ring. */
-function fieldShape(fieldIds: readonly string[], fieldId: string | null): FieldShape {
-  const index = fieldId === null ? -1 : fieldIds.indexOf(fieldId);
-  return index < 0 ? 'ring' : FIELD_SHAPES[index % FIELD_SHAPES.length]!;
+/** With fields considered, each field of the club has its own marker. */
+function fieldShape(fieldIds: readonly string[], fieldId: string | undefined): FieldShape {
+  const index = fieldId === undefined ? 0 : Math.max(0, fieldIds.indexOf(fieldId));
+  return FIELD_SHAPES[index % FIELD_SHAPES.length]!;
 }
 
 function ShapeMark({
@@ -177,35 +179,18 @@ function ShapeMark({
           {...stroke}
         />
       );
-    case 'ring':
-      return (
-        <circle
-          cx={cx}
-          cy={cy}
-          r={r - 0.5}
-          fill="var(--color-card)"
-          stroke={fill}
-          strokeWidth={2}
-        />
-      );
     default:
       return <circle cx={cx} cy={cy} r={r} fill={fill} {...stroke} />;
   }
 }
 
 /** Which marker is which field (only the fields in the chart). */
-function ShapeLegend({
-  fieldIds,
-  shown,
-}: {
-  fieldIds: readonly string[];
-  shown: (string | null)[];
-}) {
+function ShapeLegend({ fieldIds, shown }: { fieldIds: readonly string[]; shown: string[] }) {
   const t = useT();
   return (
     <ul aria-label={t.dashboard.shapesLabel} className="mt-1 flex flex-wrap gap-x-4 gap-y-1 px-3">
       {shown.map((fieldId) => (
-        <li key={fieldId ?? 'none'} className="flex items-center gap-1.5 text-sm text-ink-muted">
+        <li key={fieldId} className="flex items-center gap-1.5 text-sm text-ink-muted">
           <svg aria-hidden viewBox="0 0 16 16" className="size-4">
             <ShapeMark
               shape={fieldShape(fieldIds, fieldId)}
@@ -215,7 +200,7 @@ function ShapeLegend({
               fill="var(--color-ink-muted)"
             />
           </svg>
-          {fieldId === null ? t.clubs.noField : t.clubs.field(fieldId)}
+          {t.clubs.field(fieldId)}
         </li>
       ))}
     </ul>
@@ -242,12 +227,9 @@ export function ScoresChart({
   const visible = disciplines.filter((d) => !hidden.has(d));
   const rows = toScoreRows(series);
   const shownFields = fieldIds
-    ? [...fieldIds, null].filter((f) =>
-        visible.some((d) => series[d]?.some((p) => (p.fieldId ?? null) === f)),
-      )
+    ? fieldIds.filter((f) => visible.some((d) => series[d]?.some((p) => p.fieldId === f)))
     : [];
-  const fieldName = (fieldId: string | null | undefined) =>
-    fieldId ? t.clubs.field(fieldId) : t.clubs.noField;
+  const fieldName = (fieldId: string | undefined) => (fieldId ? t.clubs.field(fieldId) : '');
   const toggle = (d: DisciplineKey) =>
     setHidden((current) => {
       const next = new Set(current);
@@ -317,7 +299,7 @@ export function ScoresChart({
                               ) : (
                                 <ShapeMark
                                   key={`${d}-${props.index}`}
-                                  shape={fieldShape(fieldIds, props.payload.fields[d] ?? null)}
+                                  shape={fieldShape(fieldIds, props.payload.fields[d])}
                                   cx={props.cx}
                                   cy={props.cy}
                                   r={4.5}
@@ -354,8 +336,8 @@ export function ScoresChart({
 
 export interface AverageBar {
   discipline: DisciplineKey;
-  /** With fields considered: the bar's field (null: not recorded). Absent: every field. */
-  fieldId?: string | null;
+  /** With fields considered: the bar's field. Absent: every field. */
+  fieldId?: string;
   avg: number;
   min: number;
   max: number;
@@ -465,12 +447,11 @@ export function AveragesChart({
     const discipline = t.disciplines[a.discipline];
     if (a.fieldId === undefined)
       return { ...a, key: a.discipline, name: discipline, title: discipline };
-    const field = a.fieldId === null ? t.clubs.noField : t.clubs.field(a.fieldId);
     return {
       ...a,
-      key: `${a.discipline}-${a.fieldId ?? 'none'}`,
-      name: a.fieldId === null ? t.dashboard.noFieldShort : t.dashboard.fieldShort(a.fieldId),
-      title: `${discipline} · ${field}`,
+      key: `${a.discipline}-${a.fieldId}`,
+      name: t.dashboard.fieldShort(a.fieldId),
+      title: `${discipline} · ${t.clubs.field(a.fieldId)}`,
     };
   });
   const names = new Map(rows.map((r) => [r.key, r.name]));

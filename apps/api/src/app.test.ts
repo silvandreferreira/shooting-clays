@@ -163,13 +163,14 @@ describe('GET /api/dashboard', () => {
         discipline: 'helice',
         score,
         clubId: 'ccm',
+        fieldId: '1',
         createdAt,
       });
     }
     const dashboard = (await (await json('GET', '/api/dashboard')).json()) as Dashboard;
     expect(dashboard.series.helice.filter((p) => p.date === '2026-10-24')).toEqual([
-      { date: '2026-10-24', score: 11, clubId: 'ccm', fieldId: null },
-      { date: '2026-10-24', score: 21, clubId: 'ccm', fieldId: null },
+      { date: '2026-10-24', score: 11, clubId: 'ccm', fieldId: '1' },
+      { date: '2026-10-24', score: 21, clubId: 'ccm', fieldId: '1' },
     ]);
   });
 });
@@ -345,13 +346,14 @@ describe('clubs and fields', () => {
 
   it.each([
     [{ fieldId: undefined }, 'fieldId', 'fieldId is required'],
-    [{ clubId: undefined, fieldId: undefined }, 'fieldId', 'fieldId is required'],
+    [{ clubId: undefined }, 'clubId', 'clubId is required'],
+    [{ fieldId: '' }, 'fieldId', 'fieldId is required'],
     [{ clubId: 'nowhere' }, 'clubId', 'clubId must be one of: ccm'],
     [{ fieldId: '9' }, 'fieldId', 'fieldId must be one of: 1, 2, 3, 4'],
     [{ fieldId: '3', discipline: 'fosso', hardestTargets: [] }, 'discipline', "field's: compak"],
-    [{ clubId: null }, 'fieldId', 'fieldId needs a clubId'],
+    [{ clubId: null }, 'clubId', 'clubId is required'],
   ])(
-    'a new series needs a field of the club that has the discipline',
+    'a series needs a club and a field of it that has the discipline',
     async (change, path, message) => {
       const { json } = await createTestApp({ empty: true });
       const res = await json('POST', '/api/sessions', { ...newSession, ...change });
@@ -362,21 +364,22 @@ describe('clubs and fields', () => {
     },
   );
 
-  it('saves the club and field; an edit may leave the field (or both) empty', async () => {
+  // R54: no series without a club or field any more (decision #72).
+  it('saves the club and field; an edit can change them but never leave them empty', async () => {
     const { json } = await createTestApp({ empty: true });
     const created = await json('POST', '/api/sessions', newSession);
     const { session } = (await created.json()) as { session: Session };
     expect(session).toMatchObject({ clubId: 'ccm', fieldId: '1' });
 
     const put = (body: object) => json('PUT', `/api/sessions/${session.id}`, body);
-    const noField = (await (await put({ ...newSession, fieldId: null })).json()) as {
-      session: Session;
-    };
-    expect(noField.session).toMatchObject({ clubId: 'ccm', fieldId: null });
-    const fosso = { ...newSession, discipline: 'fosso', hardestTargets: [], fieldId: '' };
-    expect((await put(fosso)).status).toBe(200);
-    const none = (await (await put({ ...fosso, clubId: '' })).json()) as { session: Session };
-    expect(none.session).toMatchObject({ clubId: null, fieldId: null });
+    for (const change of [{ fieldId: null }, { fieldId: '' }, { clubId: '', fieldId: '' }]) {
+      expect(await error(await put({ ...newSession, ...change }))).toMatchObject({
+        code: 'VALIDATION_ERROR',
+      });
+    }
+    const fosso = { ...newSession, discipline: 'fosso', hardestTargets: [], fieldId: '2' };
+    const moved = (await (await put(fosso)).json()) as { session: Session };
+    expect(moved.session).toMatchObject({ clubId: 'ccm', fieldId: '2', discipline: 'fosso' });
     expect(
       await error(
         await put({ ...newSession, fieldId: '3', discipline: 'helice', hardestTargets: [] }),
@@ -384,10 +387,12 @@ describe('clubs and fields', () => {
     ).toMatchObject({ code: 'VALIDATION_ERROR' });
   });
 
-  it('the imported history is at CCM, without a field', async () => {
+  it('the imported history is at CCM: Compak Sporting on Field 4, Fosso on Field 2, Helice on 1', async () => {
     const { json } = await createTestApp();
     const sessions = (await (await json('GET', '/api/sessions')).json()) as Session[];
-    expect(new Set(sessions.map((s) => `${s.clubId}/${s.fieldId}`))).toEqual(new Set(['ccm/null']));
+    expect(new Set(sessions.map((s) => `${s.discipline}@${s.clubId}/${s.fieldId}`))).toEqual(
+      new Set(['compak@ccm/4', 'fosso@ccm/2', 'helice@ccm/1']),
+    );
   });
 
   it('the home club is saved in the profile', async () => {

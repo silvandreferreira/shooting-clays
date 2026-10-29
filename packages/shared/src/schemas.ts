@@ -10,11 +10,11 @@ import {
   hasTargetLetters,
 } from './disciplines';
 
-const optionalId = z
-  .string({ error: 'must be a string' })
-  .max(50)
-  .nullish()
-  .transform((id) => id || null);
+const requiredId = (name: string) =>
+  z
+    .string({ error: `${name} is required` })
+    .min(1, { error: `${name} is required` })
+    .max(50);
 
 export const isoDateSchema = z.iso.date({ error: 'date must be a valid YYYY-MM-DD date' });
 
@@ -40,9 +40,9 @@ export const sessionInputSchema = z
       .max(MAX_NOTES_LENGTH, { error: `notes must be at most ${MAX_NOTES_LENGTH} characters` })
       .nullish()
       .transform((notes) => (notes?.trim() ? notes.trim() : null)),
-    /** Where the series was shot (decision #66); empty or missing = not recorded. */
-    clubId: optionalId,
-    fieldId: optionalId,
+    /** Where the series was shot (decisions #66 and #72): always a club and one of its fields. */
+    clubId: requiredId('clubId'),
+    fieldId: requiredId('fieldId'),
   })
   .refine((s) => s.hardestTargets.length === 0 || hasTargetLetters(s.discipline), {
     error: 'hardestTargets are only allowed for compak',
@@ -52,12 +52,6 @@ export const sessionInputSchema = z
     const issue = placeIssue(s);
     if (issue) ctx.addIssue({ code: 'custom', message: issue.message, path: [issue.path] });
   });
-
-/** A new series also says on which field it was shot; older ones may have none. */
-export const newSessionInputSchema = sessionInputSchema.refine((s) => s.fieldId !== null, {
-  error: 'fieldId is required',
-  path: ['fieldId'],
-});
 
 /** What the client sends (before defaults/transforms). */
 export type SessionInput = z.input<typeof sessionInputSchema>;

@@ -111,7 +111,7 @@ test('R7: an API error on save keeps the form filled in', async ({ page }) => {
   await expect(page.getByLabel('Notes')).toHaveValue('Windy');
 });
 
-test('R49: club → discipline → field; History shows where; older series get a field when edited', async ({
+test('R49: club → discipline → field; History shows where; editing moves a series to another field', async ({
   page,
 }) => {
   await page.goto('/app/add');
@@ -132,15 +132,18 @@ test('R49: club → discipline → field; History shows where; older series get 
   await goTo(page, 'History');
   const items = page.getByTestId('session-item');
   await expect(items.first().getByTestId('place')).toHaveText('CCM · Field 2');
-  // The imported history is at CCM, field not recorded.
+  // The imported Compak Sporting history is at CCM, Field 4 (decision #72).
   await page
     .getByRole('combobox', { name: 'Discipline' })
     .selectOption({ label: 'Compak Sporting' });
-  await expect(items.first().getByTestId('place')).toHaveText('CCM');
+  await expect(items.first().getByTestId('place')).toHaveText('CCM · Field 4');
 
+  // R54: editing has no "No club" or "No field".
   await items.first().getByRole('link', { name: 'Edit' }).click();
   await expect(page.getByLabel('Club')).toHaveValue('ccm');
-  await expect(page.getByRole('radio', { name: 'No field' })).toBeChecked();
+  await expect(page.getByLabel('Club').getByRole('option')).toHaveText(['CCM']);
+  await expect(page.getByRole('radio', { name: 'Field 4' })).toBeChecked();
+  await expect(page.getByRole('radio', { name: 'No field' })).toHaveCount(0);
   await page.getByText('Field 3', { exact: true }).click();
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page).toHaveURL('/app/history?discipline=compak');

@@ -13,12 +13,20 @@ export interface HistoryRow {
   discipline: DisciplineKey;
   score: number;
   notes: string | null;
-  /** The whole history was shot at CCM; the field was not recorded. */
+  /** The whole history was shot at CCM; the field was not recorded, so it is the usual one. */
   clubId: string;
+  fieldId: string;
   importKey: string;
 }
 
 export const HISTORY_CLUB_ID = 'ccm';
+
+/** The CCM field where each discipline was usually shot (decision #72). */
+export const HISTORY_FIELDS: Record<DisciplineKey, string> = {
+  compak: '4',
+  fosso: '2',
+  helice: '1',
+};
 
 const DISCIPLINE_MAP: Record<string, DisciplineKey> = {
   Compak: 'compak',
@@ -79,7 +87,15 @@ export function parseHistoryCsv(text: string): HistoryRow[] {
     const importKey = createHash('sha256')
       .update(`${date}|${discipline}|${score}|${index}`)
       .digest('hex');
-    return { date, discipline, score, notes, clubId: HISTORY_CLUB_ID, importKey };
+    return {
+      date,
+      discipline,
+      score,
+      notes,
+      clubId: HISTORY_CLUB_ID,
+      fieldId: HISTORY_FIELDS[discipline],
+      importKey,
+    };
   });
 }
 
