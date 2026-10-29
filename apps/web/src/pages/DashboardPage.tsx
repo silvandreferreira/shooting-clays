@@ -183,7 +183,7 @@ function DashboardView({
       ) : (
         <>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            <label className="flex min-w-0 flex-1 items-center gap-2 font-semibold">
+            <label className="flex flex-1 items-center gap-2 font-semibold">
               {t.dashboard.club}
               <select
                 value={club}
@@ -202,7 +202,7 @@ function DashboardView({
               </select>
             </label>
             {club !== ALL_CLUBS && (
-              <div className="flex items-center gap-1 font-semibold">
+              <div className="flex shrink-0 items-center gap-1 font-semibold">
                 <span aria-hidden>{t.dashboard.byField}</span>
                 <Switch
                   checked={byField}
