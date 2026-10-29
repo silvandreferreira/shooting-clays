@@ -16,6 +16,10 @@ async function expectMenuFlow(page: import('@playwright/test').Page) {
   for (const name of ['Dashboard', 'Add', 'History', 'Community', 'Admin']) {
     await expect(nav.getByRole('link', { name })).toBeVisible();
   }
+  // The Community is marked as premium: gold icon with a star (iteration 9).
+  await expect(
+    nav.getByRole('link', { name: 'Community' }).getByTestId('community-premium'),
+  ).toBeVisible();
   await expect(page.getByRole('link', { name: 'Settings' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible();
   expect(await seriousA11yViolations(page)).toEqual([]);
@@ -60,6 +64,9 @@ test('R35: on desktop the bottom bar and the account menu stay as they are', asy
   for (const name of ['Dashboard', 'Add', 'History', 'Community', 'Admin']) {
     await expect(nav.getByRole('link', { name })).toBeVisible();
   }
+  await expect(
+    nav.getByRole('link', { name: 'Community' }).getByTestId('community-premium'),
+  ).toBeVisible();
   await page.getByRole('button', { name: 'Account' }).click();
   await expect(page.getByRole('menuitem', { name: 'Settings' })).toBeVisible();
   await expect(page.getByRole('menuitem', { name: 'Sign out' })).toBeVisible();
