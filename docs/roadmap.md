@@ -457,11 +457,11 @@ Goal: the Community becomes the **premium** part of the app. Logging series, the
 
 ### Paying by bank transfer
 
-1. The payment page shows the amount (€6 or €60), the **IBAN** and the account holder's name, and a **payment ID** for this membership, e.g. `SC-7K3P9Q` (short, unique, no ambiguous letters such as O/0 or I/1, with a copy button).
+1. The payment page shows the amount (€6 or €60), the **IBAN**, the **BIC/SWIFT** and the account holder's name, and a **payment ID** for this membership, e.g. `SC-7K3P9Q` (short, unique, no ambiguous letters such as O/0 or I/1, with a copy button).
 2. The user makes the transfer and **emails the proof of transfer to the owner's address, with the payment ID**. The page has a **Send proof by email** button that opens the user's email app with the address, the subject (the payment ID) and a short text filled in; the proof is attached by the user.
 3. The admin matches the email to the user **by the payment ID** in Admin (below) and taps **Confirm payment**. The membership becomes **active** from that moment until the end of the month or year paid; the user gets a notification ("Your Community membership is active until …").
 
-- The IBAN, the account holder and the owner's email are settings in environment variables (`PAYMENT_IBAN`, `PAYMENT_ACCOUNT_HOLDER`, `PAYMENTS_EMAIL`), never in the repository.
+- The IBAN, the BIC/SWIFT, the account holder and the owner's email are settings in environment variables (`PAYMENT_IBAN`, `PAYMENT_BIC`, `PAYMENT_ACCOUNT_HOLDER`, `PAYMENTS_EMAIL`), never in the repository. The owner has given the account to use (a Revolut account); it is set in Vercel when the iteration is built.
 - **Renewal**: some days before the end (e.g. 7), the member gets a notification and the payment page shows a **new payment ID** for the next period; paying it and being confirmed extends the membership from the end of the current one, so no days are lost. Without a confirmed payment, the membership ends on its last day.
 - No payment provider, no fees, nothing automatic: the admin's confirmation is the proof. (MB WAY through a provider was considered: automatic, from about €0.14 per €6 with Eupago, but the owner chose bank transfer.)
 
